@@ -4,7 +4,7 @@ import java.util.UUID;
 
 import org.unitedlands.unitedlands.classes.Country;
 
-import com.j256.ormlite.dao.Dao;
+import org.unitedlands.libs.ormlite.dao.Dao;
 
 public class CountryService extends BaseDbService<Country> {
 

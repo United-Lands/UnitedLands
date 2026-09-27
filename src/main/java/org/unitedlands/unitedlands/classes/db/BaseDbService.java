@@ -1,6 +1,6 @@
 package org.unitedlands.unitedlands.classes.db;
 
-import com.j256.ormlite.dao.Dao;
+import org.unitedlands.libs.ormlite.dao.Dao;
 
 import java.sql.SQLException;
 import java.util.*;

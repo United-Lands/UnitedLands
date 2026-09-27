@@ -3,8 +3,6 @@ package org.unitedlands.unitedlands.classes.infoscreen;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-
 import org.unitedlands.unitedlands.classes.Country;
 import org.unitedlands.unitedlands.classes.Region;
 
@@ -50,8 +48,8 @@ public class CountryInfoScreen extends InfoScreen {
         addComponent("area", areaComponent);
 
         addComponent("balance", "info-screens.country.balance",
-                Map.of("balance", UnitedLandsEconomyManager.instance().format(UnitedLandsEconomyManager.instance().getBalance(country.getUuid())),
-                        "upkeep", UnitedLandsEconomyManager.instance().format(CostUtils.getCountryUpkeep(country))));
+                UnitedLandsEconomyManager.instance().format(UnitedLandsEconomyManager.instance().getBalance(country.getUuid())),
+                UnitedLandsEconomyManager.instance().format(CostUtils.getCountryUpkeep(country)));
 
         var ongoingClaims = UnitedLandsDataManager.instance().getRegionClaimsOngoing(country);
         if (ongoingClaims.size() > 0) {

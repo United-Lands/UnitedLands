@@ -18,8 +18,8 @@ import org.unitedlands.unitedlands.classes.metadata.MetaDataField;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.utils.JsonUtils;
 import com.google.gson.reflect.TypeToken;
-import com.j256.ormlite.field.DataType;
-import com.j256.ormlite.field.DatabaseField;
+import org.unitedlands.libs.ormlite.field.DataType;
+import org.unitedlands.libs.ormlite.field.DatabaseField;
 
 public class Citizen implements Identifiable, MetadataHolder {
 
@@ -34,6 +34,9 @@ public class Citizen implements Identifiable, MetadataHolder {
 
     @DatabaseField(canBeNull = false, columnName = "last_logon")
     private long lastLogon;
+
+    @DatabaseField(canBeNull = false, columnName = "total_playtime")
+    private long totalPlaytime;
 
     @DatabaseField(width = 36, columnName = "settlement_uuid")
     private UUID settlementUuid;
@@ -94,6 +97,14 @@ public class Citizen implements Identifiable, MetadataHolder {
 
     public void setLastLogon(long lastLogon) {
         this.lastLogon = lastLogon;
+    }
+
+    public long getTotalPlaytime() {
+        return totalPlaytime;
+    }
+
+    public void setTotalPlaytime(long totalPlaytime) {
+        this.totalPlaytime = totalPlaytime;
     }
 
     public OfflinePlayer getOfflinePlayer() {

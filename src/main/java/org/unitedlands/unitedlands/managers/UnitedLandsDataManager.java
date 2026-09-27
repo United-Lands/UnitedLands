@@ -19,11 +19,13 @@ import org.unitedlands.unitedlands.classes.Citizen;
 import org.unitedlands.unitedlands.classes.Coordinates;
 import org.unitedlands.unitedlands.classes.Country;
 import org.unitedlands.unitedlands.classes.GeopolAttribute;
+import org.unitedlands.unitedlands.classes.PlaytimeRecord;
 import org.unitedlands.unitedlands.classes.Region;
 import org.unitedlands.unitedlands.classes.RegionIndex;
 import org.unitedlands.unitedlands.classes.Settings;
 import org.unitedlands.unitedlands.classes.Settlement;
 import org.unitedlands.unitedlands.classes.SettlementChunk;
+import org.unitedlands.unitedlands.classes.configs.GeneralConfig;
 import org.unitedlands.unitedlands.integrations.Pl3xMap.Pl3xMapRenderer;
 import org.unitedlands.unitedlands.utils.CoordinateUtils;
 import org.unitedlands.utils.United;
@@ -55,7 +57,7 @@ public class UnitedLandsDataManager {
     public UnitedLandsDataManager(UnitedLands plugin, Pl3xMapRenderer mapRenderer) {
         instance = this;
 
-        databaseManager = new DatabaseManager(plugin);
+        databaseManager = new DatabaseManager();
         databaseManager.initialize();
     }
 
@@ -64,23 +66,25 @@ public class UnitedLandsDataManager {
         CompletableFuture<List<Country>> countryFuture = databaseManager.getCountryService().getAllAsync();
         CompletableFuture<List<Region>> regionFuture = databaseManager.getRegionService().getAllAsync();
         CompletableFuture<List<Settlement>> settlementFuture = databaseManager.getSettlementService().getAllAsync();
-        CompletableFuture<List<SettlementChunk>> settlementChunkFuture = databaseManager.getSettlementChunkService().getAllAsync();
+        CompletableFuture<List<SettlementChunk>> settlementChunkFuture = databaseManager.getSettlementChunkService()
+                .getAllAsync();
         CompletableFuture<List<Citizen>> citizenFuture = databaseManager.getCitizenService().getAllAsync();
 
         try {
-            CompletableFuture.allOf(countryFuture, settlementFuture, settlementChunkFuture, regionFuture, citizenFuture).thenRun(() -> {
+            CompletableFuture.allOf(countryFuture, settlementFuture, settlementChunkFuture, regionFuture, citizenFuture)
+                    .thenRun(() -> {
 
-                try {
-                    buildCountries(countryFuture.get());
-                    buildRegions(regionFuture.get());
-                    buildSettlements(settlementFuture.get(), settlementChunkFuture.get());
-                    buildCitizens(citizenFuture.get());
-                } catch (Exception ex) {
-                    United.logger().error("GeopolObject building failed: " + ex.getMessage(), "UnitedLands");
-                    throw new RuntimeException("App init failed", ex);
-                }
+                        try {
+                            buildCountries(countryFuture.get());
+                            buildRegions(regionFuture.get());
+                            buildSettlements(settlementFuture.get(), settlementChunkFuture.get());
+                            buildCitizens(citizenFuture.get());
+                        } catch (Exception ex) {
+                            United.logger().error("GeopolObject building failed: " + ex.getMessage(), "UnitedLands");
+                            throw new RuntimeException("App init failed", ex);
+                        }
 
-            }).get();
+                    }).get();
 
             validateGeopolAttributes();
 
@@ -120,7 +124,8 @@ public class UnitedLandsDataManager {
             settlementChunks.put(settlementChunk.getCoordinates(), settlementChunk);
             settlements.get(settlementChunk.getSettlementUuid()).addChunk(settlementChunk);
         }
-        United.logger().info("Loaded " + loadedSettlementChunks.size() + " settlement chunks to memory.", "UnitedLands");
+        United.logger().info("Loaded " + loadedSettlementChunks.size() + " settlement chunks to memory.",
+                "UnitedLands");
     }
 
     public void buildRegions(List<Region> loadedRegions) {
@@ -149,7 +154,9 @@ public class UnitedLandsDataManager {
         var worldZMin = Settings.importOffsetY * -1d;
         var worldZMax = Settings.importOffsetY;
 
-        United.logger().info("Using world bounds " + worldXMin + " | " + worldZMin + " - " + worldXMax + " | " + worldZMax, "UnitedLands");
+        United.logger().info(
+                "Using world bounds " + worldXMin + " | " + worldZMin + " - " + worldXMax + " | " + worldZMax,
+                "UnitedLands");
 
         regionIndex.build(regions.values(), worldXMin, worldZMin, worldXMax, worldZMax);
     }
@@ -167,22 +174,14 @@ public class UnitedLandsDataManager {
 
         for (var country : countries.values()) {
             boolean changed = false;
-            if (country.getAttribute("MOBILIZATION") == null) {
-                changed = true;
-                country.addAttribute("MOBILIZATION", new GeopolAttribute(0, 0, 100, 1));
-            }
             if (country.getAttribute("DIPLOMACY") == null) {
                 changed = true;
                 country.addAttribute("DIPLOMACY", new GeopolAttribute(100, 0, 100, 0));
             }
-            if (country.getAttribute("MAX_REGION_CLAIMS") == null) {
-                changed = true;
-                country.addAttribute("MAX_REGION_CLAIMS", new GeopolAttribute(1, 0, 1, 0));
-            }
-
             if (changed)
                 country.saveAttributes();
         }
+
     }
 
     public void clearData() {
@@ -411,9 +410,9 @@ public class UnitedLandsDataManager {
             return coordinateRegionCache.get(coordinates);
         }
 
-        if (!Settings.worlds.contains(coordinates.getWorldName()))
+        if (!GeneralConfig.get().general().worlds().contains(coordinates.getWorldName()))
             return null;
-        
+
         var region = regionIndex.findRegion(coordinates.getX(), coordinates.getZ());
         coordinateRegionCache.put(coordinates, region);
         return region;
@@ -435,7 +434,8 @@ public class UnitedLandsDataManager {
     }
 
     public Set<Region> getRegionClaimsOngoing(Country country) {
-        return regions.values().stream().filter(r -> country.equals(r.getClaimantCountry())).collect(Collectors.toSet());
+        return regions.values().stream().filter(r -> country.equals(r.getClaimantCountry()))
+                .collect(Collectors.toSet());
     }
 
     // **************************************************
@@ -509,8 +509,9 @@ public class UnitedLandsDataManager {
     }
 
     public Set<Citizen> getCountryCitizens(Country country) {
-        CompletableFuture<Set<Citizen>> future = CompletableFuture.supplyAsync(() -> settlements.values().stream().filter(s -> country.equals(s.getCountry()))
-                .flatMap(s -> s.getCitizens().stream()).collect(Collectors.toSet()));
+        CompletableFuture<Set<Citizen>> future = CompletableFuture
+                .supplyAsync(() -> settlements.values().stream().filter(s -> country.equals(s.getCountry()))
+                        .flatMap(s -> s.getCitizens().stream()).collect(Collectors.toSet()));
         return future.join();
     }
 
@@ -531,7 +532,26 @@ public class UnitedLandsDataManager {
         }
     }
 
+    // **************************************************
+    // Playtime Records
+    // **************************************************
+
+    public void createPlaytimeRecordDbData(PlaytimeRecord record) {
+        databaseManager.getPlaytimeRecordService().createAsync(record);
+    }
+
+    public List<PlaytimeRecord> getRecentPlaytimeRecords(UUID playerId, int days) {
+        try {
+            return databaseManager.getPlaytimeRecordService().getForLastDaysAsync(playerId, days).get();
+        } catch (Exception ex) {
+            United.logger().error("Could not retrieve playtime records for player " + playerId, "UnitedLands");
+            return new ArrayList<>();
+        }
+    }
+
+    // **************************************************
     // Helper classes
+    // **************************************************
 
     public static class LRUCache<K, V> extends LinkedHashMap<K, V> {
         private final int capacity;

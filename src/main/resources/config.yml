@@ -21,12 +21,18 @@ general:
   worlds:
     - world
 
-  # Start a new day at regular intervals instead of a fixed real-world time.
-  use-new-day-interval: true
-  # The length of one day (in seconds). Only used when use-new-day-interval is true
-  interval-seconds: 3600
-  # When use-new-day-interval is false, this will be the server time at which a new day starts. Must be hh:mm in 24-hour-format (e.g. 17:35)
-  new-day-time: "00:00"
+  new-day:
+    # Start a new day at regular intervals instead of a fixed real-world time.
+    use-interval: true
+    # The length of one day (in seconds). Only used when use-new-day-interval is true
+    interval-seconds: 3600
+    # When use-new-day-interval is false, this will be the server time at which a new day 
+    # starts. Must be hh:mm in 24-hour-format (e.g. 17:35)
+    new-day-time: "00:00"
+
+  # How long does a player need to be online in order add to their playtime (in seconds). If the time between logon and logoff is
+  # less than this, their activity will not be logged and their playtime will not be increased.
+  playtime-record-threshold: 60
 
   # Scale multiplier for the import SVG
   import-scale: 1
@@ -65,6 +71,8 @@ general:
   settlement-country-fill-colour: 540248319
   settlement-country-stroke-width: 2
   settlement-country-dash: "4,4"
+
+
 
 economy:
   new-settlement-cost: 8000

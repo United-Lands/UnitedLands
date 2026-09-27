@@ -31,8 +31,8 @@ import org.unitedlands.unitedlands.managers.PermissionManager;
 import org.unitedlands.unitedlands.managers.PlayerCacheManager;
 import org.unitedlands.utils.United;
 
-import com.j256.ormlite.logger.LoggerFactory;
-import com.j256.ormlite.logger.NullLogBackend;
+import org.unitedlands.libs.ormlite.logger.LoggerFactory;
+import org.unitedlands.libs.ormlite.logger.NullLogBackend;
 
 public class UnitedLands extends JavaPlugin {
 

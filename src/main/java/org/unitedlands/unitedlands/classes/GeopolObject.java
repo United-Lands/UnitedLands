@@ -17,8 +17,8 @@ import org.unitedlands.unitedlands.classes.interfaces.MetadataHolder;
 import org.unitedlands.unitedlands.classes.metadata.MetaDataField;
 import org.unitedlands.unitedlands.utils.JsonUtils;
 import com.google.gson.reflect.TypeToken;
-import com.j256.ormlite.field.DataType;
-import com.j256.ormlite.field.DatabaseField;
+import org.unitedlands.libs.ormlite.field.DataType;
+import org.unitedlands.libs.ormlite.field.DatabaseField;
 
 public class GeopolObject implements Identifiable, MetadataHolder {
 

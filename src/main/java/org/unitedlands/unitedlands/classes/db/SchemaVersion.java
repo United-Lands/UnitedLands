@@ -1,7 +1,7 @@
 package org.unitedlands.unitedlands.classes.db;
 
-import com.j256.ormlite.field.DatabaseField;
-import com.j256.ormlite.table.DatabaseTable;
+import org.unitedlands.libs.ormlite.field.DatabaseField;
+import org.unitedlands.libs.ormlite.table.DatabaseTable;
 
 @DatabaseTable(tableName = "schema_version")
 public class SchemaVersion {

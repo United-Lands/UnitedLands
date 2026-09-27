@@ -85,6 +85,7 @@ public class CmdSettlementCreate extends SettlementCommandHandler {
             settlement.setWorld(world);
             settlement.setHomeChunkCoordinates(chunkCoords);
             settlement.setSpawn(player.getLocation());
+            settlement.setVisitorSpawn(player.getLocation());
 
             var regionInfo = "no region";
             var countryInfo = "no country";

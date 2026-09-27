@@ -55,6 +55,7 @@ public class CmdAdminSettlementCreate extends SettlementAdminCommandHandler {
         settlement.setWorld(world);
         settlement.setHomeChunkCoordinates(chunkCoords);
         settlement.setSpawn(player.getLocation());
+        settlement.setVisitorSpawn(player.getLocation());
 
         var region = UnitedLandsDataManager.instance()
                 .getRegion(CoordinateUtils.locationToChunkCenterCoordinates(player.getLocation()));

@@ -60,7 +60,8 @@ admin:
       not-in-claims: <yellow>Location is not inside settlement claims.</yellow>
       success: <aqua>Successfully changed the spawn of {1}.</aqua>
     unclaim:
-      has-spawn: <yellow>Cannot unclaim the chunk that contains the settlement spawn.</yellow>
+      has-spawn: <yellow>Cannot unclaim the chunk that contains the settlement spawn. Move the spawn first.</yellow>
+      has-visitor-spawn: <yellow>Cannot unclaim the chunk that contains the settlement visitor spawn. Move the spawn first.</yellow>
       is-home-chunk: <yellow>Cannot unclaim the settlement home chunk.</yellow>
       not-claimed: <yellow>This chunk is not claimed.</yellow>
       success: <aqua>Chunk {1} of {2} unclaimed.</aqua>

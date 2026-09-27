@@ -6,8 +6,8 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import org.unitedlands.unitedlands.classes.BankRecord;
-import com.j256.ormlite.dao.Dao;
-import com.j256.ormlite.stmt.QueryBuilder;
+import org.unitedlands.libs.ormlite.dao.Dao;
+import org.unitedlands.libs.ormlite.stmt.QueryBuilder;
 
 public class BankRecordService extends BaseDbService<BankRecord> {
 

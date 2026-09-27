@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.unitedlands.classes.Country;
 import org.unitedlands.unitedlands.classes.commandhandlers.CountryCommandHandler;
+import org.unitedlands.unitedlands.classes.events.infoscreen.CountryInfoScreenEvent;
 import org.unitedlands.unitedlands.classes.infoscreen.CountryInfoScreen;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 
@@ -47,6 +48,11 @@ public class CmdCountryInfo extends CountryCommandHandler {
         }
 
         var infoScreen = new CountryInfoScreen(country);
-        infoScreen.send(player);
+
+        // Give other plugins the opportunity to alter the info screen
+        var infoScreenEvent = new CountryInfoScreenEvent(infoScreen, country);
+        infoScreenEvent.callEvent();
+        
+        infoScreenEvent.getInfoScreen().send(player);
     }
 }

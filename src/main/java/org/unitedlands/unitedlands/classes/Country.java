@@ -14,8 +14,8 @@ import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.utils.ColorUtils;
 import org.unitedlands.unitedlands.utils.CostUtils;
 import org.unitedlands.unitedlands.utils.SerializationUtils;
-import com.j256.ormlite.field.DataType;
-import com.j256.ormlite.field.DatabaseField;
+import org.unitedlands.libs.ormlite.field.DataType;
+import org.unitedlands.libs.ormlite.field.DatabaseField;
 
 public class Country extends GeopolObject {
 

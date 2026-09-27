@@ -15,8 +15,8 @@ import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.utils.ColorUtils;
 import org.unitedlands.unitedlands.utils.CostUtils;
 import org.unitedlands.unitedlands.utils.SerializationUtils;
-import com.j256.ormlite.field.DataType;
-import com.j256.ormlite.field.DatabaseField;
+import org.unitedlands.libs.ormlite.field.DataType;
+import org.unitedlands.libs.ormlite.field.DatabaseField;
 
 public class Settlement extends GeopolObject implements PermissionHolder {
 
@@ -31,6 +31,8 @@ public class Settlement extends GeopolObject implements PermissionHolder {
     private int homeChunkCoordinatesZ;
     @DatabaseField(canBeNull = true, columnName = "spawn_serialized")
     private String spawnSerialized;
+    @DatabaseField(canBeNull = true, columnName = "visitor_spawn_serialized")
+    private String visitorSpawnSerialized;
 
     @DatabaseField(width = 36, columnName = "region_uuid")
     private UUID regionUuid;
@@ -96,6 +98,7 @@ public class Settlement extends GeopolObject implements PermissionHolder {
 
     private transient Coordinates homeChunkCoordinates;
     private transient Location spawn;
+    private transient Location visitorSpawn;
     private transient Region region;
     private transient Country country;
     private transient Set<SettlementChunk> chunks = new HashSet<>();
@@ -173,6 +176,25 @@ public class Settlement extends GeopolObject implements PermissionHolder {
         if (spawn == null && spawnSerialized != null)
             this.spawn = SerializationUtils.deserializeLocation(spawnSerialized);
         return spawn;
+    }
+
+    public String getVisitorSpawnSerialized() {
+        return visitorSpawnSerialized;
+    }
+
+    public void setVisitorSpawnSerialized(String visitorSpawnSerialized) {
+        this.visitorSpawnSerialized = visitorSpawnSerialized;
+    }
+
+    public void setVisitorSpawn(Location location) {
+        this.visitorSpawn = location;
+        this.visitorSpawnSerialized = SerializationUtils.serializeLocation(location);
+    }
+
+    public Location getVisitorSpawn() {
+        if (visitorSpawn == null && visitorSpawnSerialized != null)
+            this.visitorSpawn = SerializationUtils.deserializeLocation(spawnSerialized);
+        return visitorSpawn;
     }
 
     public void setHomeChunkCoordinates(Coordinates coordinates) {
@@ -343,7 +365,8 @@ public class Settlement extends GeopolObject implements PermissionHolder {
     }
 
     public Set<Player> getOnlinePlayers() {
-        return getCitizens().stream().map(c -> c.getPlayer()).filter(p -> p != null && p.isOnline()).map(p -> p.getPlayer())
+        return getCitizens().stream().map(c -> c.getPlayer()).filter(p -> p != null && p.isOnline())
+                .map(p -> p.getPlayer())
                 .collect(Collectors.toSet());
     }
 

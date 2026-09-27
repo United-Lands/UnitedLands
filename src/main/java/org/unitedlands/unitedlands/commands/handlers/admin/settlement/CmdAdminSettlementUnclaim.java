@@ -51,6 +51,12 @@ public class CmdAdminSettlementUnclaim extends SettlementAdminCommandHandler {
             return;
         }
 
+        var visitorSpawnChunkCoords = CoordinateUtils.locationToChunkCoordinates(settlement.getVisitorSpawn());
+        if (visitorSpawnChunkCoords.equals(chunkCoords)) {
+            United.messenger().send(player, "admin.settlement.unclaim.has-visitor-spawn");
+            return;
+        }
+
         if (settlement.getHomeChunkCoordinates().equals(chunkCoords)) {
             United.messenger().send(player, "admin.settlement.unclaim.is-home-chunk");
             return;

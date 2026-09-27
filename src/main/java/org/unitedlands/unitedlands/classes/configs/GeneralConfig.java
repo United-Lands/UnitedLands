@@ -1,5 +1,7 @@
 package org.unitedlands.unitedlands.classes.configs;
 
+import java.util.List;
+
 import org.unitedlands.annotations.UnitedConfig;
 import org.unitedlands.annotations.UnitedSection;
 import org.unitedlands.annotations.UnitedSetting;
@@ -10,9 +12,8 @@ import org.unitedlands.registrars.config.UnitedConfigs;
 public interface GeneralConfig extends UnitedConfigHandler {
     static GeneralConfig get() { return UnitedConfigs.get(GeneralConfig.class); } // Pflicht
 
-
     // Einfacher "developer-mode: true/false" in yaml
-    @UnitedSetting(key = "developer-mode", def = "false")
+    @UnitedSetting(key = "developer-mode", def = "false") 
     boolean developerMode();
 
     @UnitedSection(key = "mysql")
@@ -24,6 +25,21 @@ public interface GeneralConfig extends UnitedConfigHandler {
             @UnitedSetting(key = "username", def = "unitedlands")   String username,
             @UnitedSetting(key = "password", def = "unitedlands")   String password,
             @UnitedSetting(key = "database", def = "unitedlands")   String database
+    ) {}
+
+    @UnitedSection(key = "general")
+    GeneralSettings general();
+
+    record GeneralSettings(
+        @UnitedSetting(key = "worlds")                                  List<String>   worlds,
+        @UnitedSection(key = "new-day")                                 NewDaySettings newDay,
+        @UnitedSetting(key = "playtime-record-threshold", def = "60")   int            playtimeRecordThreshold
+    ) {}
+
+    record NewDaySettings(
+            @UnitedSetting(key = "use-interval",     def = "false")  boolean useInterval,
+            @UnitedSetting(key = "interval-seconds", def = "3600")   int     intervalSeconds,
+            @UnitedSetting(key = "new-day-time",     def = "12:00")  String  newDayTime
     ) {}
 
 

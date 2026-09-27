@@ -19,11 +19,11 @@ import org.unitedlands.unitedlands.utils.SvgUtils;
 import org.unitedlands.utils.United;
 
 @UnitedSubCommand(
-        parent = CmdAdmin.class,
-        name = "import",
+        parent      = CmdAdmin.class,
+        name        = "import",
         description = "Admin regions import",
-        usage = "/ula import <world> <filename>",
-        catchAll = true
+        usage       = "/ula import <world> <filename>",
+        catchAll    = true
 )
 public class CmdAdminImport implements UnitedCommandExecutor {
 

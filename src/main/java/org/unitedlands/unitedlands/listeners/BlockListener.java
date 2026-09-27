@@ -100,9 +100,6 @@ public class BlockListener implements Listener {
             return;
 
         var entity = event.getRightClicked();
-        if (entity == null)
-            return;
-
         var entityType = entity.getType().toString();
         if (Settings.protectedInteractEntities.contains(entityType)) {
             if (!PermissionManager.instance().checkLocationPermissions(player, entity.getLocation(),

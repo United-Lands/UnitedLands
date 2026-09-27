@@ -4,7 +4,7 @@ import java.util.UUID;
 
 import org.unitedlands.unitedlands.classes.db.Identifiable;
 
-import com.j256.ormlite.field.DatabaseField;
+import org.unitedlands.libs.ormlite.field.DatabaseField;
 
 public class LoginChallenge implements Identifiable {
 

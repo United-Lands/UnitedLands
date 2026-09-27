@@ -7,7 +7,7 @@ import java.time.format.DateTimeParseException;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitTask;
 import org.unitedlands.unitedlands.UnitedLands;
-import org.unitedlands.unitedlands.classes.Settings;
+import org.unitedlands.unitedlands.classes.configs.GeneralConfig;
 import org.unitedlands.unitedlands.tasks.NewDayTask;
 import org.unitedlands.utils.United;
 
@@ -30,9 +30,9 @@ public class NewDayScheduler {
 
     public void scheduleNewDay() {
 
-        var useInterval = Settings.useNewDayInterval;
-        long interval = Settings.intervalSeconds;
-        String newDayTime = Settings.newDayTime;
+        var useInterval = GeneralConfig.get().general().newDay().useInterval();
+        long interval = GeneralConfig.get().general().newDay().intervalSeconds();
+        String newDayTime = GeneralConfig.get().general().newDay().newDayTime();
 
         long secondsToNewDay = 0;
 

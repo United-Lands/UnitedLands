@@ -14,12 +14,6 @@ import org.unitedlands.utils.United;
 
 public class Settings {
 
-    public static List<String> worlds;
-
-    public static boolean useNewDayInterval;
-    public static long intervalSeconds;
-    public static String newDayTime;
-
     public static int regionChunkSize = 8;
     public static int importScale = 1;
     public static double importOffsetX = 0;
@@ -79,12 +73,6 @@ public class Settings {
     public static Map<String, SettlementChunkType> settlementChunkTypes = new HashMap<>();
 
     public static void loadSettings(FileConfiguration config) {
-
-        worlds = config.getStringList("general.worlds");
-
-        useNewDayInterval = config.getBoolean("general.use-new-day-interval", false);
-        intervalSeconds = config.getLong("general.interval-seconds", 3600);
-        newDayTime = config.getString("general.new-day-time", "12:00");
 
         regionChunkSize = config.getInt("general.region-chunk-size", 8);
         importScale = config.getInt("general.import-scale", 1);

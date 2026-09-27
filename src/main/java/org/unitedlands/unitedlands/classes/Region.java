@@ -14,8 +14,8 @@ import org.unitedlands.unitedlands.classes.events.region.RegionClaimedEvent;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.utils.PolygonUtils;
 import org.unitedlands.unitedlands.utils.SerializationUtils;
-import com.j256.ormlite.field.DataType;
-import com.j256.ormlite.field.DatabaseField;
+import org.unitedlands.libs.ormlite.field.DataType;
+import org.unitedlands.libs.ormlite.field.DatabaseField;
 
 public class Region extends GeopolObject implements PermissionHolder {
 

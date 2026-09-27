@@ -1,5 +1,9 @@
 package org.unitedlands.unitedlands.listeners;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -10,9 +14,11 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.unitedlands.unitedlands.classes.Citizen;
+import org.unitedlands.unitedlands.classes.PlaytimeRecord;
 import org.unitedlands.unitedlands.classes.Region;
 import org.unitedlands.unitedlands.classes.Settlement;
 import org.unitedlands.unitedlands.classes.SettlementChunk;
+import org.unitedlands.unitedlands.classes.configs.GeneralConfig;
 import org.unitedlands.unitedlands.classes.events.base.PlayerChangeChunkEvent;
 import org.unitedlands.unitedlands.classes.events.cititen.CitizenCreatedEvent;
 import org.unitedlands.unitedlands.classes.events.player.PlayerEnterRegionEvent;
@@ -23,8 +29,11 @@ import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.managers.ChatChannelManager;
 import org.unitedlands.unitedlands.managers.PlayerCacheManager;
 import org.unitedlands.unitedlands.utils.CoordinateUtils;
+import org.unitedlands.utils.United;
 
 public class PlayerMovementListener implements Listener {
+
+    private Map<UUID, Long> logons = new HashMap<>();
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onPlayerJoin(PlayerJoinEvent event) {
@@ -32,6 +41,7 @@ public class PlayerMovementListener implements Listener {
         updateCitizenRecord(player);
         updatePlayerLocation(player, new Location(player.getLocation().getWorld(), 0, 0, 0), player.getLocation());
         ChatChannelManager.instance().registerPlayer(player);
+        logons.put(player.getUniqueId(), System.currentTimeMillis());
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -39,10 +49,11 @@ public class PlayerMovementListener implements Listener {
         Player player = event.getPlayer();
         updatePlayerLocation(player, player.getLocation(), new Location(player.getLocation().getWorld(), 0, 0, 0));
         ChatChannelManager.instance().unregisterPlayer(player);
+        updatePlaytime(player);
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onPlayerQuit(PlayerTeleportEvent event) {
+    public void onPlayerTeleport(PlayerTeleportEvent event) {
         Player player = event.getPlayer();
         if (!updatePlayerLocation(player, event.getFrom(), event.getTo())) {
             event.setCancelled(true);
@@ -55,6 +66,38 @@ public class PlayerMovementListener implements Listener {
             return;
         if (!updatePlayerLocation(event.getPlayer(), event.getFrom(), event.getTo()))
             event.setCancelled(true);
+    }
+
+    private void updatePlaytime(Player player) {
+        var logon = logons.get(player.getUniqueId());
+        if (logon == null) {
+            United.logger().error("Could not retrieve logon time of player " + player.getUniqueId());
+            return;
+        }
+
+        var playtime = System.currentTimeMillis() - logon;
+        if (playtime < GeneralConfig.get().general().playtimeRecordThreshold() * 1000) {
+            United.logger().debug("Playtime of player " + player.getUniqueId() + " below threshold, skiping.");
+            return;
+        }
+
+        PlaytimeRecord record = new PlaytimeRecord();
+        record.setUuid(UUID.randomUUID());
+        record.setPlayerUuid(player.getUniqueId());
+        record.setLogon(logon);
+        record.setLogoff(System.currentTimeMillis());
+        record.setPlaytime(playtime);
+        UnitedLandsDataManager.instance().createPlaytimeRecordDbData(record);
+
+        Citizen citizen = UnitedLandsDataManager.instance().getCitizen(player);
+        if (citizen == null) {
+            United.logger().error("Could not retrieve citizen data of player " + player.getUniqueId());
+            return;
+        }
+        citizen.setTotalPlaytime(citizen.getTotalPlaytime() + playtime);
+        citizen.save();
+
+        logons.remove(player.getUniqueId());
     }
 
     private void updateCitizenRecord(Player player) {
@@ -142,7 +185,8 @@ public class PlayerMovementListener implements Listener {
             boolean leftRegion = false;
             Region lastRegion = null;
 
-            var region = UnitedLandsDataManager.instance().getRegion(CoordinateUtils.locationToChunkCenterCoordinates(to));
+            var region = UnitedLandsDataManager.instance()
+                    .getRegion(CoordinateUtils.locationToChunkCenterCoordinates(to));
             if (region != null) {
                 // Entered a valid region
                 if (!region.equals(playerCache.getCachedRegion())) {
@@ -195,8 +239,5 @@ public class PlayerMovementListener implements Listener {
 
         return true;
     }
-
-
-
 
 }

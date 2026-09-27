@@ -2,10 +2,10 @@ package org.unitedlands.unitedlands.managers;
 
 import java.sql.SQLException;
 
-import org.unitedlands.unitedlands.UnitedLands;
 import org.unitedlands.unitedlands.classes.Citizen;
 import org.unitedlands.unitedlands.classes.BankRecord;
 import org.unitedlands.unitedlands.classes.Country;
+import org.unitedlands.unitedlands.classes.PlaytimeRecord;
 import org.unitedlands.unitedlands.classes.Region;
 import org.unitedlands.unitedlands.classes.Settlement;
 import org.unitedlands.unitedlands.classes.SettlementChunk;
@@ -14,6 +14,7 @@ import org.unitedlands.unitedlands.classes.db.BankRecordService;
 import org.unitedlands.unitedlands.classes.db.CitizenService;
 import org.unitedlands.unitedlands.classes.db.CountryService;
 import org.unitedlands.unitedlands.classes.db.LoginChallengeService;
+import org.unitedlands.unitedlands.classes.db.PlaytimeRecordService;
 import org.unitedlands.unitedlands.classes.db.RegionService;
 import org.unitedlands.unitedlands.classes.db.SchemaVersion;
 import org.unitedlands.unitedlands.classes.db.SettlementChunkService;
@@ -21,17 +22,15 @@ import org.unitedlands.unitedlands.classes.db.SettlementService;
 import org.unitedlands.unitedlands.classes.webservices.LoginChallenge;
 import org.unitedlands.utils.United;
 
-import com.j256.ormlite.dao.Dao;
-import com.j256.ormlite.dao.DaoManager;
-import com.j256.ormlite.jdbc.DataSourceConnectionSource;
-import com.j256.ormlite.support.ConnectionSource;
-import com.j256.ormlite.table.TableUtils;
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
+import org.unitedlands.libs.ormlite.dao.Dao;
+import org.unitedlands.libs.ormlite.dao.DaoManager;
+import org.unitedlands.libs.ormlite.jdbc.DataSourceConnectionSource;
+import org.unitedlands.libs.ormlite.support.ConnectionSource;
+import org.unitedlands.libs.ormlite.table.TableUtils;
+import org.unitedlands.libs.zaxxer.hikari.HikariConfig;
+import org.unitedlands.libs.zaxxer.hikari.HikariDataSource;
 
 public class DatabaseManager {
-
-    private final UnitedLands plugin;
 
     private HikariDataSource hikariDataSource;
     private ConnectionSource connectionSource;
@@ -43,10 +42,7 @@ public class DatabaseManager {
     private CitizenService citizenService;
     private LoginChallengeService loginChallengeService;
     private BankRecordService bankRecordService;
-
-    public DatabaseManager(UnitedLands plugin) {
-        this.plugin = plugin;
-    }
+    private PlaytimeRecordService playtimeRecordService;
 
     public void initialize() {
 
@@ -63,7 +59,7 @@ public class DatabaseManager {
                 host,
                 port,
                 database,
-                plugin.getConfig().getBoolean("developer-mode") ? "false" : "true");
+                GeneralConfig.get().developerMode() ? "false" : "true");
 
         try {
 
@@ -106,11 +102,12 @@ public class DatabaseManager {
         this.citizenService = new CitizenService(getDao(Citizen.class));
         this.loginChallengeService = new LoginChallengeService(getDao(LoginChallenge.class));
         this.bankRecordService = new BankRecordService(getDao(BankRecord.class));
+        this.playtimeRecordService = new PlaytimeRecordService(getDao(PlaytimeRecord.class));
     }
 
     private void verifySchemaVersion() throws SQLException {
 
-        if (plugin.getConfig().getBoolean("developer-mode"))
+        if (GeneralConfig.get().developerMode())
             return;
 
         Dao<SchemaVersion, Integer> versionDao = getDao(SchemaVersion.class);
@@ -127,7 +124,7 @@ public class DatabaseManager {
     private void applyMigrations(Dao<SchemaVersion, Integer> versionDao, SchemaVersion version) throws SQLException {
         // Example for future migrations on production server
 
-        if (plugin.getConfig().getBoolean("developer-mode"))
+        if (GeneralConfig.get().developerMode())
             return;
 
         if (version.getVersion() < 2) {
@@ -162,12 +159,25 @@ public class DatabaseManager {
             version.setVersion(5);
             versionDao.update(version);
         }
+
+        if (version.getVersion() < 6) {
+            TableUtils.createTableIfNotExists(connectionSource, PlaytimeRecord.class);
+            versionDao.executeRaw("ALTER TABLE citizen ADD COLUMN total_playtime BIGINT NOT NULL;");
+            version.setVersion(6);
+            versionDao.update(version);
+        }
+
+        if (version.getVersion() < 7) {
+            versionDao.executeRaw("ALTER TABLE settlement ADD COLUMN visitor_spawn_serialized VARCHAR(255) NULL;");
+            version.setVersion(7);
+            versionDao.update(version);
+        }
     }
 
     public <T, ID> Dao<T, ID> getDao(Class<T> clazz) throws SQLException {
 
         // In developer mode, drop the table if it exists
-        if (plugin.getConfig().getBoolean("developer-mode"))
+        if (GeneralConfig.get().developerMode())
             TableUtils.dropTable(connectionSource, clazz, true);
 
         TableUtils.createTableIfNotExists(connectionSource, clazz);
@@ -215,6 +225,10 @@ public class DatabaseManager {
 
     public BankRecordService getBankRecordService() {
         return bankRecordService;
+    }
+
+    public PlaytimeRecordService getPlaytimeRecordService() {
+        return playtimeRecordService;
     }
 
     public ConnectionSource getConnectionSource() {
