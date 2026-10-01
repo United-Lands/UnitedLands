@@ -1,6 +1,8 @@
 package org.unitedlands.unitedlands.classes.infoscreen;
 
 import java.util.LinkedList;
+
+import org.bukkit.plugin.java.JavaPlugin;
 import org.unitedlands.utils.United;
 
 import net.kyori.adventure.audience.Audience;
@@ -27,16 +29,32 @@ public abstract class InfoScreen {
         components.add(new InfoScreenComponent(id, MiniMessage.miniMessage().deserialize(United.messenger().get(path, values))));
     }
 
+    public void addComponent(String id, String path, JavaPlugin plugin, Object... values) {
+        components.add(new InfoScreenComponent(id, MiniMessage.miniMessage().deserialize(United.messenger().get(path, plugin, values))));
+    }
+
     public void addComponent(int index, String id, String path, Object... values) {
         components.add(index, new InfoScreenComponent(id, MiniMessage.miniMessage().deserialize(United.messenger().get(path, values))));
+    }
+
+    public void addComponent(int index, String id, String path, JavaPlugin plugin, Object... values) {
+        components.add(index, new InfoScreenComponent(id, MiniMessage.miniMessage().deserialize(United.messenger().get(path, plugin, values))));
     }
 
     public void addComponent(Audience sender, String id, String path, Object... values) {
         components.add(new InfoScreenComponent(id, MiniMessage.miniMessage().deserialize(United.messenger().get(sender, path, values))));
     }
 
+    public void addComponent(Audience sender, String id, String path, JavaPlugin plugin, Object... values) {
+        components.add(new InfoScreenComponent(id, MiniMessage.miniMessage().deserialize(United.messenger().get(sender, path, plugin, values))));
+    }
+
     public void addComponent(Audience sender, int index, String id, String path, Object... values) {
         components.add(index, new InfoScreenComponent(id, MiniMessage.miniMessage().deserialize(United.messenger().get(sender, path, values))));
+    }
+
+    public void addComponent(Audience sender, int index, String id, String path, JavaPlugin plugin, Object... values) {
+        components.add(index, new InfoScreenComponent(id, MiniMessage.miniMessage().deserialize(United.messenger().get(sender, path, plugin, values))));
     }
 
     public void addComponent(String afterKey, String id, Component content) {

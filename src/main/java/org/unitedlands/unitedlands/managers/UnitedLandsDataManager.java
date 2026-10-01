@@ -26,6 +26,8 @@ import org.unitedlands.unitedlands.classes.Settings;
 import org.unitedlands.unitedlands.classes.Settlement;
 import org.unitedlands.unitedlands.classes.SettlementChunk;
 import org.unitedlands.unitedlands.classes.configs.GeneralConfig;
+import org.unitedlands.unitedlands.classes.events.country.CountryPreRemoveEvent;
+import org.unitedlands.unitedlands.classes.events.country.CountryRemovedEvent;
 import org.unitedlands.unitedlands.integrations.Pl3xMap.Pl3xMapRenderer;
 import org.unitedlands.unitedlands.utils.CoordinateUtils;
 import org.unitedlands.utils.United;
@@ -441,6 +443,30 @@ public class UnitedLandsDataManager {
     // **************************************************
     // Countries
     // **************************************************
+
+    public void removeCountry(Country country) {
+
+        (new CountryPreRemoveEvent(country)).callEvent();
+
+        for (var settlement : country.getSettlements()) {
+            for (var settlementCitizen : settlement.getCitizens()) {
+                settlementCitizen.removeCountryRanks();
+                settlementCitizen.save();
+            }
+            settlement.removeCountry();
+            settlement.saveAndRender();
+        }
+        for (var region : country.getRegions()) {
+
+            region.removeCountry();
+            region.saveAndRender();
+        }
+
+        UnitedLandsEconomyManager.instance().deleteAccount(country.getUuid());
+        UnitedLandsDataManager.instance().removeCountryDbData(country);
+
+        (new CountryRemovedEvent(country)).callEvent();
+    }
 
     // Database operations
 

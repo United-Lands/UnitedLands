@@ -57,6 +57,20 @@ public class SerializationUtils {
         return null;
     }
 
+     public static String serializeUuidList(Collection<UUID> list) {
+        if (list != null && !list.isEmpty()) {
+            try {
+                return list.stream()
+                        .map(UUID::toString)
+                        .collect(Collectors.joining("#"));
+            } catch (Exception ex) {
+                United.logger().error("Serialization error in serializeUuidList: " + ex.getMessage());
+                return null;
+            }
+        }
+        return null;
+    }
+
     public static String serializeUuidList(Collection<? extends Identifiable> list, Supplier<UUID> supplier) {
         if (list != null && !list.isEmpty()) {
             try {
@@ -69,6 +83,22 @@ public class SerializationUtils {
             }
         }
         return null;
+    }
+
+    
+    public static Set<UUID> deSerializeUuidListToSet(String serialized) {
+        if (serialized != null) {
+            try {
+                return Arrays.stream(serialized.split("#"))
+                        .map(c -> UUID.fromString(c))
+                        .collect(Collectors.toSet());
+            } catch (Exception ex) {
+                United.logger().error("Deserialization error in deserializeUuidListToSet: " + ex.getMessage());
+                return new HashSet<UUID>();
+            }
+        } else {
+            return new HashSet<UUID>();
+        }
     }
 
     public static <T> Set<T> deserializeUuidListToSet(String serialized, Function<UUID, T> supplier) {

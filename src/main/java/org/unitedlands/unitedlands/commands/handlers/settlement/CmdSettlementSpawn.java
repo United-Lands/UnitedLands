@@ -8,7 +8,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.unitedlands.UnitedLands;
-import org.unitedlands.unitedlands.classes.Settlement;
 import org.unitedlands.unitedlands.classes.commandhandlers.SettlementCommandHandler;
 
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;

@@ -7,8 +7,6 @@ import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.unitedlands.classes.Confirmation;
 import org.unitedlands.unitedlands.classes.commandhandlers.CountryCommandHandler;
 
-import org.unitedlands.unitedlands.integrations.Pl3xMap.Pl3xMapRenderer;
-import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.utils.United;
 
@@ -36,26 +34,7 @@ public class CmdCountryDelete extends CountryCommandHandler {
         Confirmation leave = new Confirmation("country-delete");
         leave.setRunnable(() -> {
 
-            for (var region : context.country().getRegions()) {
-                for (var settlement : region.getSettlements()) {
-                    if (!settlement.hasCountry())
-                        continue;
-                    for (var settlementCitizen : settlement.getCitizens()) {
-                        settlementCitizen.removeCountryRanks();
-                        settlementCitizen.save();
-                    }
-                    settlement.removeCountry();
-                    settlement.saveAndRender();
-                }
-                region.removeCountry();
-                region.saveAndRender();
-            }
-
-            UnitedLandsEconomyManager.instance().deleteAccount(context.country().getUuid());
-
-            UnitedLandsDataManager.instance().removeCountryDbData(context.country());
-
-            Pl3xMapRenderer.instance().removeCountry(context.country());
+            UnitedLandsDataManager.instance().removeCountry(context.country());
 
             United.messenger().send(Bukkit.getServer(), "player.country.delete.broadcast-message", context.country().getCleanName());
 

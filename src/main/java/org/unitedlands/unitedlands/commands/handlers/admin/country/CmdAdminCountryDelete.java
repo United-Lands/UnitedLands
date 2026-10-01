@@ -5,8 +5,6 @@ import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.unitedlands.classes.commandhandlers.CountryAdminCommandHandler;
 
-import org.unitedlands.unitedlands.integrations.Pl3xMap.Pl3xMapRenderer;
-import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.utils.United;
 
@@ -31,24 +29,7 @@ public class CmdAdminCountryDelete extends CountryAdminCommandHandler {
             return;
         }
 
-        for (var region : country.getRegions()) {
-            for (var settlement : region.getSettlements()) {
-                for (var settlementCitizen : settlement.getCitizens()) {
-                    settlementCitizen.removeCountryRanks();
-                    settlementCitizen.save();
-                }
-                settlement.removeCountry();
-                settlement.saveAndRender();
-            }
-            region.removeCountry();
-            region.saveAndRender();
-        }
-
-        UnitedLandsEconomyManager.instance().deleteAccount(country.getUuid());
-
-        UnitedLandsDataManager.instance().removeCountryDbData(country);
-
-        Pl3xMapRenderer.instance().removeCountry(country);
+        UnitedLandsDataManager.instance().removeCountry(country);
 
         United.messenger().send(sender, "admin.country.delete.success", country.getName());
     }
