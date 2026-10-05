@@ -9,7 +9,7 @@ import org.bukkit.entity.Player;
 import org.unitedlands.unitedlands.classes.Citizen;
 import org.unitedlands.unitedlands.classes.LocationMembership;
 import org.unitedlands.unitedlands.classes.Settlement;
-
+import org.unitedlands.unitedlands.classes.events.infoscreen.SettlementInfoScreenEvent;
 import org.unitedlands.unitedlands.classes.metadata.BooleanMetaDataField;
 import org.unitedlands.unitedlands.classes.metadata.DoubleMetaDataField;
 import org.unitedlands.unitedlands.classes.metadata.FloatMetaDataField;
@@ -144,5 +144,6 @@ public class SettlementInfoScreen extends InfoScreen {
             }
         }
 
+        (new SettlementInfoScreenEvent(this, settlement)).callEvent();
     }
 }

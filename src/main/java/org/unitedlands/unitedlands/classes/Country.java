@@ -45,7 +45,6 @@ public class Country extends GeopolObject {
     private transient Set<Region> regions = new HashSet<>();
     private transient Set<Settlement> settlements = new HashSet<>();
     private transient Set<Settlement> settlementClaimWhitelist = new HashSet<>();
-    private transient Set<Country> allies = new HashSet<>();
 
     public Integer getStrokeColor() {
         return strokeColor;

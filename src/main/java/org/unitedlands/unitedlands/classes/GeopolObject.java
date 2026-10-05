@@ -117,15 +117,21 @@ public class GeopolObject implements Identifiable, MetadataHolder {
 
     @Override
     public Map<String, MetaDataField<?>> getMetadata() {
-        if (metadata == null && metadataSerialized != null && !metadataSerialized.isEmpty()) {
-            var t = new TypeToken<Collection<MetaDataField<?>>>() {
-            };
-            Collection<MetaDataField<?>> parsedData = JsonUtils.deserialize(metadataSerialized, t);
-            metadata = new HashMap<>();
-            for (var m : parsedData)
-                metadata.put(m.getKey(), m);
+        if (metadata == null) {
+            if (metadataSerialized != null && !metadataSerialized.isEmpty()) {
+                var t = new TypeToken<Collection<MetaDataField<?>>>() {
+                };
+                Collection<MetaDataField<?>> parsedData = JsonUtils.deserialize(metadataSerialized, t);
+                metadata = new HashMap<>();
+                for (var m : parsedData)
+                    metadata.put(m.getKey(), m);
+            }
+            else {
+                metadata = new HashMap<>();
+            }
         }
         return metadata;
+
     }
 
     @Override
@@ -163,7 +169,8 @@ public class GeopolObject implements Identifiable, MetadataHolder {
         if (attributes == null) {
             if (attributesSerialized != null && !attributesSerialized.isEmpty()) {
                 try {
-                    var t = new TypeToken<Map<String, GeopolAttribute>>() {};
+                    var t = new TypeToken<Map<String, GeopolAttribute>>() {
+                    };
                     attributes = JsonUtils.deserialize(attributesSerialized, t);
                 } catch (Exception ignore) {
                     attributes = new HashMap<>();
@@ -192,8 +199,7 @@ public class GeopolObject implements Identifiable, MetadataHolder {
 
     public GeopolAttribute getAttribute(String key, GeopolAttributeDefaults defaults) {
         var attribute = getAttributes().get(key);
-        if (attribute == null && defaults != null)
-        {
+        if (attribute == null && defaults != null) {
             attribute = new GeopolAttribute(defaults.currentValue(), defaults.minValue(), defaults.maxValue(),
                     defaults.dailyChange());
             addAttribute(key, attribute);
