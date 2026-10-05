@@ -172,6 +172,12 @@ public class DatabaseManager {
             version.setVersion(7);
             versionDao.update(version);
         }
+
+        if (version.getVersion() < 8) {
+            versionDao.executeRaw("ALTER TABLE country DROP COLUMN allies_serialized;");
+            version.setVersion(8);
+            versionDao.update(version);
+        }
     }
 
     public <T, ID> Dao<T, ID> getDao(Class<T> clazz) throws SQLException {

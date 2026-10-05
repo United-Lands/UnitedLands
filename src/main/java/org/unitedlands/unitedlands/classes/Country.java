@@ -39,9 +39,6 @@ public class Country extends GeopolObject {
     @DatabaseField(dataType = DataType.LONG_STRING, columnName = "settlement_claim_whitelist")
     private String settlementClaimWhitelistSerialized;
 
-    @DatabaseField(dataType = DataType.LONG_STRING, columnName = "allies_serialized")
-    private String alliesSerialized;
-
     private transient Location spawn;
     private transient Settlement capital;
     private transient Country overlord;
@@ -211,18 +208,6 @@ public class Country extends GeopolObject {
     public void setSettlementClaimWhitelist(Set<Settlement> settlementClaimWhitelist) {
         this.settlementClaimWhitelist = settlementClaimWhitelist;
         this.settlementClaimWhitelistSerialized = SerializationUtils.serializeIdentifiableList(settlementClaimWhitelist);
-    }
-
-    public Set<Country> getAllies() {
-        if (allies == null) {
-            this.allies = SerializationUtils.deserializeUuidListToSet(alliesSerialized, UnitedLandsDataManager.instance()::getCountry);
-        }
-        return allies;
-    }
-
-    public void setAllies(Set<Country> allies) {
-        this.allies = allies;
-        this.alliesSerialized = SerializationUtils.serializeIdentifiableList(allies);
     }
 
     // TODO: Neutrality

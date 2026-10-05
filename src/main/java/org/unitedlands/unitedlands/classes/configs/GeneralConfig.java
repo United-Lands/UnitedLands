@@ -42,6 +42,11 @@ public interface GeneralConfig extends UnitedConfigHandler {
             @UnitedSetting(key = "new-day-time",     def = "12:00")  String  newDayTime
     ) {}
 
-
+    record GeopolAttributeDefaults(
+        @UnitedSetting(key = "current-value",   def = "0") double currentValue, 
+        @UnitedSetting(key = "min-value",       def = "0") double minValue, 
+        @UnitedSetting(key = "max-value",       def = "0") double maxValue, 
+        @UnitedSetting(key = "daily-change",    def = "0") double dailyChange
+    ) { }
 
 }

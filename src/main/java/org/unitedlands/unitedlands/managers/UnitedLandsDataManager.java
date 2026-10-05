@@ -18,7 +18,6 @@ import org.unitedlands.unitedlands.classes.BankRecord;
 import org.unitedlands.unitedlands.classes.Citizen;
 import org.unitedlands.unitedlands.classes.Coordinates;
 import org.unitedlands.unitedlands.classes.Country;
-import org.unitedlands.unitedlands.classes.GeopolAttribute;
 import org.unitedlands.unitedlands.classes.PlaytimeRecord;
 import org.unitedlands.unitedlands.classes.Region;
 import org.unitedlands.unitedlands.classes.RegionIndex;
@@ -176,10 +175,11 @@ public class UnitedLandsDataManager {
 
         for (var country : countries.values()) {
             boolean changed = false;
-            if (country.getAttribute("DIPLOMACY") == null) {
-                changed = true;
-                country.addAttribute("DIPLOMACY", new GeopolAttribute(100, 0, 100, 0));
-            }
+            // Use this for attribute validation, e.g.:
+            // if (country.getAttribute("DIPLOMACY") == null) {
+            //     changed = true;
+            //     country.addAttribute("DIPLOMACY", new GeopolAttribute(100, 0, 100, 0));
+            // }
             if (changed)
                 country.saveAttributes();
         }
@@ -464,6 +464,8 @@ public class UnitedLandsDataManager {
 
         UnitedLandsEconomyManager.instance().deleteAccount(country.getUuid());
         UnitedLandsDataManager.instance().removeCountryDbData(country);
+
+        United.messenger().broadcast("general-broadcasts.country-removed", country.getCleanName());
 
         (new CountryRemovedEvent(country)).callEvent();
     }

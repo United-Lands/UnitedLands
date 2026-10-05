@@ -12,6 +12,7 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
+import org.unitedlands.unitedlands.classes.configs.GeneralConfig.GeopolAttributeDefaults;
 import org.unitedlands.unitedlands.classes.db.Identifiable;
 import org.unitedlands.unitedlands.classes.interfaces.MetadataHolder;
 import org.unitedlands.unitedlands.classes.metadata.MetaDataField;
@@ -159,10 +160,17 @@ public class GeopolObject implements Identifiable, MetadataHolder {
     }
 
     public Map<String, GeopolAttribute> getAttributes() {
-        if (attributes == null && attributesSerialized != null && !attributesSerialized.isEmpty()) {
-            var t = new TypeToken<Map<String, GeopolAttribute>>() {
-            };
-            attributes = JsonUtils.deserialize(attributesSerialized, t);
+        if (attributes == null) {
+            if (attributesSerialized != null && !attributesSerialized.isEmpty()) {
+                try {
+                    var t = new TypeToken<Map<String, GeopolAttribute>>() {};
+                    attributes = JsonUtils.deserialize(attributesSerialized, t);
+                } catch (Exception ignore) {
+                    attributes = new HashMap<>();
+                }
+            } else {
+                attributes = new HashMap<>();
+            }
         }
         return attributes;
     }
@@ -179,16 +187,28 @@ public class GeopolObject implements Identifiable, MetadataHolder {
     }
 
     public GeopolAttribute getAttribute(String key) {
-        if (getAttributes() == null)
-            return null;
-        return getAttributes().get(key);
+        return getAttribute(key, null);
+    }
+
+    public GeopolAttribute getAttribute(String key, GeopolAttributeDefaults defaults) {
+        var attribute = getAttributes().get(key);
+        if (attribute == null && defaults != null)
+        {
+            attribute = new GeopolAttribute(defaults.currentValue(), defaults.minValue(), defaults.maxValue(),
+                    defaults.dailyChange());
+            addAttribute(key, attribute);
+        }
+
+        return attribute;
     }
 
     public GeopolAttribute getModifiedAttribute(String key) {
-        if (getAttributes() == null)
-            return null;
+        return getModifiedAttribute(key, null);
+    }
 
-        var attribute = getAttributes().get(key);
+    public GeopolAttribute getModifiedAttribute(String key, GeopolAttributeDefaults defaults) {
+
+        var attribute = getAttribute(key, defaults);
         if (attribute == null)
             return null;
 
@@ -213,20 +233,16 @@ public class GeopolObject implements Identifiable, MetadataHolder {
                     break;
             }
         }
-        
-        return  finalAttribute;
+
+        return finalAttribute;
     }
 
     public void addAttribute(String key, GeopolAttribute attribute) {
-        if (getAttributes() == null)
-            attributes = new HashMap<>();
         attributes.put(key, attribute);
         attributesSerialized = JsonUtils.serialize(attributes);
     }
 
     public void removeAttribute(String key) {
-        if (getAttributes() == null)
-            return;
         attributes.remove(key);
         attributesSerialized = JsonUtils.serialize(attributes);
     }
@@ -235,7 +251,8 @@ public class GeopolObject implements Identifiable, MetadataHolder {
     }
 
     public List<GeopolAttributeModifier> getAttributeModifiers() {
-        if (attributeModifiers == null && attributesModifiersSerialized != null && !attributesModifiersSerialized.isEmpty()) {
+        if (attributeModifiers == null && attributesModifiersSerialized != null
+                && !attributesModifiersSerialized.isEmpty()) {
             var t = new TypeToken<List<GeopolAttributeModifier>>() {
             };
             attributeModifiers = JsonUtils.deserialize(attributesModifiersSerialized, t);
@@ -272,7 +289,8 @@ public class GeopolObject implements Identifiable, MetadataHolder {
     public void removeAttributeModifiers(String attributeKey, String modifierKey) {
         if (getAttributeModifiers() == null)
             return;
-        attributeModifiers.removeIf(m -> m.getAttributeKey().equals(attributeKey) && m.getModifierKey().equals(modifierKey));
+        attributeModifiers
+                .removeIf(m -> m.getAttributeKey().equals(attributeKey) && m.getModifierKey().equals(modifierKey));
         attributesModifiersSerialized = JsonUtils.serialize(attributeModifiers);
     }
 

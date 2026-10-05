@@ -142,7 +142,7 @@ public class Citizen implements Identifiable, MetadataHolder {
     }
 
     public boolean isLeader() {
-        return getCountry() != null && hasCountryRank("country-leader");
+        return getCountry() != null && hasCountryRank("leader");
     }
 
     public void setSettlement(Settlement settlement) {
