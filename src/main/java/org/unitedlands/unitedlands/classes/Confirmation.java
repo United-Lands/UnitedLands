@@ -5,9 +5,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.bukkit.entity.Player;
-import org.unitedlands.unitedlands.UnitedLands;
 import org.unitedlands.unitedlands.integrations.floodgate.FloodgateAPIIntegration;
 import org.unitedlands.unitedlands.managers.ConfirmationManager;
+import org.unitedlands.unitedlands.managers.IntegrationManager;
+
 import io.papermc.paper.dialog.Dialog;
 import io.papermc.paper.registry.data.dialog.ActionButton;
 import io.papermc.paper.registry.data.dialog.DialogBase;
@@ -102,7 +103,7 @@ public class Confirmation {
         ConfirmationManager.instance().queueConfirmation(this);
 
         // Show different UIs to Java and Bedrock players if floodgate is present
-        if (!UnitedLands.instance().useFloodgate()) {
+        if (!IntegrationManager.instance().useFloodgate()) {
             sendJavaDialog(receiver);
         } else {
             var floodgate = new FloodgateAPIIntegration();

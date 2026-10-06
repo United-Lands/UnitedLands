@@ -3,20 +3,14 @@ package org.unitedlands.unitedlands.integrations.Towny;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.unitedlands.unitedlands.UnitedLands;
-
 import com.palmergames.bukkit.towny.TownyAPI;
 import com.palmergames.bukkit.towny.object.Town;
 
 public class TownyProvider {
 
-    public final UnitedLands plugin;
-
     private TownyAPI townyAPI;
 
-    public TownyProvider(UnitedLands plugin) {
-        this.plugin = plugin;
-
+    public TownyProvider() {
         townyAPI = TownyAPI.getInstance();
     }
 

@@ -243,7 +243,7 @@ public class ChatChannelManager {
         var miniMessage = MiniMessage.miniMessage();
 
         var prefix = channel.getPrefix();
-        if (plugin.usePAPI())
+        if (IntegrationManager.instance().usePAPI())
             prefix = PlaceholderAPIIntegration.instance().setPlaceholders(source, prefix);
 
         return Component.text().append(miniMessage.deserialize(prefix)).append(Component.text(source.getName()))

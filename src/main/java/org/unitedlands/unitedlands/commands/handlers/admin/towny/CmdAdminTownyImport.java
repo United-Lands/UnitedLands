@@ -7,7 +7,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.registrars.command.UnitedCommandExecutor;
-import org.unitedlands.unitedlands.UnitedLands;
 import org.unitedlands.unitedlands.classes.Citizen;
 import org.unitedlands.unitedlands.classes.Coordinates;
 import org.unitedlands.unitedlands.classes.Country;
@@ -22,6 +21,7 @@ import org.unitedlands.unitedlands.classes.metadata.LocationMetaDataField;
 import org.unitedlands.unitedlands.classes.metadata.LongMetaDataField;
 import org.unitedlands.unitedlands.classes.metadata.StringMetaDataField;
 import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
+import org.unitedlands.unitedlands.managers.IntegrationManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.utils.CoordinateUtils;
 import org.unitedlands.utils.United;
@@ -40,14 +40,15 @@ import com.palmergames.bukkit.towny.object.metadata.LongDataField;
         parent = CmdAdminTowny.class,
         name = "import",
         description = "Admin towny import",
-        usage = "/ula towny import [town|nation]"
+        usage = "/ula towny import [town|nation]",
+        requirePlugins = "Towny"
 )
 public class CmdAdminTownyImport implements UnitedCommandExecutor {
 
     @Override
     public List<String> handleTab(CommandSender sender, String[] args) {
         if (args.length == 1)
-            return UnitedLands.instance().getTownyProvider().getTownNames();
+            return IntegrationManager.instance().getTownyProvider().getTownNames();
         return null;
     }
 
@@ -62,13 +63,13 @@ public class CmdAdminTownyImport implements UnitedCommandExecutor {
         }
 
         if (args.length == 1) {
-            var town = UnitedLands.instance().getTownyProvider().getTown(args[0]);
+            var town = IntegrationManager.instance().getTownyProvider().getTown(args[0]);
             if (town == null)
                 return;
 
             importTown(player, town);
         } else {
-            var towns = UnitedLands.instance().getTownyProvider().getTowns();
+            var towns = IntegrationManager.instance().getTownyProvider().getTowns();
 
             for (Town town : towns) {
                 var spawnLocation = town.getSpawnOrNull();

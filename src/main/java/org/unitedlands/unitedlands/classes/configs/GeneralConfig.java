@@ -7,6 +7,7 @@ import org.unitedlands.annotations.UnitedSection;
 import org.unitedlands.annotations.UnitedSetting;
 import org.unitedlands.registrars.config.UnitedConfigHandler;
 import org.unitedlands.registrars.config.UnitedConfigs;
+import org.unitedlands.registrars.config.UnitedDynamicSection;
 
 @UnitedConfig(file = "config.yml") // file property möglich, wenn config z.B. "settings.yml" heißen soll
 public interface GeneralConfig extends UnitedConfigHandler {
@@ -36,11 +37,27 @@ public interface GeneralConfig extends UnitedConfigHandler {
         @UnitedSetting(key = "playtime-record-threshold", def = "60")   int            playtimeRecordThreshold
     ) {}
 
+    @UnitedSection (key = "economy")
+    EconomySettings economy();
+
+    record EconomySettings(
+        @UnitedSection (key = "taxes") UnitedDynamicSection<TaxSettings> taxes
+    ) { }
+
     record NewDaySettings(
             @UnitedSetting(key = "use-interval",     def = "false")  boolean useInterval,
             @UnitedSetting(key = "interval-seconds", def = "3600")   int     intervalSeconds,
             @UnitedSetting(key = "new-day-time",     def = "12:00")  String  newDayTime
     ) {}
+
+    record TaxSettings(
+        @UnitedSetting(key = "tax-mode",   def = "WEALTH") String taxMode, 
+        @UnitedSetting(key = "min-percent",   def = "0.0") double minPercent, 
+        @UnitedSetting(key = "max-percent",   def = "25.0") double maxPercent, 
+        @UnitedSetting(key = "min-amount",   def = "0.0") double minAmount, 
+        @UnitedSetting(key = "max-amount",   def = "0.0") double maxAmount, 
+        @UnitedSetting(key = "tax-cap",   def = "10000.0") double taxCap
+    ) { }
 
     record GeopolAttributeDefaults(
         @UnitedSetting(key = "current-value",   def = "0") double currentValue, 
@@ -48,5 +65,7 @@ public interface GeneralConfig extends UnitedConfigHandler {
         @UnitedSetting(key = "max-value",       def = "0") double maxValue, 
         @UnitedSetting(key = "daily-change",    def = "0") double dailyChange
     ) { }
+
+
 
 }

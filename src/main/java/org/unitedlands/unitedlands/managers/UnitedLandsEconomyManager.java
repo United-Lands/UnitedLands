@@ -8,6 +8,9 @@ import java.util.UUID;
 import org.apache.logging.log4j.util.InternalException;
 import org.unitedlands.unitedlands.UnitedLands;
 import org.unitedlands.unitedlands.classes.BankRecord;
+import org.unitedlands.unitedlands.classes.Citizen;
+import org.unitedlands.unitedlands.classes.Settlement;
+import org.unitedlands.unitedlands.classes.configs.GeneralConfig;
 import org.unitedlands.unitedlands.integrations.economy.IEconomyProvider;
 import org.unitedlands.unitedlands.integrations.economy.VaultEconomyProvider;
 import org.unitedlands.utils.United;
@@ -126,6 +129,52 @@ public class UnitedLandsEconomyManager {
         }
         return false;
     }
+
+    // Helper methods for tax modes
+
+    public boolean depositAndTax(Citizen citizen, double amount, String reason) {
+
+        if (GeneralConfig.get().economy().taxes().get("settlement").taxMode().equals("INCOME"))
+        {
+            if (!citizen.hasSettlement()) {
+                return deposit(citizen.getUuid(), amount, reason);
+            } else {
+                var percent = citizen.getSettlement().getTax();
+
+                var settlementShare = amount * percent;
+                var citizenShare = amount - settlementShare;
+
+                depositAndTax(citizen.getSettlement(), settlementShare, "Income tax");
+                return deposit(citizen.getUuid(), citizenShare, reason);
+            }
+        } else {
+            return deposit(citizen.getUuid(), amount, reason);
+        }
+    }
+
+    public boolean depositAndTax(Settlement settlement, double amount, String reason) {
+
+        if (GeneralConfig.get().economy().taxes().get("country").taxMode().equals("INCOME"))
+        {
+            if (!settlement.hasCountry()) {
+                return deposit(settlement.getUuid(), amount, reason);
+            } else {
+
+                // TODO: Country tax implementation
+                var percent = 0.1f; // settlement.getCountry().getTax();
+
+                var countryShare = amount * percent;
+                var settlementShare = amount - countryShare;
+
+                deposit(settlement.getCountry().getUuid(), countryShare, "Income tax");
+                
+                return deposit(settlement.getUuid(), settlementShare, reason);
+            }
+        } else {
+            return deposit(settlement.getUuid(), amount, reason);
+        }
+    }
+
 
     // Logging
 

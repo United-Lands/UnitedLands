@@ -75,6 +75,42 @@ general:
 
 
 economy:
+
+  taxes:
+    settlement:
+      # Settlement tax mode. Options are:
+      # INCOME: for each supported trade income (UnitedTrade and QuickShop Hikari), a percentage is automatically put in the settlement bank.
+      # WEALTH (default): on each new day, the set percentage or flat amount is deducted from the player balance and put in the settlement bank. 
+      tax-mode: INCOME
+
+      # Min and max percentage are used in both WEALTH and INCOME tax mode
+      min-percent: 1.0
+      max-percent: 25.0
+
+      # Min and max amount are only considered in WEALTH tax mode
+      min-amount: 1.0
+      max-amount: 10000.0
+
+      # Absolute cap of tax taken in a single transaction 
+      tax-cap: 10000.0
+    
+    country:
+      # Country tax mode. Options are:
+      # INCOME: for each settlement deposit, a percentage is automatically put in the country bank.
+      # WEALTH (default): on each new day, the set percentage or flat amount is deducted from the settlement balances and put in the country bank. 
+      tax-mode: INCOME
+
+      # Min and max percentage are used in both WEALTH and INCOME tax mode
+      min-percent: 1.0
+      max-percent: 25.0
+
+      # Min and max amount are only considered in WEALTH tax mode
+      min-amount: 1.0
+      max-amount: 10000.0
+
+      # Absolute cap of tax taken in a single transaction 
+      tax-cap: 10000.0
+
   new-settlement-cost: 8000
   settlement-claim-base-cost: 48
   settlement-base-upkeep-per-plot: 3
@@ -84,11 +120,6 @@ economy:
   # Available vars: base (base costs), claims (total settlement claim count), residents (total resident count). This value will be multiplied by the number of settlement chunks.
   settlement-upkeep-per-plot-formula: "base * claims"
 
-  settlement-tax-min-percent: 1.0
-  settlement-tax-max-percent: 25.0
-  settlement-tax-min-amount: 1.0
-  settlement-tax-max-amount: 10000.0
-  settlement-tax-cap: 10000.0
 
   new-country-cost: 80000
 
