@@ -86,7 +86,7 @@ public class CmdAdminCountryModifiersAdd extends CountryAdminCommandHandler {
 
         GeopolAttributeModifier attrModifier = new GeopolAttributeModifier(args[1], args[2], mode, valueMod, maxValueMod, minValueMod, dailyChangeMod);
         country.addAttributeModifier(attrModifier);
-        country.saveAttributeModifiers();
+        country.save();
 
         // TODO: Move strings to config
         United.messenger().sendRaw(sender, "<green>Attribute modifier added to " + country.getCleanName());

@@ -2,6 +2,7 @@ package org.unitedlands.unitedlands.integrations.Pl3xMap;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,12 +28,13 @@ import org.unitedlands.unitedlands.UnitedLands;
 import org.unitedlands.unitedlands.classes.Coordinates;
 import org.unitedlands.unitedlands.classes.Country;
 import org.unitedlands.unitedlands.classes.Region;
-import org.unitedlands.unitedlands.classes.Settings;
 import org.unitedlands.unitedlands.classes.Settlement;
 import org.unitedlands.unitedlands.classes.SettlementChunk;
+import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.classes.interfaces.CoordinateHolder;
 import org.unitedlands.unitedlands.classes.map.LayerOptions;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
+import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.unitedlands.utils.CoordinateUtils;
 import org.unitedlands.unitedlands.utils.PolygonUtils;
 import org.unitedlands.utils.United;
@@ -67,6 +69,10 @@ public class Pl3xMapRenderer {
 
     private BukkitTask queueCheckTask;
 
+    private String settlementMapInfoBox;
+    // private String regionMapInfoBox;
+    private String countryMapInfoBox;
+
     private boolean debugMode = false;
 
     public Pl3xMapRenderer() {
@@ -88,6 +94,13 @@ public class Pl3xMapRenderer {
         registerIcon("siege", "siege.png");
         registerIcon("fortress", "fortress.png");
         registerIcon("home", "home.png");
+        registerIcon("camp", "camp.png");
+        loadMessages();
+    }
+
+    public void loadMessages() {
+        settlementMapInfoBox = United.messenger().get("map-info-boxes.settlement");
+        countryMapInfoBox = United.messenger().get("map-info-boxes.country");
     }
 
     public void shutdown() {
@@ -204,7 +217,8 @@ public class Pl3xMapRenderer {
     // Marker rendering
     // *********************************************************
 
-    public void renderMarker(String worldName, Location location, String markerName, String markerKey, String layerId, String layerName) {
+    public void renderMarker(String worldName, Location location, String markerName, String markerKey, String layerId,
+            String layerName) {
         SimpleLayer layer = getOrCreateSimpleLayer(worldName, layerId, layerName, 1, 2000);
         if (layer.hasMarker(markerKey))
             layer.removeMarker(markerKey);
@@ -239,11 +253,13 @@ public class Pl3xMapRenderer {
         }
 
         var startTime = System.currentTimeMillis();
-        List<CompletableFuture<Void>> futures = countries.stream().map(country -> CompletableFuture.runAsync(() -> renderCountryAsync(country))).toList();
+        List<CompletableFuture<Void>> futures = countries.stream()
+                .map(country -> CompletableFuture.runAsync(() -> renderCountryAsync(country))).toList();
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenRun(() -> {
             var executionTime = System.currentTimeMillis() - startTime;
-            United.logger().info("Created " + countries.size() + " countries in map overlay in " + executionTime + "ms");
+            United.logger()
+                    .info("Created " + countries.size() + " countries in map overlay in " + executionTime + "ms");
         }).exceptionally(ex -> {
             United.logger().error("Error rendering countries: " + ex.getMessage(), "UnitedLands");
             ex.printStackTrace();
@@ -260,9 +276,9 @@ public class Pl3xMapRenderer {
         if (layer.hasMarker(key))
             layer.removeMarker(key);
 
-        var popup = new Popup("<div><p><strong>" + country.getCleanName() + "</strong></p><p><strong>Owner: </strong>");
+        var popup = new Popup(getCountryInfoBox(country));
 
-        int strokeWidth = Settings.defaultCountryStrokeWidth;
+        int strokeWidth = UnitedLandsConfig.get().mapRendering().get("country-default").width();
 
         var countryPolygons = country.getRegions().stream().map(Region::getPolygon).collect(Collectors.toList());
         var vassals = UnitedLandsDataManager.instance().getCountryVassals(country);
@@ -278,7 +294,8 @@ public class Pl3xMapRenderer {
 
         List<Polygon> finalPolygons = new ArrayList<>();
 
-        var markerOptions = Options.builder().fill(false).stroke(true).strokeColor(country.getStrokeColor()).strokeWeight(strokeWidth)
+        var markerOptions = Options.builder().fill(false).stroke(true).strokeColor(country.getStrokeColor())
+                .strokeWeight(strokeWidth)
                 .tooltipContent(country.getCleanName()).build().setPopup(popup);
 
         int i = 0;
@@ -295,7 +312,8 @@ public class Pl3xMapRenderer {
                 // 1]));
                 polygonPoints.add(new Point((int) offsetPolygon[j], (int) offsetPolygon[j + 1]));
             }
-            finalPolygons.add(new Polygon(key, new Polyline("border-" + country.getUuid().toString() + "-" + i, polygonPoints)));
+            finalPolygons.add(
+                    new Polygon(key, new Polyline("border-" + country.getUuid().toString() + "-" + i, polygonPoints)));
         }
 
         MultiPolygon mapPolygon = new MultiPolygon(key, finalPolygons);
@@ -310,12 +328,28 @@ public class Pl3xMapRenderer {
 
         if (countryLayer != null) {
             var countryMarkers = countryLayer.getMarkers();
-            var poly = countryMarkers.stream().filter(m -> m.getKey().equals("country-" + country.getUuid().toString())).findFirst().orElse(null);
+            var poly = countryMarkers.stream().filter(m -> m.getKey().equals("country-" + country.getUuid().toString()))
+                    .findFirst().orElse(null);
             if (poly != null) {
                 countryMarkers.remove(poly);
                 return;
             }
         }
+    }
+
+    private String getCountryInfoBox(Country country) {
+        var infoBox = countryMapInfoBox;
+        infoBox = infoBox.replace("%country%", country.getCleanName());
+        infoBox = infoBox.replace("%leader%", country.getLeader() != null ? country.getLeader().getName() : "NPC");
+        infoBox = infoBox.replace("%capital%", country.hasCapital() ? country.getCapital().getCleanName() : "");
+        infoBox = infoBox.replace("%capital-coords%", country.hasCapital() ? 
+            "x=" + country.getCapital().getSpawn().blockX() + "&z=" + country.getCapital().getSpawn().blockZ() : "");
+        infoBox = infoBox.replace("%founded%",
+                new SimpleDateFormat("dd-MM-yyyy HH:mm").format(country.getFoundingTimestamp()));
+        infoBox = infoBox.replace("%balance%", UnitedLandsEconomyManager.instance()
+                .format(UnitedLandsEconomyManager.instance().getBalance(country.getUuid())));
+        infoBox = infoBox.replace("%upkeep%", UnitedLandsEconomyManager.instance().format(country.getUpkeep()));
+        return infoBox;
     }
 
     // #endregion
@@ -336,7 +370,8 @@ public class Pl3xMapRenderer {
         }
 
         var startTime = System.currentTimeMillis();
-        List<CompletableFuture<Void>> futures = regions.stream().map(region -> CompletableFuture.runAsync(() -> renderPolyRegionAsync(region, debug))).toList();
+        List<CompletableFuture<Void>> futures = regions.stream()
+                .map(region -> CompletableFuture.runAsync(() -> renderPolyRegionAsync(region, debug))).toList();
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenRun(() -> {
             var executionTime = System.currentTimeMillis() - startTime;
@@ -350,7 +385,8 @@ public class Pl3xMapRenderer {
 
     private void renderPolyRegionAsync(Region region, boolean debug) {
 
-        var unclaimedLayer = getOrCreateSimpleLayer(region.getWorldName(), "unclaimedregions", "Unclaimed Regions", 8, 0);
+        var unclaimedLayer = getOrCreateSimpleLayer(region.getWorldName(), "unclaimedregions", "Unclaimed Regions", 8,
+                0);
         var claimedLayer = getOrCreateSimpleLayer(region.getWorldName(), "claimedregions", "Claimed Regions", 6, 0);
 
         SimpleLayer regionLayer;
@@ -359,7 +395,8 @@ public class Pl3xMapRenderer {
         } else {
             regionLayer = claimedLayer;
         }
-        SimpleLayer regionInfoMarkerLayer = getOrCreateSimpleLayer(region.getWorldName(), "regioninfos", "Region Infos", 10, 100);
+        SimpleLayer regionInfoMarkerLayer = getOrCreateSimpleLayer(region.getWorldName(), "regioninfos", "Region Infos",
+                10, 100);
 
         var key = "region-" + region.getUuid().toString();
         if (unclaimedLayer.hasMarker(key))
@@ -388,12 +425,12 @@ public class Pl3xMapRenderer {
         var popup = new Popup("<div><p><strong>" + region.getCleanName() + "</strong></p><p><strong>Owner: </strong>"
                 + (region.hasFounder() ? region.getFounderName() : "-") + "</p></div>");
 
-        String dash = Settings.defaultRegionDash;
-        int strokeWidth = Settings.defaultRegionStrokeWidth;
+        String dash = UnitedLandsConfig.get().mapRendering().get("region-default").dash(); 
+        int strokeWidth = UnitedLandsConfig.get().mapRendering().get("region-default").width();
 
         if (region.hasCountry()) {
-            dash = Settings.countryRegionDash;
-            strokeWidth = Settings.countryRegionStrokeWidth;
+            dash = UnitedLandsConfig.get().mapRendering().get("region-in-country").dash();
+            strokeWidth = UnitedLandsConfig.get().mapRendering().get("region-in-country").width();
         }
 
         int fillColor;
@@ -408,8 +445,10 @@ public class Pl3xMapRenderer {
             strokeColor = region.getStrokeColor();
         }
 
-        var tooltip = region.getCleanName() + (region.hasCountry() ? " (" + region.getCountry().getCleanName() + ")" : "");
-        var markerOptions = Options.builder().fill(true).fillType(Fill.Type.NONZERO).fillColor(fillColor).stroke(true).strokeColor(strokeColor)
+        var tooltip = region.getCleanName()
+                + (region.hasCountry() ? " (" + region.getCountry().getCleanName() + ")" : "");
+        var markerOptions = Options.builder().fill(true).fillType(Fill.Type.NONZERO).fillColor(fillColor).stroke(true)
+                .strokeColor(strokeColor)
                 .strokeDashPattern(dash).strokeWeight(strokeWidth).tooltipContent(tooltip).build().setPopup(popup);
 
         var polyPoints = region.getPolygon();
@@ -427,7 +466,8 @@ public class Pl3xMapRenderer {
 
     public void removeRegion(Region region) {
         String key = "region-" + region.getUuid().toString();
-        var unclaimedLayer = getOrCreateSimpleLayer(region.getWorldName(), "unclaimedregions", "Unclaimed Regions", 30, 30);
+        var unclaimedLayer = getOrCreateSimpleLayer(region.getWorldName(), "unclaimedregions", "Unclaimed Regions", 30,
+                30);
         if (unclaimedLayer.hasMarker(key))
             unclaimedLayer.removeMarker(key);
 
@@ -452,12 +492,14 @@ public class Pl3xMapRenderer {
         }
 
         var startTime = System.currentTimeMillis();
-        List<CompletableFuture<Void>> futures = settlements.stream().map(settlement -> CompletableFuture.runAsync(() -> renderSettlementAsync(settlement)))
+        List<CompletableFuture<Void>> futures = settlements.stream()
+                .map(settlement -> CompletableFuture.runAsync(() -> renderSettlementAsync(settlement)))
                 .toList();
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenRun(() -> {
             var executionTime = System.currentTimeMillis() - startTime;
-            United.logger().info("Created " + settlements.size() + " settlements in map overlay in " + executionTime + "ms");
+            United.logger()
+                    .info("Created " + settlements.size() + " settlements in map overlay in " + executionTime + "ms");
         }).exceptionally(ex -> {
             United.logger().error("Error rendering settlements: " + ex.getMessage(), "UnitedLands");
             return null;
@@ -474,19 +516,20 @@ public class Pl3xMapRenderer {
         // if (layer.hasMarker(key))
         // layer.removeMarker(key);
 
-        var popup = new Popup("<div><p><strong>" + settlement.getCleanName() + "</strong></p><p><strong>Owner: </strong>"
-                + (settlement.hasFounder() ? settlement.getFounderName() : "-") + "</p></div>");
+        var popup = new Popup(getSettlementInfoBox(settlement));
 
-        int strokeWidth = Settings.defaultSettlementStrokeWidth;
-        String dash = Settings.defaultSettlementDash;
+        int strokeWidth = UnitedLandsConfig.get().mapRendering().get("settlement-default").width();
+        String dash = UnitedLandsConfig.get().mapRendering().get("settlement-default").dash();
 
         if (settlement.hasCountry()) {
-            strokeWidth = Settings.countrySettlementStrokeWidth;
-            dash = Settings.countrySettlementDash;
+            strokeWidth = UnitedLandsConfig.get().mapRendering().get("settlement-in-country").width();
+            dash = UnitedLandsConfig.get().mapRendering().get("settlement-in-country").dash();
         }
 
-        var markerOptions = Options.builder().fill(true).fillType(Fill.Type.EVENODD).fillColor(settlement.getFillColor()).stroke(true)
-                .strokeColor(settlement.getStrokeColor()).strokeWeight(strokeWidth).strokeDashPattern(dash).tooltipContent(settlement.getCleanName()).build()
+        var markerOptions = Options.builder().fill(true).fillType(Fill.Type.EVENODD)
+                .fillColor(settlement.getFillColor()).stroke(true)
+                .strokeColor(settlement.getStrokeColor()).strokeWeight(strokeWidth).strokeDashPattern(dash)
+                .tooltipContent(settlement.getCleanName()).build()
                 .setPopup(popup);
 
         var chunkClusters = findClusters(settlement.getChunks());
@@ -522,12 +565,33 @@ public class Pl3xMapRenderer {
 
         if (settlementsLayer != null) {
             var settlemenMarkers = settlementsLayer.getMarkers();
-            var poly = settlemenMarkers.stream().filter(m -> m.getKey().equals("settlement-" + settlement.getUuid().toString())).findFirst().orElse(null);
+            var poly = settlemenMarkers.stream()
+                    .filter(m -> m.getKey().equals("settlement-" + settlement.getUuid().toString())).findFirst()
+                    .orElse(null);
             if (poly != null) {
                 settlemenMarkers.remove(poly);
                 return;
             }
         }
+    }
+
+    private String getSettlementInfoBox(Settlement settlement) {
+
+        var infoBox = settlementMapInfoBox;
+
+        infoBox = infoBox.replace("%settlement%", settlement.getCleanName());
+        infoBox = infoBox.replace("%mayor%", settlement.getMayor() != null ? settlement.getMayor().getName() : "NPC");
+        infoBox = infoBox.replace("%country%",
+                settlement.hasCountry() ? settlement.getCountry().getCleanName() : "Independent");
+        infoBox = infoBox.replace("%citizencount%", String.valueOf(settlement.getCitizenCount()));
+        infoBox = infoBox.replace("%founded%",
+                new SimpleDateFormat("dd-MM-yyyy HH:mm").format(settlement.getFoundingTimestamp()));
+        infoBox = infoBox.replace("%balance%", UnitedLandsEconomyManager.instance()
+                .format(UnitedLandsEconomyManager.instance().getBalance(settlement.getUuid())));
+        infoBox = infoBox.replace("%upkeep%", UnitedLandsEconomyManager.instance().format(settlement.getUpkeep()));
+        infoBox = infoBox.replace("%board%", settlement.getTownBoard() != null ? settlement.getTownBoard() : "");
+
+        return infoBox;
     }
 
     // #endregion
@@ -699,90 +763,90 @@ public class Pl3xMapRenderer {
             var chunk = chunksToVisit.poll();
 
             switch (currDir) {
-            case RIGHT: {
-                var upperLeft = chunk.getUpperLeft();
-                if (!isOriginPoint && upperLeft.equals(originPoint))
-                    continue;
-                else if (isOriginPoint)
-                    isOriginPoint = false;
+                case RIGHT: {
+                    var upperLeft = chunk.getUpperLeft();
+                    if (!isOriginPoint && upperLeft.equals(originPoint))
+                        continue;
+                    else if (isOriginPoint)
+                        isOriginPoint = false;
 
-                var upCoords = chunk.getCoordinates().clone().add(0, -1);
-                var rightCoords = chunk.getCoordinates().clone().add(1, 0);
-                // Check if there's a chunk above
-                if (isChunkAtCoordinates(chunks, upCoords)) {
-                    chunksToVisit.add(getChunkAtCoordinates(chunks, upCoords));
-                    currDir = DIRECTION.UP;
-                    polygon.add(chunk.getUpperLeft());
-                    // Check if there's a chunk to the right
-                } else if (isChunkAtCoordinates(chunks, rightCoords)) {
-                    chunksToVisit.add(getChunkAtCoordinates(chunks, rightCoords));
-                    // We're the rightmost, so switch direction to down and queue the same block
-                } else {
-                    chunksToVisit.add(chunk);
-                    currDir = DIRECTION.DOWN;
-                    polygon.add(chunk.getUpperRight());
+                    var upCoords = chunk.getCoordinates().clone().add(0, -1);
+                    var rightCoords = chunk.getCoordinates().clone().add(1, 0);
+                    // Check if there's a chunk above
+                    if (isChunkAtCoordinates(chunks, upCoords)) {
+                        chunksToVisit.add(getChunkAtCoordinates(chunks, upCoords));
+                        currDir = DIRECTION.UP;
+                        polygon.add(chunk.getUpperLeft());
+                        // Check if there's a chunk to the right
+                    } else if (isChunkAtCoordinates(chunks, rightCoords)) {
+                        chunksToVisit.add(getChunkAtCoordinates(chunks, rightCoords));
+                        // We're the rightmost, so switch direction to down and queue the same block
+                    } else {
+                        chunksToVisit.add(chunk);
+                        currDir = DIRECTION.DOWN;
+                        polygon.add(chunk.getUpperRight());
+                    }
+                    break;
                 }
-                break;
-            }
-            case LEFT: {
-                var downCoords = chunk.getCoordinates().clone().add(0, 1);
-                var leftCoords = chunk.getCoordinates().clone().add(-1, 0);
-                // Check if there's a chunk below
-                if (isChunkAtCoordinates(chunks, downCoords)) {
-                    chunksToVisit.add(getChunkAtCoordinates(chunks, downCoords));
-                    currDir = DIRECTION.DOWN;
-                    polygon.add(chunk.getLowerRight());
-                    // Check if there's a chunk to the right
-                } else if (isChunkAtCoordinates(chunks, leftCoords)) {
-                    chunksToVisit.add(getChunkAtCoordinates(chunks, leftCoords));
-                    // We're the the leftmost, so switch direction to up
-                } else {
-                    chunksToVisit.add(chunk);
-                    currDir = DIRECTION.UP;
-                    polygon.add(chunk.getLowerLeft());
-
-                }
-                break;
-            }
-            case DOWN: {
-                var rightCoords = chunk.getCoordinates().clone().add(1, 0);
-                var downCoords = chunk.getCoordinates().clone().add(0, 1);
-                // Check if there's a chunk to the right
-                if (isChunkAtCoordinates(chunks, rightCoords)) {
-                    chunksToVisit.add(getChunkAtCoordinates(chunks, rightCoords));
-                    currDir = DIRECTION.RIGHT;
-                    polygon.add(chunk.getUpperRight());
+                case LEFT: {
+                    var downCoords = chunk.getCoordinates().clone().add(0, 1);
+                    var leftCoords = chunk.getCoordinates().clone().add(-1, 0);
                     // Check if there's a chunk below
-                } else if (isChunkAtCoordinates(chunks, downCoords)) {
-                    chunksToVisit.add(getChunkAtCoordinates(chunks, downCoords));
-                    // We're the the bottom most, so switch direction to left
-                } else {
-                    chunksToVisit.add(chunk);
-                    currDir = DIRECTION.LEFT;
-                    polygon.add(chunk.getLowerRight());
-                }
-                break;
-            }
-            case UP: {
-                var leftCoords = chunk.getCoordinates().clone().add(-1, 0);
-                var upCoords = chunk.getCoordinates().clone().add(0, -1);
-                // Check if there's a chunk to the left
-                if (isChunkAtCoordinates(chunks, leftCoords)) {
-                    chunksToVisit.add(getChunkAtCoordinates(chunks, leftCoords));
-                    currDir = DIRECTION.LEFT;
-                    polygon.add(chunk.getLowerLeft());
-                    // Check if there's a chunk below
-                } else if (isChunkAtCoordinates(chunks, upCoords)) {
-                    chunksToVisit.add(getChunkAtCoordinates(chunks, upCoords));
-                    // We're the the top most, so switch direction to right
-                } else {
-                    chunksToVisit.add(chunk);
-                    currDir = DIRECTION.RIGHT;
-                    polygon.add(chunk.getUpperLeft());
+                    if (isChunkAtCoordinates(chunks, downCoords)) {
+                        chunksToVisit.add(getChunkAtCoordinates(chunks, downCoords));
+                        currDir = DIRECTION.DOWN;
+                        polygon.add(chunk.getLowerRight());
+                        // Check if there's a chunk to the right
+                    } else if (isChunkAtCoordinates(chunks, leftCoords)) {
+                        chunksToVisit.add(getChunkAtCoordinates(chunks, leftCoords));
+                        // We're the the leftmost, so switch direction to up
+                    } else {
+                        chunksToVisit.add(chunk);
+                        currDir = DIRECTION.UP;
+                        polygon.add(chunk.getLowerLeft());
 
+                    }
+                    break;
                 }
-                break;
-            }
+                case DOWN: {
+                    var rightCoords = chunk.getCoordinates().clone().add(1, 0);
+                    var downCoords = chunk.getCoordinates().clone().add(0, 1);
+                    // Check if there's a chunk to the right
+                    if (isChunkAtCoordinates(chunks, rightCoords)) {
+                        chunksToVisit.add(getChunkAtCoordinates(chunks, rightCoords));
+                        currDir = DIRECTION.RIGHT;
+                        polygon.add(chunk.getUpperRight());
+                        // Check if there's a chunk below
+                    } else if (isChunkAtCoordinates(chunks, downCoords)) {
+                        chunksToVisit.add(getChunkAtCoordinates(chunks, downCoords));
+                        // We're the the bottom most, so switch direction to left
+                    } else {
+                        chunksToVisit.add(chunk);
+                        currDir = DIRECTION.LEFT;
+                        polygon.add(chunk.getLowerRight());
+                    }
+                    break;
+                }
+                case UP: {
+                    var leftCoords = chunk.getCoordinates().clone().add(-1, 0);
+                    var upCoords = chunk.getCoordinates().clone().add(0, -1);
+                    // Check if there's a chunk to the left
+                    if (isChunkAtCoordinates(chunks, leftCoords)) {
+                        chunksToVisit.add(getChunkAtCoordinates(chunks, leftCoords));
+                        currDir = DIRECTION.LEFT;
+                        polygon.add(chunk.getLowerLeft());
+                        // Check if there's a chunk below
+                    } else if (isChunkAtCoordinates(chunks, upCoords)) {
+                        chunksToVisit.add(getChunkAtCoordinates(chunks, upCoords));
+                        // We're the the top most, so switch direction to right
+                    } else {
+                        chunksToVisit.add(chunk);
+                        currDir = DIRECTION.RIGHT;
+                        polygon.add(chunk.getUpperLeft());
+
+                    }
+                    break;
+                }
             }
         }
 
@@ -833,8 +897,9 @@ public class Pl3xMapRenderer {
     private CoordinateHolder findRightmostChunk(Set<CoordinateHolder> chunks) {
         var rightmost = chunks.stream().findAny().orElse(null);
         for (var chunk : chunks) {
-            if (chunk.getCoordinates().getX() > rightmost.getCoordinates().getX() || (chunk.getCoordinates().getX() == rightmost.getCoordinates().getX()
-                    && chunk.getCoordinates().getZ() < rightmost.getCoordinates().getZ())) {
+            if (chunk.getCoordinates().getX() > rightmost.getCoordinates().getX()
+                    || (chunk.getCoordinates().getX() == rightmost.getCoordinates().getX()
+                            && chunk.getCoordinates().getZ() < rightmost.getCoordinates().getZ())) {
                 rightmost = chunk;
             }
         }
@@ -1047,7 +1112,8 @@ public class Pl3xMapRenderer {
                     Deque<Integer> currentOuts = adjacency.get(current);
                     if (currentOuts == null || currentOuts.isEmpty()) {
                         Pt stranded = canonicalPoints.get(current);
-                        System.err.printf("WARNING: ring did not close — dead end at (%.6f, %.6f).%n", stranded.x, stranded.y);
+                        System.err.printf("WARNING: ring did not close — dead end at (%.6f, %.6f).%n", stranded.x,
+                                stranded.y);
                         break;
                     }
                     int next = currentOuts.poll();

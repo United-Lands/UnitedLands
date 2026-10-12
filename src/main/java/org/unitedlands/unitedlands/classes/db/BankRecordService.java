@@ -22,6 +22,7 @@ public class BankRecordService extends BaseDbService<BankRecord> {
                 QueryBuilder<BankRecord, UUID> queryBuilder = dao.queryBuilder();
                 queryBuilder.where().eq("subject", id);
                 queryBuilder.orderBy("timestamp", false);
+                queryBuilder.orderBy("amount", true);
                 queryBuilder.offset(page * pageSize);
                 queryBuilder.limit((long) pageSize);
                 return dao.query(queryBuilder.prepare());

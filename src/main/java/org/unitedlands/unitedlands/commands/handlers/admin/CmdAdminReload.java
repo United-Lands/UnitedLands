@@ -7,9 +7,9 @@ import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.registrars.command.UnitedCommandExecutor;
 import org.unitedlands.registrars.messages.UnitedMessagesRegistrar;
 import org.unitedlands.unitedlands.UnitedLands;
-import org.unitedlands.unitedlands.classes.Settings;
-import org.unitedlands.unitedlands.classes.configs.GeneralConfig;
-import org.unitedlands.unitedlands.classes.configs.TitlesConfig;
+import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
+import org.unitedlands.unitedlands.classes.configs.UnitedLandsTitlesConfig;
+import org.unitedlands.unitedlands.integrations.Pl3xMap.Pl3xMapRenderer;
 import org.unitedlands.unitedlands.managers.PermissionManager;
 import org.unitedlands.utils.United;
 
@@ -24,18 +24,15 @@ public class CmdAdminReload implements UnitedCommandExecutor {
     @Override
     public void handleCommand(CommandSender sender, String[] args) {
 
-        GeneralConfig.get().reload();
-        TitlesConfig.get().reload();
+        UnitedLandsConfig.get().reload();
+        UnitedLandsTitlesConfig.get().reload();
 
         UnitedMessagesRegistrar.reload(UnitedLands.instance());
+        Pl3xMapRenderer.instance().loadMessages();
         
         PermissionManager.instance().reloadRankPermissions();
 
-        UnitedLands.instance().reloadConfig();
-
         UnitedLands.instance().getWebServices().reloadConfig();
-
-        Settings.loadSettings(UnitedLands.instance().getConfig());
 
         United.messenger().send(sender, "reload");
     }

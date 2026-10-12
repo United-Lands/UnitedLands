@@ -5,7 +5,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.unitedlands.classes.Confirmation;
-import org.unitedlands.unitedlands.classes.Settings;
 import org.unitedlands.unitedlands.classes.commandhandlers.CountryCommandHandler;
 import org.unitedlands.unitedlands.classes.events.region.RegionClaimStartEvent;
 import org.unitedlands.unitedlands.classes.events.region.RegionDoubleClaimEvent;
@@ -44,11 +43,13 @@ public class CmdCountryClaim extends CountryCommandHandler {
             }
         }
 
-        var currentClaims = UnitedLandsDataManager.instance().getRegionClaimsOngoing(context.country());
-        if (currentClaims.size() >= Settings.regionParallelClaimsMax) {
-            United.messenger().send(context.player(), "player.country.claim.too-many-claiming", String.valueOf(Settings.regionParallelClaimsMax));
-            return;
-        }
+        // TODO: Attribute-based max numbers
+
+        // var currentClaims = UnitedLandsDataManager.instance().getRegionClaimsOngoing(context.country());
+        // if (currentClaims.size() >= Settings.regionParallelClaimsMax) {
+        //     United.messenger().send(context.player(), "player.country.claim.too-many-claiming", String.valueOf(Settings.regionParallelClaimsMax));
+        //     return;
+        // }
 
         var claimCost = CostUtils.getRegionClaimCosts(context.country(), region);
 
@@ -60,9 +61,12 @@ public class CmdCountryClaim extends CountryCommandHandler {
         // if (preStartClaimEvent.isCancelled())
         // return;
 
+        // TODO: Attribute-based claim time
+
         var confirmationMessage = United.messenger().get("player.country.claim.claim-confirm",
-                United.formatter().formatDuration(Settings.regionClaimTime * 1000),
-                UnitedLandsEconomyManager.instance().format(claimCost));
+                //United.formatter().formatDuration(UnitedLandsConfig.get().economy().costs().country(). * 1000),
+                UnitedLandsEconomyManager.instance().format(claimCost)
+            );
 
         var doubleClaim = false;
 
@@ -103,9 +107,11 @@ public class CmdCountryClaim extends CountryCommandHandler {
             if (startClaimEvent.isCancelled())
                 return;
 
+            // TODO: Attribute-based claim time
+            
             region.setClaimantCountry(context.country());
             region.setClaimStartTime(System.currentTimeMillis());
-            region.setClaimEndTime(System.currentTimeMillis() + (Settings.regionClaimTime * 1000));
+            region.setClaimEndTime(System.currentTimeMillis() + (5 * 1000));
             region.startClaimTask();
             region.saveAndRender();
 

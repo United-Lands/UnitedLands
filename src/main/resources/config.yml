@@ -19,60 +19,66 @@ general:
 
   # Worlds where UnitedLands commands can be used
   worlds:
-    - world
+    - world_earth
 
   new-day:
     # Start a new day at regular intervals instead of a fixed real-world time.
-    use-interval: true
+    use-interval: false
     # The length of one day (in seconds). Only used when use-new-day-interval is true
     interval-seconds: 3600
     # When use-new-day-interval is false, this will be the server time at which a new day 
     # starts. Must be hh:mm in 24-hour-format (e.g. 17:35)
-    new-day-time: "00:00"
+    new-day-time: "12:00"
 
   # How long does a player need to be online in order add to their playtime (in seconds). If the time between logon and logoff is
   # less than this, their activity will not be logged and their playtime will not be increased.
-  playtime-record-threshold: 60
+  playtime-record-threshold: 5
 
-  # Scale multiplier for the import SVG
-  import-scale: 1
-  # Offsets to be subtracted from the imported vertex positions. These will usually be
-  # half of the map width / height
-  import-offset-x: 0
-  import-offset-y: 0
-
-  region-chunk-size: 8
-  # Colours as int values (e.g. https://argb-int-calculator.netlify.app/)
-
+  # Should land unclaimed land in owned regions / regionless areas be protected by default?
   protect-unclaimed-land: true
 
-  allow-town-claims-outside-home-region: false
+  # Should settlements be able to claim across region borders?
+  allow-settlement-claims-outside-home-region: false
 
+import:
+  # Scale multiplier for the import SVG
+  scale: 1
+  # Offsets to be subtracted from the imported vertex positions. These will usually be
+  # half of the map width / height
+  offset-x: 0
+  offset-y: 0
+
+
+  # Default map colors
+  # Colours as int values (e.g. https://argb-int-calculator.netlify.app/)
   # Default map colors & styles
 
-  country-default-stroke-colour: -13399809
-  country-default-fill-colour: 540248319
-  country-default-stroke-width: 5
-
-  region-default-stroke-colour: 536870912
-  region-default-fill-colour: 0
-  region-default-stroke-width: 2
-  region-default-dash: "1"
-
-  region-country-stroke-width: 1
-  region-country-dash: "4,4"
-
-  settlement-default-fill-colour: 540787967
-  settlement-default-stroke-colour: -13399809
-  settlement-default-stroke-width: 2
-  settlement-default-dash: "1"
-
-  settlement-country-stroke-colour: -1073741824
-  settlement-country-fill-colour: 540248319
-  settlement-country-stroke-width: 2
-  settlement-country-dash: "4,4"
-
-
+map-rendering:
+  settlement-default:
+    fill: 550950614
+    stroke: -2697514
+    width: 2
+    dash: "0"
+  settlement-country:
+    fill: 0
+    stroke: 0
+    width: 2
+    dash: "4,4"
+  region-default:
+    fill: 1610612736
+    stroke: 0
+    width: 1
+    dash: "0"
+  region-country:
+    fill: 0
+    stroke: 0
+    width: 1
+    dash: "1,3"
+  country-default:
+    fill: 540248319
+    stroke: -13399809
+    width: 3
+    dash: "0"
 
 economy:
 
@@ -111,29 +117,61 @@ economy:
       # Absolute cap of tax taken in a single transaction 
       tax-cap: 10000.0
 
-  new-settlement-cost: 8000
-  settlement-claim-base-cost: 48
-  settlement-base-upkeep-per-plot: 3
+  costs:
+    settlement:
+      create: 8000
+      plot-claim-base: 48
+      plot-claim-cost-formula: "base"
+      plot-upkeep-base: 3
+      upkeep-per-plot-formula: "base"
+    country:
+      create: 80000
+      region-claim-base: 10000
+      region-claim-cost-formula: "base + (base * 0.1 * (distance / 512))"
+      region-upkeep-base: 250
+      region-upkeep-formula: "base + (base * 0.1 * (distance / 512))"
 
-  # Available vars: base (base costs), claims (total settlement claim count).
-  settlement-claim-cost-progression: "base"
-  # Available vars: base (base costs), claims (total settlement claim count), residents (total resident count). This value will be multiplied by the number of settlement chunks.
-  settlement-upkeep-per-plot-formula: "base * claims"
+# These attributes will be attached to all settlements and countries automatically
+geopol-attribute-defaults:
+  settlement:
+    CLAIM_DISCOUNT:
+      display: "Claim cost reduction"
+      current-value: 0
+      max-value: 0
+      min-value: 0
+      daily-change: 0
+    UPKEEP_DISCOUNT:
+      display: "Upkeep reduction"
+      current-value: 0
+      max-value: 0
+      min-value: 0
+      daily-change: 0
+  country:
+    CLAIM_DISCOUNT:
+      display: "Claim cost reduction"
+      current-value: 0
+      max-value: 0
+      min-value: 0
+      daily-change: 0
+    UPKEEP_DISCOUNT:
+      display: "Upkeep reduction"
+      current-value: 0
+      max-value: 0
+      min-value: 0
+      daily-change: 0
+    REGION_CLAIM_TIME:
+      display: "Time to claim a region (seconds)"
+      current-value: 86400
+      max-value: 0
+      min-value: 0
+      daily-change: 0
+    MAX_PARELLEL_CLAIMS:
+      display: "Maximum parallel region claims"
+      current-value: 1
+      max-value: 0
+      min-value: 0
+      daily-change: 0
 
-
-  new-country-cost: 80000
-
-  region-claim-base-cost: 10000
-  # The time (in seconds) between claiming a region and incorporating it into the country
-  region-claim-time: 20
-  # How many regions a country can claim in parallel
-  region-parallel-claims-max: 1
-  # base upkeep per region per day
-  region-base-upkeep: 100
-  # Available vars: base (base costs), modifier, regions (total country region count), distance (Euclidean distance to capital home chunk in blocks).
-  region-claim-cost-formula: "base + (base * 0.1 * (distance / 512))"
-  # Available vars: base (base costs), regions (total country region count), distance (Euclidean distance to capital home chunk in blocks).
-  region-upkeep-formula: "base + (base * 0.1 * (distance / 512))"
 
 protection:
   containers:
@@ -182,8 +220,8 @@ protection:
     - PHANTOM
     - PILLAGER
     - RAVAGER
-    - VINDICATOR
     - ENDERMAN
+    - VINDICATOR
   animals:
     - CHICKEN
     - COW
@@ -199,76 +237,3 @@ settlement-chunks:
     map-icon: "F"
     map-icon-color: "§f"
     max-per-settlement: 1
-
-
-
-base_vanilla_potions_low_tier:
-  timelimit: 7200
-  random-descriptions:
-    - ""
-  order-items:
-    terrain:
-      materials:
-        - POTION:SWIFTNESS
-        - POTION:SLOWNESS
-        - POTION:POISON
-        - POTION:WEAKNESS
-      unitsize: 1
-      units: 4-27
-      
-base_custom_potions_low_tier:
-  timelimit: 7200
-  random-descriptions:
-    - ""
-  order-items:
-    terrain:
-      materials:
-        - "hunger1"
-        - "withering1"
-        - "luck1"
-        - "glowing1"
-      unitsize: 1
-      units: 4-27
-      
-splash_vanilla_potions_low_tier:
-  timelimit: 7200
-  random-descriptions:
-    - ""
-  order-items:
-    terrain:
-      materials:
-        - SPLASH_POTION:SWIFTNESS
-        - SPLASH_POTION:SLOWNESS
-        - SPLASH_POTION:POISON
-        - SPLASH_POTION:WEAKNESS
-      unitsize: 1
-      units: 4-27
-      
-splash_custom_potions_low_tier:
-  timelimit: 7200
-  random-descriptions:
-    - ""
-  order-items:
-    terrain:
-      materials:
-        - "hunger4"
-        - "withering4"
-        - "luck3"
-        - "glowing3"
-      unitsize: 1
-      units: 4-27
-      
-strong_potions_low_tier:
-  timelimit: 7200
-  random-descriptions:
-    - ""
-  order-items:
-    terrain:
-      materials:
-        - POTION:STRONG_SWIFTNESS
-        - POTION:STRONG_SLOWNESS
-        - POTION:STRONG_POISON
-        - "hunger2"
-        - "withering2"
-      unitsize: 1
-      units: 4-27

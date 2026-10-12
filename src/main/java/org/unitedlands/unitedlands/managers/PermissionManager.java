@@ -15,8 +15,8 @@ import org.unitedlands.unitedlands.classes.LocationMembership;
 import org.unitedlands.unitedlands.classes.PermissionHolder;
 import org.unitedlands.unitedlands.classes.PermissionType;
 import org.unitedlands.unitedlands.classes.Region;
-import org.unitedlands.unitedlands.classes.Settings;
 import org.unitedlands.unitedlands.classes.SettlementChunk;
+import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.classes.events.base.PermissablePlayerActionEvent;
 import org.unitedlands.unitedlands.utils.CoordinateUtils;
 import org.unitedlands.utils.United;
@@ -141,12 +141,10 @@ public class PermissionManager {
                 }
             }
         }
-        return Settings.protectUnclaimedLand;
+        return UnitedLandsConfig.get().general().protectUnclaimedLand();
     }
 
     public boolean hasLocationPermissions(PermissionHolder holder, int membership, PermissionType type) {
-        if (membership == LocationMembership.OWNER || membership == LocationMembership.TRUSTED)
-            return true;
         return (getLocationPermissions(holder, type) & membership) != 0;
     }
 

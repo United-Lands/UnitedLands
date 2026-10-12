@@ -11,10 +11,10 @@ import org.unitedlands.registrars.config.UnitedDynamicSection;
 import org.unitedlands.unitedlands.classes.GeopolAttributeModifier.Mode;
 
 @UnitedConfig(file = "titles.yml")
-public interface TitlesConfig extends UnitedConfigHandler {
+public interface UnitedLandsTitlesConfig extends UnitedConfigHandler {
 
-    static TitlesConfig get() {
-        return UnitedConfigs.get(TitlesConfig.class);
+    static UnitedLandsTitlesConfig get() {
+        return UnitedConfigs.get(UnitedLandsTitlesConfig.class);
     }
 
     @UnitedSection(key = "titles")

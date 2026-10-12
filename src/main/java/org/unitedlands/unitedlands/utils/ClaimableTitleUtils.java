@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.unitedlands.unitedlands.classes.Country;
 import org.unitedlands.unitedlands.classes.Region;
-import org.unitedlands.unitedlands.classes.configs.TitlesConfig;
+import org.unitedlands.unitedlands.classes.configs.UnitedLandsTitlesConfig;
 
 public class ClaimableTitleUtils {
 
@@ -20,7 +20,7 @@ public class ClaimableTitleUtils {
 
     public static ClaimableTitleValidation validateTitle(Country country, String titleName) {
 
-        var titleConfig = TitlesConfig.get().titles().get(titleName);
+        var titleConfig = UnitedLandsTitlesConfig.get().titles().get(titleName);
         
         var ownedRegions = country.getRegions().stream().map(Region::getDefaultName).toList();
         var requiredPrimaryRegions = titleConfig.primaryRegions();

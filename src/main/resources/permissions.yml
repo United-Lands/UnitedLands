@@ -59,6 +59,7 @@ country:
   leader:
     - country.delete
     - country.withdraw
+    - country.bankhistory
     - country.releasesettlement
     - country.manage.ranks.leader
     - country.manage.ranks.other

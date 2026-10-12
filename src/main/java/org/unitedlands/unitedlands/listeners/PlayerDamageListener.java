@@ -50,8 +50,6 @@ public class PlayerDamageListener implements Listener {
 
         var settlementChunk = UnitedLandsDataManager.instance().getSettlementChunk(CoordinateUtils.locationToChunkCoordinates(event.getEntity().getLocation()));
         if (settlementChunk != null) {
-            United.logger().debug("SC: " + settlementChunk.getCoordinates().toCleanString());
-            United.logger().debug("SC PVP: " + settlementChunk.allowPvp());
             if (!settlementChunk.allowPvp()) {
                 cancelAttack(event, attacker, DamageType.PVP);
                 return;

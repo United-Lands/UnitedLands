@@ -5,9 +5,9 @@ import java.util.UUID;
 
 import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
-import org.unitedlands.unitedlands.classes.Settings;
 import org.unitedlands.unitedlands.classes.SettlementChunk;
 import org.unitedlands.unitedlands.classes.commandhandlers.SettlementCommandHandler;
+import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.classes.events.settlement.SettlementPreClaimEvent;
 
 import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
@@ -48,7 +48,7 @@ public class CmdSettlementClaim extends SettlementCommandHandler {
         var region = UnitedLandsDataManager.instance()
                 .getRegion(CoordinateUtils.locationToChunkCenterCoordinates(context.player().getLocation()));
         if (region != null) {
-            if (!region.equals(context.settlement().getRegion()) && !Settings.allowTownClaimsOutsideHomeRegion) {
+            if (!region.equals(context.settlement().getRegion()) && !UnitedLandsConfig.get().general().allowSettlementClaimsOutsideHomeRegion()) {
                 United.messenger().send(context.player(), "player.settlement.claim.outside-of-region");
                 return;
             }

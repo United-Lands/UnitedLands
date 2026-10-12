@@ -18,7 +18,7 @@ import org.unitedlands.unitedlands.classes.PlaytimeRecord;
 import org.unitedlands.unitedlands.classes.Region;
 import org.unitedlands.unitedlands.classes.Settlement;
 import org.unitedlands.unitedlands.classes.SettlementChunk;
-import org.unitedlands.unitedlands.classes.configs.GeneralConfig;
+import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.classes.events.base.PlayerChangeChunkEvent;
 import org.unitedlands.unitedlands.classes.events.cititen.CitizenCreatedEvent;
 import org.unitedlands.unitedlands.classes.events.player.PlayerEnterRegionEvent;
@@ -76,8 +76,8 @@ public class PlayerMovementListener implements Listener {
         }
 
         var playtime = System.currentTimeMillis() - logon;
-        if (playtime < GeneralConfig.get().general().playtimeRecordThreshold() * 1000) {
-            United.logger().debug("Playtime of player " + player.getUniqueId() + " below threshold, skiping.");
+        if (playtime < UnitedLandsConfig.get().general().playtimeRecordThreshold() * 1000) {
+            United.logger().info("Playtime of player " + player.getUniqueId() + " below threshold, skiping.");
             return;
         }
 

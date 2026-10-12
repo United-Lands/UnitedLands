@@ -5,7 +5,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
-import org.unitedlands.unitedlands.classes.Settings;
+import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.utils.CoordinateUtils;
 
@@ -22,8 +22,8 @@ public class MobListener implements Listener {
 
         var creatureType = event.getEntityType().toString();
 
-        var isMonster = Settings.blacklistedMonsters.contains(creatureType);
-        var isAnimal = Settings.blacklistedAnimals.contains(creatureType);
+        var isMonster = UnitedLandsConfig.get().protection().monsters().contains(creatureType);
+        var isAnimal = UnitedLandsConfig.get().protection().animals().contains(creatureType);
 
         if (!isMonster && !isAnimal)
             return;

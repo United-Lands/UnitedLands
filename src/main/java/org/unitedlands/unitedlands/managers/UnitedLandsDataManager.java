@@ -18,15 +18,17 @@ import org.unitedlands.unitedlands.classes.BankRecord;
 import org.unitedlands.unitedlands.classes.Citizen;
 import org.unitedlands.unitedlands.classes.Coordinates;
 import org.unitedlands.unitedlands.classes.Country;
+import org.unitedlands.unitedlands.classes.GeopolAttribute;
 import org.unitedlands.unitedlands.classes.PlaytimeRecord;
 import org.unitedlands.unitedlands.classes.Region;
 import org.unitedlands.unitedlands.classes.RegionIndex;
-import org.unitedlands.unitedlands.classes.Settings;
 import org.unitedlands.unitedlands.classes.Settlement;
 import org.unitedlands.unitedlands.classes.SettlementChunk;
-import org.unitedlands.unitedlands.classes.configs.GeneralConfig;
+import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
+import org.unitedlands.unitedlands.classes.events.country.CountryCreatedEvent;
 import org.unitedlands.unitedlands.classes.events.country.CountryPreRemoveEvent;
 import org.unitedlands.unitedlands.classes.events.country.CountryRemovedEvent;
+import org.unitedlands.unitedlands.classes.events.settlement.SettlementCreatedEvent;
 import org.unitedlands.unitedlands.integrations.Pl3xMap.Pl3xMapRenderer;
 import org.unitedlands.unitedlands.utils.CoordinateUtils;
 import org.unitedlands.utils.United;
@@ -150,10 +152,10 @@ public class UnitedLandsDataManager {
         regionIndex = new RegionIndex();
         // TODO: Add to world bounds to settings
 
-        var worldXMin = Settings.importOffsetX * -1d;
-        var worldXMax = Settings.importOffsetX;
-        var worldZMin = Settings.importOffsetY * -1d;
-        var worldZMax = Settings.importOffsetY;
+        var worldXMin = UnitedLandsConfig.get().importSetting().offsetX() * -1d;
+        var worldXMax = UnitedLandsConfig.get().importSetting().offsetX();
+        var worldZMin = UnitedLandsConfig.get().importSetting().offsetY() * -1d;
+        var worldZMax = UnitedLandsConfig.get().importSetting().offsetY();
 
         United.logger().info(
                 "Using world bounds " + worldXMin + " | " + worldZMin + " - " + worldXMax + " | " + worldZMax,
@@ -173,15 +175,33 @@ public class UnitedLandsDataManager {
 
         // Make sure all geopol objects have the correct attributes
 
+        for (var settlement : settlements.values()) {
+            boolean changed = false;
+
+            for (var key : UnitedLandsConfig.get().geopolAttributeDefaults().settlement().keys()) {
+                if (!settlement.hasAttribute(key)) {
+                    United.logger().info("Settlement " + settlement.getName() + " is missing attribute " + key + ", adding...");
+                    changed = true;
+                    settlement.addAttribute(key, new GeopolAttribute(
+                            UnitedLandsConfig.get().geopolAttributeDefaults().settlement().get(key)));
+                }
+            }
+            if (changed)
+                settlement.save();
+        }
+
         for (var country : countries.values()) {
             boolean changed = false;
-            // Use this for attribute validation, e.g.:
-            // if (country.getAttribute("DIPLOMACY") == null) {
-            //     changed = true;
-            //     country.addAttribute("DIPLOMACY", new GeopolAttribute(100, 0, 100, 0));
-            // }
+            for (var key : UnitedLandsConfig.get().geopolAttributeDefaults().country().keys()) {
+                if (!country.hasAttribute(key)) {
+                    United.logger().info("Country " + country.getName() + " is missing attribute " + key + ", adding...");
+                    changed = true;
+                    country.addAttribute(key,
+                            new GeopolAttribute(UnitedLandsConfig.get().geopolAttributeDefaults().country().get(key)));
+                }
+            }
             if (changed)
-                country.saveAttributes();
+                country.save();
         }
 
     }
@@ -248,6 +268,68 @@ public class UnitedLandsDataManager {
     // **************************************************
     // Settlements
     // **************************************************
+
+    public Settlement createSettlement(String name, Coordinates coords, Location spawn, Region region, Citizen mayor) {
+
+        Settlement settlement = new Settlement();
+        settlement.setUuid(UUID.randomUUID());
+        settlement.setName(name);
+        settlement.setFoundingTimestamp(System.currentTimeMillis());
+        settlement.setWorld(coords.getWorld());
+        settlement.setHomeChunkCoordinates(coords);
+        settlement.setSpawn(spawn);
+        settlement.setVisitorSpawn(spawn);
+
+        if (region != null) {
+
+            settlement.setRegion(region);
+            region.addSettlement(settlement);
+
+            if (region.hasCountry()) {
+                var country = region.getCountry();
+                settlement.setCountry(country);
+                country.addSettlement(settlement);
+            }
+        }
+
+        var chunk = new SettlementChunk();
+        chunk.setUuid(UUID.randomUUID());
+        chunk.setCoordinates(coords);
+        chunk.setWorld(coords.getWorld());
+        chunk.setClaimTimestamp(System.currentTimeMillis());
+        chunk.setSettlement(settlement);
+
+        settlement.addChunk(chunk);
+
+        // Mayor may be null if settlement is created via Admin command
+
+        if (mayor != null) {
+
+            settlement.addCitizen(mayor);
+            settlement.setFounder(mayor.getOfflinePlayer());
+
+            mayor.setSettlement(settlement);
+            mayor.addSettlementRank("mayor");
+            mayor.save();
+
+            UnitedLandsEconomyManager.instance().withdraw(mayor.getUuid(),
+                    UnitedLandsConfig.get().economy().costs().settlement().createCosts(),
+                    "Settlement creation payment");
+        }
+
+        // Add default attributes
+        for (var key : UnitedLandsConfig.get().geopolAttributeDefaults().settlement().keys()) {
+            settlement.addAttribute(key,
+                    new GeopolAttribute(UnitedLandsConfig.get().geopolAttributeDefaults().settlement().get(key)));
+        }
+
+        UnitedLandsDataManager.instance().createSettlementDbData(settlement);
+
+        UnitedLandsEconomyManager.instance().createAccount(settlement.getUuid(), settlement.getName());
+        (new SettlementCreatedEvent(settlement)).callEvent();
+
+        return settlement;
+    }
 
     // Database operations
 
@@ -412,7 +494,7 @@ public class UnitedLandsDataManager {
             return coordinateRegionCache.get(coordinates);
         }
 
-        if (!GeneralConfig.get().general().worlds().contains(coordinates.getWorldName()))
+        if (!UnitedLandsConfig.get().general().worlds().contains(coordinates.getWorldName()))
             return null;
 
         var region = regionIndex.findRegion(coordinates.getX(), coordinates.getZ());
@@ -443,6 +525,56 @@ public class UnitedLandsDataManager {
     // **************************************************
     // Countries
     // **************************************************
+
+    public Country creatCountry(String name, Region region, Settlement capital, Citizen leader) {
+
+        Country country = new Country();
+        country.setUuid(UUID.randomUUID());
+        country.setName(name);
+        country.setWorld(region.getWorld());
+        country.setCapital(capital);
+        country.setFoundingTimestamp(System.currentTimeMillis());
+        country.setSpawn(capital.getSpawn());
+        country.setStrokeColor(UnitedLandsConfig.get().mapRendering().get("country-default").stroke());
+        country.setFillColor(UnitedLandsConfig.get().mapRendering().get("country-default").fill());
+
+        // Leader may be null if country is created via Admin command
+        if (leader != null) {
+
+            country.setFounder(leader.getOfflinePlayer());
+            region.setAdministrator(leader);
+
+            leader.addCountryRank("leader");
+            leader.save();
+
+            UnitedLandsEconomyManager.instance().withdraw(leader.getUuid(),
+                    UnitedLandsConfig.get().economy().costs().country().createCosts(), "Country creation costs");
+
+        }
+
+        country.addSettlement(capital);
+        country.addRegion(region);
+
+        region.setCountry(country);
+        region.saveAndRender();
+
+        capital.setCountry(country);
+        capital.saveAndRender();
+
+        // Add default attributes
+        for (var key : UnitedLandsConfig.get().geopolAttributeDefaults().country().keys()) {
+            country.addAttribute(key,
+                    new GeopolAttribute(UnitedLandsConfig.get().geopolAttributeDefaults().country().get(key)));
+        }
+
+        UnitedLandsDataManager.instance().createCountryDbData(country);
+
+        UnitedLandsEconomyManager.instance().createAccount(country.getUuid(), country.getName());
+
+        (new CountryCreatedEvent(country)).callEvent();
+
+        return country;
+    }
 
     public void removeCountry(Country country) {
 

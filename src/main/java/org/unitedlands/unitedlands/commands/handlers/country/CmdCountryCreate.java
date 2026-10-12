@@ -2,16 +2,13 @@ package org.unitedlands.unitedlands.commands.handlers.country;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.registrars.command.UnitedCommandExecutor;
 import org.unitedlands.unitedlands.classes.Confirmation;
-import org.unitedlands.unitedlands.classes.Country;
-import org.unitedlands.unitedlands.classes.Settings;
-
+import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.utils.United;
@@ -53,48 +50,26 @@ public class CmdCountryCreate implements UnitedCommandExecutor {
             return;
         }
 
-        if (!UnitedLandsEconomyManager.instance().has(citizen.getUuid(), new BigDecimal(Settings.countryCreateCosts))) {
-            United.messenger().send(player, "general-errors.no-funds-player", UnitedLandsEconomyManager.instance().format(Settings.countryCreateCosts));
+        if (!UnitedLandsEconomyManager.instance().has(citizen.getUuid(), new BigDecimal(UnitedLandsConfig.get().economy().costs().country().createCosts()))) {
+            United.messenger().send(player, "general-errors.no-funds-player", 
+            UnitedLandsEconomyManager.instance().format(UnitedLandsConfig.get().economy().costs().country().createCosts()));
             return;
         }
 
         var confirmation = new Confirmation("country");
         confirmation.setRunnable(() -> {
 
-            Country country = new Country();
-            country.setUuid(UUID.randomUUID());
-            country.setName(args[0]);
-            country.setWorld(region.getWorld());
-            country.setCapital(settlement);
-            country.setFoundingTimestamp(System.currentTimeMillis());
-            country.setFounder(player);
-            country.setSpawn(settlement.getSpawn());
-            country.setStrokeColor(Settings.defaultCountryStrokeColour);
-            country.setFillColor(Settings.defaultCountryFillColour);
-
-            country.addSettlement(settlement);
-            country.addRegion(region);
-
-            region.setCountry(country);
-            region.setAdministrator(citizen);
-            region.saveAndRender();
-
-            settlement.setCountry(country);
-            settlement.saveAndRender();
-
-            citizen.addCountryRank("leader");
-            citizen.save();
-
-            UnitedLandsDataManager.instance().createCountryDbData(country);
-
-            UnitedLandsEconomyManager.instance().createAccount(country.getUuid(), country.getName());
-            UnitedLandsEconomyManager.instance().withdraw(citizen.getUuid(), Settings.countryCreateCosts, "Country creation costs");
-
+            var country = UnitedLandsDataManager.instance().creatCountry(args[0], region, settlement, citizen);
+            
             United.messenger().send(player, "player.country.create.player-message", country.getCleanName());
             United.messenger().send(Bukkit.getServer(), "player.country.create.broadcast-message", player.getName(), country.getCleanName(),
                     region.getCleanName());
         })
-                .setTitle(United.messenger().get("player.country.create.create-confirm", args[0], UnitedLandsEconomyManager.instance().format(Settings.countryCreateCosts)))
+                .setTitle(
+                    United.messenger().get("player.country.create.confirm", 
+                    args[0].replace("_", " "), 
+                    settlement.getCleanName(),
+                    UnitedLandsEconomyManager.instance().format(UnitedLandsConfig.get().economy().costs().country().createCosts())))
                 .setSender(player)
                 .setReceiver(player)
                 .send();

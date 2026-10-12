@@ -12,7 +12,7 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
-import org.unitedlands.unitedlands.classes.configs.GeneralConfig.GeopolAttributeDefaults;
+import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig.GeopolAttributeDefaults;
 import org.unitedlands.unitedlands.classes.db.Identifiable;
 import org.unitedlands.unitedlands.classes.interfaces.MetadataHolder;
 import org.unitedlands.unitedlands.classes.metadata.MetaDataField;
@@ -162,9 +162,6 @@ public class GeopolObject implements Identifiable, MetadataHolder {
         metadataSerialized = JsonUtils.serialize(metadata.values());
     }
 
-    public void saveMetadata() {
-    }
-
     public Map<String, GeopolAttribute> getAttributes() {
         if (attributes == null) {
             if (attributesSerialized != null && !attributesSerialized.isEmpty()) {
@@ -200,7 +197,7 @@ public class GeopolObject implements Identifiable, MetadataHolder {
     public GeopolAttribute getAttribute(String key, GeopolAttributeDefaults defaults) {
         var attribute = getAttributes().get(key);
         if (attribute == null && defaults != null) {
-            attribute = new GeopolAttribute(defaults.currentValue(), defaults.minValue(), defaults.maxValue(),
+            attribute = new GeopolAttribute(defaults.display(), defaults.currentValue(), defaults.minValue(), defaults.maxValue(),
                     defaults.dailyChange());
             addAttribute(key, attribute);
         }
@@ -251,9 +248,6 @@ public class GeopolObject implements Identifiable, MetadataHolder {
     public void removeAttribute(String key) {
         attributes.remove(key);
         attributesSerialized = JsonUtils.serialize(attributes);
-    }
-
-    public void saveAttributes() {
     }
 
     public List<GeopolAttributeModifier> getAttributeModifiers() {
@@ -307,8 +301,9 @@ public class GeopolObject implements Identifiable, MetadataHolder {
         attributesModifiersSerialized = JsonUtils.serialize(attributeModifiers);
     }
 
-    public void saveAttributeModifiers() {
-    }
+    public void save() { }
+
+    public void saveAndRender() { }
 
     @Override
     public int hashCode() {

@@ -5,4 +5,4 @@ api-version: 1.18
 description: UnitedLands Core claiming and geopol plugin
 author: Theriel_
 depend: [ UnitedLib ]
-softdepend: [ Vault, Pl3xmap, Towny, PlaceholderAPI ]
+softdepend: [ CMI, Vault, Pl3xmap, Towny, PlaceholderAPI ]

@@ -10,7 +10,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.unitedlands.unitedlands.classes.PermissionType;
-import org.unitedlands.unitedlands.classes.Settings;
+import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.managers.PermissionManager;
 import net.kyori.adventure.text.Component;
 
@@ -65,7 +65,7 @@ public class BlockListener implements Listener {
             return;
 
         var blockType = block.getType().toString();
-        if (Settings.protectedContainers.contains(blockType)) {
+        if (UnitedLandsConfig.get().protection().containers().contains(blockType)) {
             if (!PermissionManager.instance().checkLocationPermissions(player, block.getLocation(),
                     PermissionType.CONTAINER)) {
                 event.setCancelled(true);
@@ -74,7 +74,7 @@ public class BlockListener implements Listener {
             }
         }
 
-        if (Settings.protectedUseBlocks.contains(blockType)) {
+        if (UnitedLandsConfig.get().protection().useBlocks().contains(blockType)) {
             if (!PermissionManager.instance().checkLocationPermissions(player, block.getLocation(),
                     PermissionType.BLOCK_USE)) {
                 event.setCancelled(true);
@@ -83,7 +83,7 @@ public class BlockListener implements Listener {
             }
         }
 
-        if (Settings.protectedSwitchBlocks.contains(blockType) || isSwitchMaterialTagProtected(block.getType())) {
+        if (UnitedLandsConfig.get().protection().switchBlocks().contains(blockType) || isSwitchMaterialTagProtected(block.getType())) {
             if (!PermissionManager.instance().checkLocationPermissions(player, block.getLocation(),
                     PermissionType.SWITCH)) {
                 event.setCancelled(true);
@@ -101,7 +101,7 @@ public class BlockListener implements Listener {
 
         var entity = event.getRightClicked();
         var entityType = entity.getType().toString();
-        if (Settings.protectedInteractEntities.contains(entityType)) {
+        if (UnitedLandsConfig.get().protection().interact().contains(entityType)) {
             if (!PermissionManager.instance().checkLocationPermissions(player, entity.getLocation(),
                     PermissionType.INTERACT)) {
                 event.setCancelled(true);
@@ -113,10 +113,13 @@ public class BlockListener implements Listener {
     }
 
     private boolean isSwitchMaterialTagProtected(Material type) {
-        for (var tag : Settings.protectedSwitchTags) {
-            if (tag.isTagged(type))
-                return true;
-        }
+
+        // TODO: Find implementation for tags from config
+
+        // for (var tag : Settings.protectedSwitchTags) {
+        //     if (tag.isTagged(type))
+        //         return true;
+        // }
         return false;
     }
 

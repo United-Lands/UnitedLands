@@ -2,20 +2,12 @@ package org.unitedlands.unitedlands.commands.handlers.settlement;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.unitedlands.classes.Confirmation;
-import org.unitedlands.unitedlands.classes.Settings;
-import org.unitedlands.unitedlands.classes.Settlement;
-import org.unitedlands.unitedlands.classes.SettlementChunk;
 import org.unitedlands.unitedlands.classes.commandhandlers.SettlementCommandHandler;
-import org.unitedlands.unitedlands.classes.events.settlement.SettlementCreatedEvent;
-
+import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.utils.CoordinateUtils;
@@ -61,74 +53,36 @@ public class CmdSettlementCreate extends SettlementCommandHandler {
         }
 
         if (!UnitedLandsEconomyManager.instance().has(citizen.getUuid(),
-                new BigDecimal(Settings.settlementCreateCosts))) {
-            United.messenger().send(player, "general-errors.no-funds-player", UnitedLandsEconomyManager.instance().format(Settings.settlementCreateCosts));
+                new BigDecimal(UnitedLandsConfig.get().economy().costs().settlement().createCosts()))) {
+            United.messenger().send(player, "general-errors.no-funds-player", 
+                UnitedLandsEconomyManager.instance().format(UnitedLandsConfig.get().economy().costs().settlement().createCosts()));
             return;
         }
 
-        var region = UnitedLandsDataManager.instance()
-                .getRegion(CoordinateUtils.locationToChunkCenterCoordinates(player.getLocation()));
+        var confirmTitle = United.messenger().get("player.settlement.create.confirm",
+                        args[0].replace("_", " "),
+                        UnitedLandsEconomyManager.instance().format(UnitedLandsConfig.get().economy().costs().settlement().createCosts()));
+
+        var region = UnitedLandsDataManager.instance().getRegion(CoordinateUtils.locationToChunkCenterCoordinates(player.getLocation()));
         if (region != null && region.hasCountry()) {
-            United.messenger().send(player, "player.settlement.create.COUNTRY_WARNING", region.getCountry().getCleanName());
+            var countryWarning = United.messenger().get("player.settlement.create.country-warning", region.getCountry().getCleanName());
+            confirmTitle += "<br><br>" + countryWarning;
         }
 
         var confirmation = new Confirmation("settlement");
         confirmation.setRunnable(() -> {
 
-            var world = player.getLocation().getWorld();
-
-            Settlement settlement = new Settlement();
-            settlement.setUuid(UUID.randomUUID());
-            settlement.setName(args[0]);
-            settlement.setFounder(player);
-            settlement.setFoundingTimestamp(System.currentTimeMillis());
-            settlement.setWorld(world);
-            settlement.setHomeChunkCoordinates(chunkCoords);
-            settlement.setSpawn(player.getLocation());
-            settlement.setVisitorSpawn(player.getLocation());
-
-            var regionInfo = "no region";
-            var countryInfo = "no country";
-            if (region != null) {
-                settlement.setRegion(region);
-                region.addSettlement(settlement);
-                regionInfo = region.getCleanName();
-
-                if (region.hasCountry()) {
-                    var country = region.getCountry();
-                    settlement.setCountry(country);
-                    country.addSettlement(settlement);
-                    countryInfo = country.getCleanName();
-                }
-            }
-
-            var chunk = new SettlementChunk();
-            chunk.setUuid(UUID.randomUUID());
-            chunk.setCoordinates(CoordinateUtils.locationToChunkCoordinates(player.getLocation()));
-            chunk.setWorld(world);
-            chunk.setClaimTimestamp(System.currentTimeMillis());
-            chunk.setSettlement(settlement);
-
-            settlement.addChunk(chunk);
-            settlement.addCitizen(citizen);
-            UnitedLandsDataManager.instance().createSettlementDbData(settlement);
-
-            UnitedLandsEconomyManager.instance().createAccount(settlement.getUuid(), settlement.getName());
-            UnitedLandsEconomyManager.instance().withdraw(citizen.getUuid(), Settings.settlementCreateCosts, "Settlement creation payment");
-
-            citizen.setSettlement(settlement);
-            citizen.addSettlementRank("mayor");
-            citizen.save();
+            var settlement = UnitedLandsDataManager.instance().createSettlement(args[0], chunkCoords, player.getLocation(), region, citizen);
 
             United.messenger().send(player, "player.settlement.create.player-message", settlement.getCleanName());
-            United.messenger().send(Bukkit.getServer(), "player.settlement.create.broadcast-message", player.getName(), settlement.getCleanName(), regionInfo, countryInfo);
-
-            (new SettlementCreatedEvent(settlement)).callEvent();
-
+            United.messenger().broadcast("player.settlement.create.broadcast-message", 
+                player.getName(), 
+                settlement.getCleanName(), 
+                settlement.hasRegion() ? settlement.getRegion().getCleanName() : "-", 
+                settlement.hasCountry() ? settlement.getCountry().getCleanName() : "-"
+            );
         })
-                .setTitle("player.settlement.create.CONFIRM")
-                .setReplacements(Map.of("settlement", args[0], "cost",
-                        UnitedLandsEconomyManager.instance().format(Settings.settlementCreateCosts)))
+                .setTitle(confirmTitle)
                 .setSender(player)
                 .setReceiver(player)
                 .send();

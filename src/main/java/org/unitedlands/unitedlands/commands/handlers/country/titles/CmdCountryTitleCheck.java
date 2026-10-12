@@ -6,7 +6,7 @@ import java.util.List;
 import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.unitedlands.classes.commandhandlers.CountryCommandHandler;
-import org.unitedlands.unitedlands.classes.configs.TitlesConfig;
+import org.unitedlands.unitedlands.classes.configs.UnitedLandsTitlesConfig;
 import org.unitedlands.unitedlands.utils.ClaimableTitleUtils;
 import org.unitedlands.utils.United;
 
@@ -22,7 +22,7 @@ public class CmdCountryTitleCheck extends CountryCommandHandler {
     @Override
     public List<String> handleTab(CommandSender sender, String[] args) {
         if (args.length == 1)
-            return TitlesConfig.get().titles().keys().stream().toList();
+            return UnitedLandsTitlesConfig.get().titles().keys().stream().toList();
         return null;
     }
 
@@ -34,7 +34,7 @@ public class CmdCountryTitleCheck extends CountryCommandHandler {
             return;
         }
 
-        var titleConfig = TitlesConfig.get().titles().get(args[0]);
+        var titleConfig = UnitedLandsTitlesConfig.get().titles().get(args[0]);
         if (titleConfig == null) {
             return;
         }

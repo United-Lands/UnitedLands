@@ -271,42 +271,42 @@ public class SettlementChunk implements Identifiable, PermissionHolder, Coordina
 
     @Override
     public int getBreakPermissions() {
-        if (breakPermissions == 0)
+        if (breakPermissions == LocationMembership.UNSET)
             return settlement.getBreakPermissions();
         return breakPermissions;
     }
 
     @Override
     public int getPlacePermissions() {
-        if (placePermissions == 0)
+        if (placePermissions == LocationMembership.UNSET)
             return settlement.getPlacePermissions();
         return placePermissions;
     }
 
     @Override
     public int getContainerPermissions() {
-        if (containerPermissions == 0)
+        if (containerPermissions == LocationMembership.UNSET)
             return settlement.getContainerPermissions();
         return containerPermissions;
     }
 
     @Override
     public int getSwitchPermissions() {
-        if (switchPermissions == 0)
+        if (switchPermissions == LocationMembership.UNSET)
             return settlement.getSwitchPermissions();
         return switchPermissions;
     }
 
     @Override
     public int getBlockUsePermissions() {
-        if (blockUsePermissions == 0)
+        if (blockUsePermissions == LocationMembership.UNSET)
             return settlement.getBlockUsePermissions();
         return blockUsePermissions;
     }
 
     @Override
     public int getInteractPermissions() {
-        if (interactPermissions == 0)
+        if (interactPermissions == LocationMembership.UNSET)
             return settlement.getInteractPermissions();
         return interactPermissions;
     }

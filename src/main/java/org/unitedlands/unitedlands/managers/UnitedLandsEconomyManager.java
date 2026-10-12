@@ -10,7 +10,7 @@ import org.unitedlands.unitedlands.UnitedLands;
 import org.unitedlands.unitedlands.classes.BankRecord;
 import org.unitedlands.unitedlands.classes.Citizen;
 import org.unitedlands.unitedlands.classes.Settlement;
-import org.unitedlands.unitedlands.classes.configs.GeneralConfig;
+import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.integrations.economy.IEconomyProvider;
 import org.unitedlands.unitedlands.integrations.economy.VaultEconomyProvider;
 import org.unitedlands.utils.United;
@@ -134,18 +134,20 @@ public class UnitedLandsEconomyManager {
 
     public boolean depositAndTax(Citizen citizen, double amount, String reason) {
 
-        if (GeneralConfig.get().economy().taxes().get("settlement").taxMode().equals("INCOME"))
-        {
+        if (UnitedLandsConfig.get().economy().taxes().get("settlement").taxMode().equals("INCOME")) {
             if (!citizen.hasSettlement()) {
                 return deposit(citizen.getUuid(), amount, reason);
             } else {
                 var percent = citizen.getSettlement().getTax();
 
                 var settlementShare = amount * percent;
-                var citizenShare = amount - settlementShare;
 
-                depositAndTax(citizen.getSettlement(), settlementShare, "Income tax");
-                return deposit(citizen.getUuid(), citizenShare, reason);
+                // Do two separate transactions so that the bankhistory properly shows taxes
+                deposit(citizen.getUuid(), amount, reason);
+                withdraw(citizen.getUuid(), settlementShare, "Tax");
+
+                depositAndTax(citizen.getSettlement(), settlementShare, "Tax");
+                return true;
             }
         } else {
             return deposit(citizen.getUuid(), amount, reason);
@@ -154,8 +156,7 @@ public class UnitedLandsEconomyManager {
 
     public boolean depositAndTax(Settlement settlement, double amount, String reason) {
 
-        if (GeneralConfig.get().economy().taxes().get("country").taxMode().equals("INCOME"))
-        {
+        if (UnitedLandsConfig.get().economy().taxes().get("country").taxMode().equals("INCOME")) {
             if (!settlement.hasCountry()) {
                 return deposit(settlement.getUuid(), amount, reason);
             } else {
@@ -164,19 +165,25 @@ public class UnitedLandsEconomyManager {
                 var percent = 0.1f; // settlement.getCountry().getTax();
 
                 var countryShare = amount * percent;
-                var settlementShare = amount - countryShare;
 
-                deposit(settlement.getCountry().getUuid(), countryShare, "Income tax");
-                
-                return deposit(settlement.getUuid(), settlementShare, reason);
+                deposit(settlement.getUuid(), amount, reason);
+                withdraw(settlement.getUuid(), countryShare, "Tax");
+
+                deposit(settlement.getCountry().getUuid(), countryShare, "Tax");
+                return true;
             }
         } else {
             return deposit(settlement.getUuid(), amount, reason);
         }
     }
 
-
     // Logging
+
+    // Method for writing records from external plugins that would otherwise not
+    // show up in UnitedLands bank history
+    public void addVirtualBankRecord(UUID objectId, BigDecimal amount, String message) {
+        saveBankRecord(objectId, amount, message);
+    }
 
     private void saveBankRecord(UUID objectId, BigDecimal amount, String message) {
         var record = new BankRecord(objectId, amount.doubleValue(), message);

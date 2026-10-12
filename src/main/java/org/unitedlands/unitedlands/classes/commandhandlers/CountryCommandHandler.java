@@ -8,7 +8,7 @@ import org.bukkit.entity.Player;
 import org.unitedlands.registrars.command.UnitedCommandExecutor;
 import org.unitedlands.unitedlands.classes.Citizen;
 import org.unitedlands.unitedlands.classes.Country;
-import org.unitedlands.unitedlands.classes.configs.GeneralConfig;
+import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.managers.PermissionManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.utils.United;
@@ -33,7 +33,7 @@ public class CountryCommandHandler implements UnitedCommandExecutor {
 
         var player = (Player) sender;
 
-        if (!GeneralConfig.get().general().worlds().contains(player.getLocation().getWorld().getName())) {
+        if (!UnitedLandsConfig.get().general().worlds().contains(player.getLocation().getWorld().getName())) {
             United.messenger().send(player, "general-errors.wrong-world");
             return null;
         }

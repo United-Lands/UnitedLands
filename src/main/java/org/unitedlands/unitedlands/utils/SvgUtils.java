@@ -1,6 +1,6 @@
 package org.unitedlands.unitedlands.utils;
 
-import org.unitedlands.unitedlands.classes.Settings;
+import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.w3c.dom.*;
 import javax.xml.parsers.*;
 import java.io.File;
@@ -54,9 +54,9 @@ public class SvgUtils {
     // separators)
     private static double[] parsePoints(String pointsAttr) {
 
-        double scaling = Settings.importScale;
-        double xOffset = Settings.importOffsetX;
-        double yOffset = Settings.importOffsetY;
+        double scaling = UnitedLandsConfig.get().importSetting().scale();
+        double xOffset = UnitedLandsConfig.get().importSetting().offsetX();
+        double yOffset = UnitedLandsConfig.get().importSetting().offsetY();
 
         // Normalize: replace commas with spaces, collapse whitespace
         String cleaned = pointsAttr.trim().replaceAll("[,\\s]+", " ");

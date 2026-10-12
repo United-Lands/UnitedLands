@@ -17,7 +17,6 @@ import org.bukkit.scoreboard.ScoreboardManager;
 import org.unitedlands.unitedlands.UnitedLands;
 import org.unitedlands.unitedlands.classes.Coordinates;
 import org.unitedlands.unitedlands.classes.Region;
-import org.unitedlands.unitedlands.classes.Settings;
 import org.unitedlands.unitedlands.classes.Settlement;
 import org.unitedlands.unitedlands.utils.CoordinateUtils;
 
@@ -151,7 +150,7 @@ public class DisplayManager {
             if (chunk.isForSale())
                 return "$";
             if (chunk.getChunkType() != null)
-                return Settings.settlementChunkTypes.get(chunk.getChunkType()).icon;
+                return null; //Settings.settlementChunkTypes.get(chunk.getChunkType()).icon;
             return "+";
         }
         return "-";

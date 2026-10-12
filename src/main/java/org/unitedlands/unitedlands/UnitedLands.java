@@ -5,8 +5,6 @@ import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.unitedlands.classes.ConfigFile;
 import org.unitedlands.services.UnitedLanguageService;
-import org.unitedlands.unitedlands.classes.Settings;
-
 import org.unitedlands.unitedlands.integrations.Pl3xMap.Pl3xMapRenderer;
 import org.unitedlands.unitedlands.listeners.BlockListener;
 import org.unitedlands.unitedlands.listeners.ChatListener;
@@ -23,6 +21,7 @@ import org.unitedlands.unitedlands.managers.DisplayManager;
 import org.unitedlands.unitedlands.managers.IntegrationManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.unitedlands.schedulers.NewDayScheduler;
+import org.unitedlands.unitedlands.utils.FontUtils;
 import org.unitedlands.unitedlands.utils.UnitedLanguageServiceImplementation;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.managers.PermissionManager;
@@ -33,7 +32,6 @@ import org.unitedlands.libs.ormlite.logger.NullLogBackend;
 public class UnitedLands extends JavaPlugin {
 
     private static UnitedLands instance;
-    private static Settings settings;
 
     private ConfigFile permissionConfig;
 
@@ -52,7 +50,6 @@ public class UnitedLands extends JavaPlugin {
 
     private NewDayScheduler newDayScheduler;
 
-
     private UnitedLanguageService languageProvider;
 
     @Override
@@ -66,8 +63,6 @@ public class UnitedLands extends JavaPlugin {
 
         permissionConfig = new ConfigFile(this, "permissions.yml");
 
-        Settings.loadSettings(getConfig());
-
         loadManagers();
         registerListeners();
 
@@ -76,6 +71,8 @@ public class UnitedLands extends JavaPlugin {
         languageProvider = new UnitedLanguageServiceImplementation();
         Bukkit.getServicesManager().register(UnitedLanguageService.class, languageProvider, this,
                 ServicePriority.Highest);
+
+        FontUtils.load(this);
 
         getLogger().info("UnitedLands initialized.");
     }
@@ -116,10 +113,6 @@ public class UnitedLands extends JavaPlugin {
 
     public static UnitedLands instance() {
         return instance;
-    }
-
-    public static Settings getSettings() {
-        return settings;
     }
 
     public ConfigFile getPermissionConfig() {

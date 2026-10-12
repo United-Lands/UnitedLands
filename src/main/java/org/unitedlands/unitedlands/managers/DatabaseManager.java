@@ -9,7 +9,7 @@ import org.unitedlands.unitedlands.classes.PlaytimeRecord;
 import org.unitedlands.unitedlands.classes.Region;
 import org.unitedlands.unitedlands.classes.Settlement;
 import org.unitedlands.unitedlands.classes.SettlementChunk;
-import org.unitedlands.unitedlands.classes.configs.GeneralConfig;
+import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.classes.db.BankRecordService;
 import org.unitedlands.unitedlands.classes.db.CitizenService;
 import org.unitedlands.unitedlands.classes.db.CountryService;
@@ -48,18 +48,18 @@ public class DatabaseManager {
 
         // instance = this;
 
-        String host = GeneralConfig.get().mysql().host();
-        int port = GeneralConfig.get().mysql().port();
-        String database = GeneralConfig.get().mysql().database();
-        String username = GeneralConfig.get().mysql().username();
-        String password = GeneralConfig.get().mysql().password();
+        String host = UnitedLandsConfig.get().mysql().host();
+        int port = UnitedLandsConfig.get().mysql().port();
+        String database = UnitedLandsConfig.get().mysql().database();
+        String username = UnitedLandsConfig.get().mysql().username();
+        String password = UnitedLandsConfig.get().mysql().password();
 
         String jdbcUrl = String.format(
                 "jdbc:mysql://%s:%d/%s?useSSL=%s&serverTimezone=UTC&allowPublicKeyRetrieval=true",
                 host,
                 port,
                 database,
-                GeneralConfig.get().developerMode() ? "false" : "true");
+                UnitedLandsConfig.get().developerMode() ? "false" : "true");
 
         try {
 
@@ -107,7 +107,7 @@ public class DatabaseManager {
 
     private void verifySchemaVersion() throws SQLException {
 
-        if (GeneralConfig.get().developerMode())
+        if (UnitedLandsConfig.get().developerMode())
             return;
 
         Dao<SchemaVersion, Integer> versionDao = getDao(SchemaVersion.class);
@@ -124,7 +124,7 @@ public class DatabaseManager {
     private void applyMigrations(Dao<SchemaVersion, Integer> versionDao, SchemaVersion version) throws SQLException {
         // Example for future migrations on production server
 
-        if (GeneralConfig.get().developerMode())
+        if (UnitedLandsConfig.get().developerMode())
             return;
 
         if (version.getVersion() < 2) {
@@ -183,7 +183,7 @@ public class DatabaseManager {
     public <T, ID> Dao<T, ID> getDao(Class<T> clazz) throws SQLException {
 
         // In developer mode, drop the table if it exists
-        if (GeneralConfig.get().developerMode())
+        if (UnitedLandsConfig.get().developerMode())
             TableUtils.dropTable(connectionSource, clazz, true);
 
         TableUtils.createTableIfNotExists(connectionSource, clazz);

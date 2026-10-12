@@ -4,13 +4,17 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.awt.Color;
 import java.math.BigDecimal;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
+import org.unitedlands.unitedlands.UnitedLands;
+import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.utils.ColorUtils;
 import org.unitedlands.unitedlands.utils.CostUtils;
@@ -110,7 +114,7 @@ public class Settlement extends GeopolObject implements PermissionHolder {
     public Integer getStrokeColor() {
         if (hasCountry())
             return getCountry().getStrokeColor();
-        return strokeColor != null ? strokeColor : Settings.defaultSettlementStrokeColour;
+        return strokeColor != null ? strokeColor : UnitedLandsConfig.get().mapRendering().get("settlement-default").stroke();
     }
 
     public void setStrokeColor(String hexColor) {
@@ -128,7 +132,7 @@ public class Settlement extends GeopolObject implements PermissionHolder {
     public Integer getFillColor() {
         if (hasCountry())
             return getCountry().getFillColor();
-        return fillColor != null ? fillColor : Settings.defaultSettlementFillColour;
+        return fillColor != null ? fillColor : UnitedLandsConfig.get().mapRendering().get("settlement-default").fill();
     }
 
     public void setFillColor(String hexColor) {
@@ -543,13 +547,30 @@ public class Settlement extends GeopolObject implements PermissionHolder {
     }
 
     public double getUpkeep() {
-        return CostUtils.getSettlementUpkeep(this);
+        // Upkeep calculation mus always occur on the main thread due to event handling.
+        // This getter may get called asynchronously (e.g. in map rendering), so make
+        // sure to always have it execute on the main thread.
+        if (Bukkit.isPrimaryThread()) {
+            return CostUtils.getSettlementUpkeep(this);
+        }
+        try {
+            return Bukkit.getScheduler()
+                    .callSyncMethod(UnitedLands.instance(), () -> CostUtils.getSettlementUpkeep(this))
+                    .get();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return CostUtils.getSettlementUpkeep(this);
+        } catch (ExecutionException e) {
+            return CostUtils.getSettlementUpkeep(this);
+        }
     }
 
+    @Override 
     public void save() {
         UnitedLandsDataManager.instance().updateSettlementDbData(this, false);
     }
 
+    @Override 
     public void saveAndRender() {
         UnitedLandsDataManager.instance().updateSettlementDbData(this, true);
     }

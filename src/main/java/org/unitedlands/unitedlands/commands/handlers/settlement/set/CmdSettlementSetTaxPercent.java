@@ -3,9 +3,8 @@ package org.unitedlands.unitedlands.commands.handlers.settlement.set;
 import java.util.List;
 import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
-import org.unitedlands.unitedlands.classes.Settings;
 import org.unitedlands.unitedlands.classes.commandhandlers.SettlementCommandHandler;
-
+import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.utils.United;
 
@@ -36,22 +35,26 @@ public class CmdSettlementSetTaxPercent extends SettlementCommandHandler {
 
         var currTax = context.settlement().getTax();
         if (context.settlement().useTaxPercent()) {
-            if (currTax < Settings.settlementMinTaxPercent) {
-                United.messenger().send(context.player(), "player.settlement.settax.below-min", String.format("%.2f%%", Settings.settlementMinTaxPercent * 100));
-                context.settlement().setTax(Settings.settlementMinTaxPercent);
-            } else if (currTax > Settings.settlementMaxTaxPercent) {
-                United.messenger().send(context.player(), "player.settlement.settax.above-max", String.format("%.2f%%", Settings.settlementMaxTaxPercent * 100));
-                context.settlement().setTax(Settings.settlementMaxTaxPercent);
+            if (currTax < UnitedLandsConfig.get().economy().taxes().get("settlement").minPercent()) {
+                United.messenger().send(context.player(), "player.settlement.settax.below-min", String.format("%.2f%%", 
+                    UnitedLandsConfig.get().economy().taxes().get("settlement").minPercent() * 100));
+                context.settlement().setTax((float)UnitedLandsConfig.get().economy().taxes().get("settlement").minPercent());
+            } else if (currTax > UnitedLandsConfig.get().economy().taxes().get("settlement").maxPercent()) {
+                United.messenger().send(context.player(), "player.settlement.settax.above-max", String.format("%.2f%%", 
+                    UnitedLandsConfig.get().economy().taxes().get("settlement").maxPercent() * 100));
+                context.settlement().setTax((float)UnitedLandsConfig.get().economy().taxes().get("settlement").maxPercent());
 
             }
         } else {
-            if (currTax < Settings.settlementMinTaxAmount) {
-                United.messenger().send(context.player(), "player.settlement.settax.below-min", UnitedLandsEconomyManager.instance().format(Settings.settlementMinTaxAmount));
-                context.settlement().setTax((float) Settings.settlementMinTaxAmount);
+            if (currTax < UnitedLandsConfig.get().economy().taxes().get("settlement").minAmount()) {
+                United.messenger().send(context.player(), "player.settlement.settax.below-min", 
+                    UnitedLandsEconomyManager.instance().format(UnitedLandsConfig.get().economy().taxes().get("settlement").minAmount()));
+                context.settlement().setTax((float) UnitedLandsConfig.get().economy().taxes().get("settlement").minAmount());
 
-            } else if (currTax > Settings.settlementMaxTaxAmount) {
-                United.messenger().send(context.player(), "player.settlement.settax.above-max", UnitedLandsEconomyManager.instance().format(Settings.settlementMaxTaxAmount));
-                context.settlement().setTax((float) Settings.settlementMaxTaxAmount);
+            } else if (currTax > UnitedLandsConfig.get().economy().taxes().get("settlement").maxAmount()) {
+                United.messenger().send(context.player(), "player.settlement.settax.above-max", 
+                    UnitedLandsEconomyManager.instance().format(UnitedLandsConfig.get().economy().taxes().get("settlement").maxAmount()));
+                context.settlement().setTax((float) UnitedLandsConfig.get().economy().taxes().get("settlement").maxAmount());
             }
         }
 

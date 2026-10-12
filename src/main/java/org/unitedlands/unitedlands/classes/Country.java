@@ -6,10 +6,13 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
+import org.unitedlands.unitedlands.UnitedLands;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.utils.ColorUtils;
 import org.unitedlands.unitedlands.utils.CostUtils;
@@ -219,13 +222,30 @@ public class Country extends GeopolObject {
     }
 
     public double getUpkeep() {
-        return CostUtils.getCountryUpkeep(this);
+        // Upkeep calculation mus always occur on the main thread due to event handling.
+        // This getter may get called asynchronously (e.g. in map rendering), so make
+        // sure to always have it execute on the main thread.
+        if (Bukkit.isPrimaryThread()) {
+            return CostUtils.getCountryUpkeep(this);
+        }
+        try {
+            return Bukkit.getScheduler()
+                    .callSyncMethod(UnitedLands.instance(), () -> CostUtils.getCountryUpkeep(this))
+                    .get();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return CostUtils.getCountryUpkeep(this);
+        } catch (ExecutionException e) {
+            return CostUtils.getCountryUpkeep(this);
+        }
     }
 
+    @Override 
     public void save() {
         UnitedLandsDataManager.instance().updateCountryDbData(this, false);
     }
 
+    @Override 
     public void saveAndRender() {
         UnitedLandsDataManager.instance().updateCountryDbData(this, true);
     }

@@ -1,13 +1,10 @@
 package org.unitedlands.unitedlands.commands.handlers.settlementchunk;
 
 import java.util.List;
-import java.util.stream.Collectors;
-
 import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
-import org.unitedlands.unitedlands.classes.Settings;
 import org.unitedlands.unitedlands.classes.commandhandlers.SettlementChunkCommandHandler;
-
+import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.utils.United;
 
 @UnitedSubCommand(
@@ -22,7 +19,7 @@ public class CmdSettlementChunkType extends SettlementChunkCommandHandler {
     @Override
     public List<String> handleTab(CommandSender sender, String[] args) {
         if (args.length == 1)
-            return Settings.settlementChunkTypes.keySet().stream().collect(Collectors.toList());
+            return UnitedLandsConfig.get().settlementChunks().keys().stream().toList();
         return null;
     }
 
@@ -39,16 +36,16 @@ public class CmdSettlementChunkType extends SettlementChunkCommandHandler {
             return;
 
         var type = args[0];
-        if (!Settings.settlementChunkTypes.containsKey(type)) {
+        if (!UnitedLandsConfig.get().settlementChunks().has(type)) {
             United.messenger().send(context.player(), "player.settlementchunk.settype.unknown-type", type);
             return;
         }
 
-        var typeSettings = Settings.settlementChunkTypes.get(type);
-        if (typeSettings.maxPerSettlement != -1) {
+        var typeSettings = UnitedLandsConfig.get().settlementChunks().get(type);
+        if (typeSettings.maxPerSettlement() != -1) {
             var chunksOfType = context.settlementChunk().getSettlement().getChunksOfType(type);
-            if (chunksOfType.size() >= typeSettings.maxPerSettlement) {
-                United.messenger().send(context.player(), "player.settlementchunk.settype.too-many-of-type", type, String.valueOf(typeSettings.maxPerSettlement));
+            if (chunksOfType.size() >= typeSettings.maxPerSettlement()) {
+                United.messenger().send(context.player(), "player.settlementchunk.settype.too-many-of-type", type, String.valueOf(typeSettings.maxPerSettlement()));
                 return;
             }
         }

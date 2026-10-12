@@ -10,6 +10,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.scheduler.BukkitTask;
 import org.unitedlands.unitedlands.UnitedLands;
+import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.classes.events.region.RegionClaimedEvent;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.utils.PolygonUtils;
@@ -400,13 +401,13 @@ public class Region extends GeopolObject implements PermissionHolder {
     public Integer getFillColor() {
         if (hasCountry())
             return country.getFillColor();
-        return Settings.defaultRegionFillColour;
+        return UnitedLandsConfig.get().mapRendering().get("region-default").fill();
     }
 
     public Integer getStrokeColor() {
         if (hasCountry())
             return country.getStrokeColor();
-        return Settings.defaultRegionStrokeColour;
+        return UnitedLandsConfig.get().mapRendering().get("region-default").stroke();
     }
 
     public int getDebugStrokeColor() {
@@ -449,10 +450,12 @@ public class Region extends GeopolObject implements PermissionHolder {
         return PolygonUtils.isPointInPolygon(regionPolygon, px, py);
     }
 
+    @Override 
     public void save() {
         UnitedLandsDataManager.instance().updateRegionDbData(this, false);
     }
 
+    @Override 
     public void saveAndRender() {
         UnitedLandsDataManager.instance().updateRegionDbData(this, true);
     }

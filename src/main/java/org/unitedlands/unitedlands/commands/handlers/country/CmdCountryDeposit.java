@@ -39,7 +39,7 @@ public class CmdCountryDeposit extends CountryCommandHandler {
         try {
             amount = new BigDecimal(args[0]);
         } catch (Exception ex) {
-            United.messenger().send(context.player(), "general-errors.wrong-number-format", args[1]);
+            United.messenger().send(context.player(), "general-errors.wrong-number-format", args[0]);
             return;
         }
 
