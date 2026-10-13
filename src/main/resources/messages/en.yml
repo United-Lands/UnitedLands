@@ -210,6 +210,11 @@ player:
       success: <aqua>You have forfeited your claims to region {1}.</aqua>
     withdraw:
       success: <aqua>You took {1} from the country bank.</aqua>
+  money:
+    balance: "<gray><b>{1}</b>'s Balance: {2}</gray>"
+    pay:
+      received: "<aqua>You received {1} from {2}.</aqua>"
+      success: "<aqua>You paid {1} to {2}.</aqua>"
   region:
     info:
       not-in-region: <yellow>You're not in a region.</yellow>

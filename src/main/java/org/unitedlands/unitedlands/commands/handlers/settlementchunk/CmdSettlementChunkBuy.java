@@ -37,7 +37,7 @@ public class CmdSettlementChunkBuy extends SettlementChunkCommandHandler {
             return;
         }
 
-        // TODO: Check for foreigners
+        // TODO: Check for foreigners?
 
         if (!UnitedLandsEconomyManager.instance().has(context.citizen().getUuid(),
                 new BigDecimal(context.settlementChunk().getSalePrice()))) {

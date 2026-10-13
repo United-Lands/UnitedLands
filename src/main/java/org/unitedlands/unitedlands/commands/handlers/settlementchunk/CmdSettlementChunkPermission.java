@@ -8,14 +8,7 @@ import org.unitedlands.unitedlands.classes.commandhandlers.SettlementChunkComman
 
 import org.unitedlands.utils.United;
 
-@UnitedSubCommand(
-        parent = CmdSettlementChunk.class,
-        name = "permission",
-        description = "Sets settlement chunk permissions",
-        usage = "/settlementchunk permission <permission> <group> <on|off>",
-        playerOnly = true,
-        catchAll = true
-)
+@UnitedSubCommand(parent = CmdSettlementChunk.class, name = "permission", description = "Sets settlement chunk permissions", usage = "/settlementchunk permission <permission> <group> <on|off>", playerOnly = true, catchAll = true)
 public class CmdSettlementChunkPermission extends SettlementChunkCommandHandler {
 
     List<String> permissions = List.of("break", "place", "containers", "switch", "block_use", "interact");
@@ -44,9 +37,15 @@ public class CmdSettlementChunkPermission extends SettlementChunkCommandHandler 
             return;
         }
 
-        var context = validate(sender, "settlement.plot.permissions");
+        var context = validate(sender, null);
         if (context == null)
             return;
+
+        // Command may be performed by 
+        if (!(isOwner(context.settlementChunk(), context.citizen())
+                || hasPermission("settlement.plot.permissions", context.citizen(), context.settlementChunk()))) {
+            return;
+        }
 
         int membership = 0;
         switch (args[1]) {
@@ -127,7 +126,8 @@ public class CmdSettlementChunkPermission extends SettlementChunkCommandHandler 
 
         context.settlementChunk().save();
 
-        United.messenger().send(context.player(), "player.settlementchunk.permission.success", args[0], args[1], add ? "<green>on</green>" : "<red>off</red>");
+        United.messenger().send(context.player(), "player.settlementchunk.permission.success", args[0], args[1],
+                add ? "<green>on</green>" : "<red>off</red>");
     }
 
 }

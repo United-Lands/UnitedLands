@@ -8,7 +8,7 @@ import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.unitedlands.classes.GeopolAttributeModifier;
 import org.unitedlands.unitedlands.classes.GeopolAttributeModifier.Mode;
 import org.unitedlands.unitedlands.classes.commandhandlers.CountryAdminCommandHandler;
-
+import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.utils.United;
 
@@ -16,7 +16,8 @@ import org.unitedlands.utils.United;
         parent = CmdAdminCountryModifiers.class,
         name = "add",
         description = "Add a country modifier",
-        usage = "/ula country modifiers add <country_name> <attr_key> <mod_key> <mode> <value_mod> <max_value_mod> <min_value_mod> <daily_change_mod>"
+        usage = "/ula country modifiers add <country_name> <attr_key> <mod_key> <mode> <value_mod> <max_value_mod> <min_value_mod> <daily_change_mod>",
+        catchAll = true
 )
 
 public class CmdAdminCountryModifiersAdd extends CountryAdminCommandHandler {
@@ -25,6 +26,8 @@ public class CmdAdminCountryModifiersAdd extends CountryAdminCommandHandler {
     public List<String> handleTab(CommandSender semder, String[] args) {
         if (args.length == 1) {
             return UnitedLandsDataManager.instance().getCountryNames();
+        } else if (args.length == 2) {
+            return UnitedLandsConfig.get().geopolAttributeDefaults().country().keys().stream().toList();
         } else if (args.length == 4) {
             return Arrays.stream(Mode.values()).map(Enum::toString).toList();
         }

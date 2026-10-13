@@ -29,6 +29,11 @@ public class CmdAdminCountryAttributesList extends CountryAdminCommandHandler {
     @Override
     public void handleCommand(CommandSender sender, String[] args) {
 
+        if (args.length == 0) {
+            sendUsage(sender);
+            return;
+        }
+
         var country = getCountry(sender, args[0]);
         if (country == null) {
             return;

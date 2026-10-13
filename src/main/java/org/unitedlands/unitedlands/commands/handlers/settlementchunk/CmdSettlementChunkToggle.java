@@ -7,14 +7,7 @@ import org.unitedlands.unitedlands.classes.commandhandlers.SettlementChunkComman
 
 import org.unitedlands.utils.United;
 
-@UnitedSubCommand(
-        parent = CmdSettlementChunk.class,
-        name = "toggle",
-        description = "Sets settlement chunk toggles",
-        usage = "/settlementchunk toggle <toggle> <on|off>",
-        playerOnly = true,
-        catchAll = true
-)
+@UnitedSubCommand(parent = CmdSettlementChunk.class, name = "toggle", description = "Sets settlement chunk toggles", usage = "/settlementchunk toggle <toggle> <on|off>", playerOnly = true, catchAll = true)
 public class CmdSettlementChunkToggle extends SettlementChunkCommandHandler {
 
     List<String> fields = List.of("pvp", "monsters", "animals", "fire", "explosions");
@@ -40,9 +33,14 @@ public class CmdSettlementChunkToggle extends SettlementChunkCommandHandler {
             return;
         }
 
-        var context = validate(sender, "settlement.plot.toggle");
+        var context = validate(sender, null);
         if (context == null)
             return;
+
+        if (!(isOwner(context.settlementChunk(), context.citizen())
+                || hasPermission("settlement.plot.permissions", context.citizen(), context.settlementChunk()))) {
+            return;
+        }
 
         Boolean enable = null;
         if (args[1].equalsIgnoreCase("on")) {
@@ -74,7 +72,8 @@ public class CmdSettlementChunkToggle extends SettlementChunkCommandHandler {
 
         context.settlementChunk().save();
 
-        United.messenger().send(context.player(), "player.settlementchunk.toggle.success", args[0], enable != null ? (enable == true ? "<green>on</green>" : "<red>off</red>") : "<yellow>unset</yellow>");
+        United.messenger().send(context.player(), "player.settlementchunk.toggle.success", args[0],
+                enable != null ? (enable == true ? "<green>on</green>" : "<red>off</red>") : "<yellow>unset</yellow>");
     }
 
 }

@@ -28,7 +28,7 @@ public class CmdSettlementChunkAbandon extends SettlementChunkCommandHandler {
         if (context == null)
             return;
 
-        if (!context.settlementChunk().hasOwner() || !context.settlementChunk().getOwner().equals(context.citizen())) {
+        if (!isOwner(context.settlementChunk(), context.citizen())) {
             United.messenger().send(context.player(), "player.settlementchunk.abandon.not_owner");
             return;
         }

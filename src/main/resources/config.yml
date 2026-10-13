@@ -59,7 +59,7 @@ map-rendering:
     stroke: -2697514
     width: 2
     dash: "0"
-  settlement-country:
+  settlement-in-country:
     fill: 0
     stroke: 0
     width: 2
@@ -69,7 +69,7 @@ map-rendering:
     stroke: 0
     width: 1
     dash: "0"
-  region-country:
+  region-in-country:
     fill: 0
     stroke: 0
     width: 1

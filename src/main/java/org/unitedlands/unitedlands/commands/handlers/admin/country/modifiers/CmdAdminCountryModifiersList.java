@@ -12,7 +12,7 @@ import org.unitedlands.utils.United;
         parent = CmdAdminCountryModifiers.class,
         name = "list",
         description = "Lists all country modifiers",
-        usage = "/ula country modifiers list"
+        usage = "/ula country modifiers list <country_name>"
 )
 
 public class CmdAdminCountryModifiersList extends CountryAdminCommandHandler {
@@ -27,6 +27,11 @@ public class CmdAdminCountryModifiersList extends CountryAdminCommandHandler {
 
     @Override
     public void handleCommand(CommandSender sender, String[] args) {
+
+        if (args.length == 0) {
+            sendUsage(sender);
+            return;
+        }
 
         var country = getCountry(sender, args[0]);
         if (country == null) {

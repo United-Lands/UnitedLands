@@ -11,6 +11,7 @@ import org.unitedlands.utils.United;
 @UnitedSubCommand(
         parent = CmdSettlementChunk.class,
         name = "forsale",
+        aliases = { "fs" },
         description = "Puts a settlement chunk on sale",
         usage = "/settlementchunk forsale <price>",
         playerOnly = true

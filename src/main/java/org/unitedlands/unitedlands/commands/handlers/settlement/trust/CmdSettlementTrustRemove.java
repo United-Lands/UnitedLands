@@ -36,7 +36,7 @@ public class CmdSettlementTrustRemove extends SettlementCommandHandler {
             return;
         }
 
-        var context = validate(sender, "settlement.addtrust");
+        var context = validate(sender, "settlement.removetrust");
         if (context == null)
             return;
 

@@ -19,7 +19,8 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
         name = "attributes",
         description = "Shows attributes of a settlement",
         usage = "/settlement attributes [settlement_name]",
-        playerOnly = true
+        playerOnly = true,
+        permission = "united.lands.admin"
 )
 public class CmdSettlementAttributes extends SettlementCommandHandler {
 
@@ -54,7 +55,7 @@ public class CmdSettlementAttributes extends SettlementCommandHandler {
         var colWith = 40;
 
         var head1 = FontUtils.padTo(MiniMessage.miniMessage().deserialize("<gray>Attribute</gray>"), firstColWith, Align.LEFT);
-        var head2 = FontUtils.padTo(MiniMessage.miniMessage().deserialize("<gray>Current</gray>"), colWith, Align.LEFT);
+        var head2 = FontUtils.padTo(MiniMessage.miniMessage().deserialize("<gray>Value</gray>"), colWith, Align.LEFT);
         var head3 = FontUtils.padTo(MiniMessage.miniMessage().deserialize("<gray>Min</gray>"), colWith, Align.LEFT);
         var head4 = FontUtils.padTo(MiniMessage.miniMessage().deserialize("<gray>Max</gray>"), colWith, Align.LEFT);
         var head5 = FontUtils.padTo(MiniMessage.miniMessage().deserialize("<gray>Daily</gray>"), colWith, Align.LEFT);

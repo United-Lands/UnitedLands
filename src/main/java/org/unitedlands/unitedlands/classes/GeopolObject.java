@@ -125,8 +125,7 @@ public class GeopolObject implements Identifiable, MetadataHolder {
                 metadata = new HashMap<>();
                 for (var m : parsedData)
                     metadata.put(m.getKey(), m);
-            }
-            else {
+            } else {
                 metadata = new HashMap<>();
             }
         }
@@ -197,7 +196,8 @@ public class GeopolObject implements Identifiable, MetadataHolder {
     public GeopolAttribute getAttribute(String key, GeopolAttributeDefaults defaults) {
         var attribute = getAttributes().get(key);
         if (attribute == null && defaults != null) {
-            attribute = new GeopolAttribute(defaults.display(), defaults.currentValue(), defaults.minValue(), defaults.maxValue(),
+            attribute = new GeopolAttribute(defaults.display(), defaults.currentValue(), defaults.minValue(),
+                    defaults.maxValue(),
                     defaults.dailyChange());
             addAttribute(key, attribute);
         }
@@ -241,11 +241,15 @@ public class GeopolObject implements Identifiable, MetadataHolder {
     }
 
     public void addAttribute(String key, GeopolAttribute attribute) {
+        if (attributes == null)
+            attributes = new HashMap<>();
         attributes.put(key, attribute);
         attributesSerialized = JsonUtils.serialize(attributes);
     }
 
     public void removeAttribute(String key) {
+        if (attributes == null)
+            return;
         attributes.remove(key);
         attributesSerialized = JsonUtils.serialize(attributes);
     }
@@ -301,9 +305,11 @@ public class GeopolObject implements Identifiable, MetadataHolder {
         attributesModifiersSerialized = JsonUtils.serialize(attributeModifiers);
     }
 
-    public void save() { }
+    public void save() {
+    }
 
-    public void saveAndRender() { }
+    public void saveAndRender() {
+    }
 
     @Override
     public int hashCode() {

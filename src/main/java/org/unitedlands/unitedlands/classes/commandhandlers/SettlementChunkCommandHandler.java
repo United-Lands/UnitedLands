@@ -35,12 +35,12 @@ public class SettlementChunkCommandHandler implements UnitedCommandExecutor {
     protected SettlementChunkCommandHandlerContext validate(CommandSender sender, String permission) {
 
         var player = (Player) sender;
-        
+
         if (!UnitedLandsConfig.get().general().worlds().contains(player.getLocation().getWorld().getName())) {
             United.messenger().send(player, "general-errors.wrong-world");
             return null;
         }
-        
+
         var citizen = getCitizen(player);
         if (citizen == null)
             return null;
@@ -98,6 +98,10 @@ public class SettlementChunkCommandHandler implements UnitedCommandExecutor {
             United.messenger().send(player, "general-errors.no-claim-permission");
             return false;
         }
+    }
+
+    protected boolean isOwner(SettlementChunk settlementChunk, Citizen citizen) {
+        return settlementChunk.hasOwner() && settlementChunk.getOwner().equals(citizen);
     }
 
 }

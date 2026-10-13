@@ -49,6 +49,11 @@ public class CostUtils {
 
         upkeepCosts *= settlement.getChunks().size();
 
+        var discountAttribute = settlement.getModifiedAttribute("UPKEEP_DISCOUNT");
+        if (discountAttribute != null && discountAttribute.getCurrentValue() > 0.0) {
+            upkeepCosts = upkeepCosts - (upkeepCosts * discountAttribute.getCurrentValue());
+        }
+
         SettlementUpkeepCostCalculatedEvent event = new SettlementUpkeepCostCalculatedEvent(upkeepCosts);
         event.callEvent();
 
@@ -57,7 +62,8 @@ public class CostUtils {
 
     public static double getRegionClaimCosts(Country country, Region region) {
         var baseCosts = UnitedLandsConfig.get().economy().costs().country().regionClaimBaseCosts();
-        var modifier = UnitedLandsConfig.get().economy().costs().country().regionClaimCostFormula();;
+        var modifier = UnitedLandsConfig.get().economy().costs().country().regionClaimCostFormula();
+        ;
 
         var capital = country.getCapital();
         var distance = capital.getHomeChunkCoordinates().distance(region.getHomeChunkCoordinates()) * 16;
@@ -104,6 +110,11 @@ public class CostUtils {
 
         for (var region : country.getRegions()) {
             upkeepCosts += getRegionUpkeep(region, country);
+        }
+
+        var discountAttribute = country.getModifiedAttribute("UPKEEP_DISCOUNT");
+        if (discountAttribute != null && discountAttribute.getCurrentValue() > 0.0) {
+            upkeepCosts = upkeepCosts - (upkeepCosts * discountAttribute.getCurrentValue());
         }
 
         CountryUpkeepCalculatedEvent event = new CountryUpkeepCalculatedEvent(upkeepCosts);

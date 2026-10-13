@@ -180,7 +180,8 @@ public class UnitedLandsDataManager {
 
             for (var key : UnitedLandsConfig.get().geopolAttributeDefaults().settlement().keys()) {
                 if (!settlement.hasAttribute(key)) {
-                    United.logger().info("Settlement " + settlement.getName() + " is missing attribute " + key + ", adding...");
+                    United.logger().info(
+                            "Settlement " + settlement.getName() + " is missing attribute " + key + ", adding...");
                     changed = true;
                     settlement.addAttribute(key, new GeopolAttribute(
                             UnitedLandsConfig.get().geopolAttributeDefaults().settlement().get(key)));
@@ -194,7 +195,8 @@ public class UnitedLandsDataManager {
             boolean changed = false;
             for (var key : UnitedLandsConfig.get().geopolAttributeDefaults().country().keys()) {
                 if (!country.hasAttribute(key)) {
-                    United.logger().info("Country " + country.getName() + " is missing attribute " + key + ", adding...");
+                    United.logger()
+                            .info("Country " + country.getName() + " is missing attribute " + key + ", adding...");
                     changed = true;
                     country.addAttribute(key,
                             new GeopolAttribute(UnitedLandsConfig.get().geopolAttributeDefaults().country().get(key)));
