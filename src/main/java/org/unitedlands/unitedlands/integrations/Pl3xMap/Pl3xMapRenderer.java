@@ -219,7 +219,7 @@ public class Pl3xMapRenderer {
 
     public void renderMarker(String worldName, Location location, String markerName, String markerKey, String layerId,
             String layerName) {
-        SimpleLayer layer = getOrCreateSimpleLayer(worldName, layerId, layerName, 1, 2000);
+        SimpleLayer layer = getOrCreateSimpleLayer(worldName, layerId, layerName, 1, 490);
         if (layer.hasMarker(markerKey))
             layer.removeMarker(markerKey);
         var position = new Point((int) location.getX(), (int) location.getZ());
@@ -230,7 +230,7 @@ public class Pl3xMapRenderer {
     }
 
     public void removeMarker(String worldName, String markerKey, String layerId, String layerName) {
-        SimpleLayer layer = getOrCreateSimpleLayer(worldName, layerId, layerName, 1, 2000);
+        SimpleLayer layer = getOrCreateSimpleLayer(worldName, layerId, layerName, 1, 490);
         if (layer.hasMarker(markerKey))
             layer.removeMarker(markerKey);
     }
@@ -270,7 +270,7 @@ public class Pl3xMapRenderer {
 
     private void renderCountryAsync(Country country) {
 
-        SimpleLayer layer = getOrCreateSimpleLayer(country.getWorldName(), "countries", "Countries", 1, 1000);
+        SimpleLayer layer = getOrCreateSimpleLayer(country.getWorldName(), "countries", "Countries", 1, 460);
 
         var key = "country-" + country.getUuid().toString();
         if (layer.hasMarker(key))
@@ -294,7 +294,7 @@ public class Pl3xMapRenderer {
 
         List<Polygon> finalPolygons = new ArrayList<>();
 
-        var markerOptions = Options.builder().fill(false).stroke(true).strokeColor(country.getStrokeColor())
+        var markerOptions = Options.builder().fill(true).fillColor(0).stroke(true).strokeColor(country.getStrokeColor())
                 .strokeWeight(strokeWidth)
                 .tooltipContent(country.getCleanName()).build().setPopup(popup);
 
@@ -342,8 +342,11 @@ public class Pl3xMapRenderer {
         infoBox = infoBox.replace("%country%", country.getCleanName());
         infoBox = infoBox.replace("%leader%", country.getLeader() != null ? country.getLeader().getName() : "NPC");
         infoBox = infoBox.replace("%capital%", country.hasCapital() ? country.getCapital().getCleanName() : "");
-        infoBox = infoBox.replace("%capital-coords%", country.hasCapital() ? 
-            "x=" + country.getCapital().getSpawn().blockX() + "&z=" + country.getCapital().getSpawn().blockZ() : "");
+        infoBox = infoBox.replace("%capital-coords%",
+                country.hasCapital()
+                        ? "x=" + country.getCapital().getSpawn().blockX() + "&z="
+                                + country.getCapital().getSpawn().blockZ()
+                        : "");
         infoBox = infoBox.replace("%founded%",
                 new SimpleDateFormat("dd-MM-yyyy HH:mm").format(country.getFoundingTimestamp()));
         infoBox = infoBox.replace("%balance%", UnitedLandsEconomyManager.instance()
@@ -386,8 +389,8 @@ public class Pl3xMapRenderer {
     private void renderPolyRegionAsync(Region region, boolean debug) {
 
         var unclaimedLayer = getOrCreateSimpleLayer(region.getWorldName(), "unclaimedregions", "Unclaimed Regions", 8,
-                0);
-        var claimedLayer = getOrCreateSimpleLayer(region.getWorldName(), "claimedregions", "Claimed Regions", 6, 0);
+                450, false);
+        var claimedLayer = getOrCreateSimpleLayer(region.getWorldName(), "claimedregions", "Claimed Regions", 6, 450, false);
 
         SimpleLayer regionLayer;
         if (!region.hasCountry()) {
@@ -425,7 +428,7 @@ public class Pl3xMapRenderer {
         var popup = new Popup("<div><p><strong>" + region.getCleanName() + "</strong></p><p><strong>Owner: </strong>"
                 + (region.hasFounder() ? region.getFounderName() : "-") + "</p></div>");
 
-        String dash = UnitedLandsConfig.get().mapRendering().get("region-default").dash(); 
+        String dash = UnitedLandsConfig.get().mapRendering().get("region-default").dash();
         int strokeWidth = UnitedLandsConfig.get().mapRendering().get("region-default").width();
 
         if (region.hasCountry()) {
@@ -458,7 +461,6 @@ public class Pl3xMapRenderer {
         }
 
         Polygon polygon = new Polygon(key, new Polyline("border-" + region.getUuid().toString(), points));
-
         polygon.setOptions(markerOptions);
 
         regionLayer.addMarker(polygon);
@@ -467,11 +469,11 @@ public class Pl3xMapRenderer {
     public void removeRegion(Region region) {
         String key = "region-" + region.getUuid().toString();
         var unclaimedLayer = getOrCreateSimpleLayer(region.getWorldName(), "unclaimedregions", "Unclaimed Regions", 30,
-                30);
+                460, false);
         if (unclaimedLayer.hasMarker(key))
             unclaimedLayer.removeMarker(key);
 
-        var claimedLayer = getOrCreateSimpleLayer(region.getWorldName(), "claimedregions", "Claimed Regions", 20, 20);
+        var claimedLayer = getOrCreateSimpleLayer(region.getWorldName(), "claimedregions", "Claimed Regions", 20, 460, false);
         if (claimedLayer.hasMarker(key))
             claimedLayer.removeMarker(key);
     }
@@ -508,7 +510,7 @@ public class Pl3xMapRenderer {
 
     private void renderSettlementAsync(Settlement settlement) {
 
-        SimpleLayer layer = getOrCreateSimpleLayer(settlement.getWorldName(), "settlements", "Settlements", 1, 1000);
+        SimpleLayer layer = getOrCreateSimpleLayer(settlement.getWorldName(), "settlements", "Settlements", 1, 480);
 
         String uuid = settlement.getUuid().toString();
         United.logger().info("Rendering settlement " + uuid + "...");
@@ -552,7 +554,6 @@ public class Pl3xMapRenderer {
             polygons.add(new Polygon("cluster-" + uuid + "-" + i, clusterLines));
         }
         MultiPolygon mapPolygon = new MultiPolygon(key, polygons);
-
         mapPolygon.setOptions(markerOptions);
 
         layer.addMarker(mapPolygon);
@@ -862,8 +863,14 @@ public class Pl3xMapRenderer {
     // *******************************
 
     private SimpleLayer getOrCreateSimpleLayer(String world, String key, String name, int priority, int zindex) {
+        return getOrCreateSimpleLayer(world, key, name, priority, zindex, true);
+    }
+
+    private SimpleLayer getOrCreateSimpleLayer(String world, String key, String name, int priority, int zindex, boolean setPane) {
 
         CompletableFuture<SimpleLayer> simpleLayerFuture = new CompletableFuture<>();
+
+        var paneName = key.replace("-", "");
 
         Bukkit.getScheduler().runTask(UnitedLands.instance(), () -> {
 
@@ -875,6 +882,8 @@ public class Pl3xMapRenderer {
                 layer = new SimpleLayer(key, options::getName);
                 layer.setDefaultHidden(options.isDefaultHidden());
                 layer.setPriority(options.getLayerPriority());
+                if (setPane)
+                    layer.setPane(paneName);
                 layer.setZIndex(options.getZIndex());
                 layer.setShowControls(options.showControls());
                 mapworld.getLayerRegistry().register(layer);

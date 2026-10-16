@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
+import org.unitedlands.unitedlands.classes.Coordinates;
 import org.unitedlands.unitedlands.classes.SettlementChunk;
 import org.unitedlands.unitedlands.classes.commandhandlers.SettlementCommandHandler;
 import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
@@ -89,7 +90,18 @@ public class CmdSettlementClaim extends SettlementCommandHandler {
 
         UnitedLandsEconomyManager.instance().withdraw(context.settlement().getUuid(), claimCosts, "Chunk claiming");
 
-        United.messenger().send(context.player(), "player.settlement.claim.success", context.settlement().getCleanName(), chunkCoords.toString(), UnitedLandsEconomyManager.instance().format(claimCosts));
+        var coordNorth = new Coordinates(chunkCoords.getX(), chunkCoords.getZ() - 1, chunkCoords.getWorldName());
+        var coordEast = new Coordinates(chunkCoords.getX() + 1, chunkCoords.getZ(), chunkCoords.getWorldName());
+        var coordSouth = new Coordinates(chunkCoords.getX(), chunkCoords.getZ() + 1, chunkCoords.getWorldName());
+        var coordWest = new Coordinates(chunkCoords.getX() - 1, chunkCoords.getZ(), chunkCoords.getWorldName());
+
+        boolean connected = context.settlement().hasChunkAtCoordinates(coordNorth) || 
+                            context.settlement().hasChunkAtCoordinates(coordEast) ||
+                            context.settlement().hasChunkAtCoordinates(coordWest)  ||
+                            context.settlement().hasChunkAtCoordinates(coordSouth);
+        if (!connected)
+            United.messenger().send(context.player(), "player.settlement.claim.disconnected-warning");
+        United.messenger().send(context.player(), "player.settlement.claim.success", context.settlement().getCleanName(), chunkCoords.toCleanShortString(), UnitedLandsEconomyManager.instance().format(claimCosts));
     }
 
 }

@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.unitedlands.UnitedLands;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
@@ -41,6 +42,9 @@ public class Country extends GeopolObject {
 
     @DatabaseField(dataType = DataType.LONG_STRING, columnName = "settlement_claim_whitelist")
     private String settlementClaimWhitelistSerialized;
+
+    @DatabaseField(canBeNull = false, columnName = "tax")
+    private float tax = 0.0f;
 
     private transient Location spawn;
     private transient Settlement capital;
@@ -87,6 +91,14 @@ public class Country extends GeopolObject {
 
     public void setBonusRegions(int bonusRegions) {
         this.bonusRegions = bonusRegions;
+    }
+
+    public float getTax() {
+        return tax;
+    }
+
+    public void setTax(float tax) {
+        this.tax = tax;
     }
 
     public double getArea() {
@@ -181,6 +193,12 @@ public class Country extends GeopolObject {
             return settlements.stream().map(Settlement::getCitizens).flatMap(Set::stream).collect(Collectors.toSet());
         });
         return future.join();
+    }
+
+    public Set<Player> getOnlinePlayers() {
+        return getCitizens().stream().map(c -> c.getPlayer()).filter(p -> p != null && p.isOnline())
+                .map(p -> p.getPlayer())
+                .collect(Collectors.toSet());
     }
 
     public Citizen getLeader() {

@@ -3,9 +3,10 @@ package org.unitedlands.unitedlands.commands.handlers.country;
 import java.math.BigDecimal;
 import java.util.List;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.unitedlands.classes.commandhandlers.CountryCommandHandler;
-
+import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.utils.United;
 
@@ -31,27 +32,48 @@ public class CmdCountryDeposit extends CountryCommandHandler {
             return;
         }
 
-        var context = validate(sender, null);
-        if (context == null)
+        // Don't use the context for this command to avoid bankruptcy checks
+
+        var player = (Player) sender;
+
+        var citizen = getCitizen(player);
+        if (citizen == null)
+            return;
+
+        var country = getCitizenCountry(citizen);
+        if (country == null)
             return;
 
         BigDecimal amount = new BigDecimal(0);
         try {
             amount = new BigDecimal(args[0]);
         } catch (Exception ex) {
-            United.messenger().send(context.player(), "general-errors.wrong-number-format", args[0]);
+            United.messenger().send(player, "general-errors.wrong-number-format", args[0]);
             return;
         }
 
-        if (!UnitedLandsEconomyManager.instance().has(context.player().getUniqueId(), amount)) {
-            United.messenger().send(context.player(), "general-errors.no-funds-player", UnitedLandsEconomyManager.instance().format(amount));
+        if (!UnitedLandsEconomyManager.instance().has(player.getUniqueId(), amount)) {
+            United.messenger().send(player, "general-errors.no-funds-player", UnitedLandsEconomyManager.instance().format(amount));
             return;
         }
 
-        UnitedLandsEconomyManager.instance().withdraw(context.player().getUniqueId(), amount, "Deposit to " + context.country().getName());
-        UnitedLandsEconomyManager.instance().deposit(context.country().getUuid(), amount, "Deposit by " + context.player().getName());
+        UnitedLandsEconomyManager.instance().withdraw(player.getUniqueId(), amount, "Deposit to " + country.getName());
+        UnitedLandsEconomyManager.instance().deposit(country.getUuid(), amount, "Deposit by " + player.getName());
+        
+        United.messenger().send(player, "player.country.deposit.success", UnitedLandsEconomyManager.instance().format(amount));
 
-        United.messenger().send(context.player(), "player.country.deposit.success", UnitedLandsEconomyManager.instance().format(amount));
+        if (country.isBankrupt()) {
+            var threshold = BigDecimal.valueOf(UnitedLandsConfig.get().economy().costs().settlement().bankruptcyStopThreshold());
+            if (UnitedLandsEconomyManager.instance().getBalance(country.getUuid()).compareTo(threshold) >= 0) {
+                country.setBankrupt(false);
+                country.setBankruptcyTimestamp(null);
+                country.save();
+                United.messenger().send(player, "player.country.deposit.bankruptcy-stopped",
+                        UnitedLandsEconomyManager.instance().format(amount));
+            }
+        }
+
+
     }
 
 }

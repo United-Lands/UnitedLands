@@ -1,56 +1,125 @@
 package org.unitedlands.unitedlands.listeners;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
+import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockFertilizeEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityPlaceEvent;
+import org.bukkit.event.hanging.HangingBreakByEntityEvent;
+import org.bukkit.event.hanging.HangingPlaceEvent;
+import org.bukkit.event.player.PlayerBucketEmptyEvent;
+import org.bukkit.event.player.PlayerBucketFillEvent;
+import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.unitedlands.unitedlands.classes.PermissionType;
 import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.managers.PermissionManager;
-import net.kyori.adventure.text.Component;
+import org.unitedlands.utils.United;
+
+import io.papermc.paper.event.player.PlayerItemFrameChangeEvent;
 
 public class BlockListener implements Listener {
 
     public BlockListener() {
     }
 
+    // Break listeners
+
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
+        handleBreak(event.getPlayer(), event.getBlock().getLocation(), event);
+    }
 
-        Player player = event.getPlayer();
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onItemFrameRemove(PlayerItemFrameChangeEvent event) {
+        if (event.getAction() == PlayerItemFrameChangeEvent.ItemFrameChangeAction.REMOVE) {
+            handleBreak(event.getPlayer(), event.getItemFrame().getLocation(), event);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onBucketFill(PlayerBucketFillEvent event) {
+        handleBreak(event.getPlayer(), event.getBlock().getLocation(), event);
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onHangingBreak(HangingBreakByEntityEvent event) {
+        if (event.getRemover() instanceof Player player) {
+            handleBreak(player, event.getEntity().getLocation(), event);
+        } else {
+            if (event.getRemover() instanceof Projectile) {
+                if (((Projectile) event.getRemover()).getShooter() instanceof Player player) {
+                    handleBreak(player, event.getEntity().getLocation(), event);
+                }
+            }
+        }
+    }
+
+    private void handleBreak(Player player, Location location, Cancellable event) {
 
         if (PermissionManager.instance().hasGlobalOverrides(player))
             return;
 
-        if (!PermissionManager.instance().checkLocationPermissions(player, event.getBlock().getLocation(),
+        if (!PermissionManager.instance().checkLocationPermissions(player, location,
                 PermissionType.BREAK)) {
             event.setCancelled(true);
-            player.sendMessage(Component.text("§cYou cannot break blocks here."));
+            United.messenger().send(player, "general-errors.not-allowed");
         }
     }
+
+    // Placement listeners
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
+        handlePlace(event.getPlayer(), event.getBlock().getLocation(), event);
+    }
 
-        Player player = event.getPlayer();
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onItemFramePlace(PlayerItemFrameChangeEvent event) {
+        if (event.getAction() == PlayerItemFrameChangeEvent.ItemFrameChangeAction.PLACE) {
+            handlePlace(event.getPlayer(), event.getItemFrame().getLocation(), event);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onHangingPlace(HangingPlaceEvent event) {
+        handlePlace(event.getPlayer(), event.getBlock().getLocation(), event);
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onEntityPlace(EntityPlaceEvent event) {
+        handlePlace(event.getPlayer(), event.getBlock().getLocation(), event);
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onBucketEmpty(PlayerBucketEmptyEvent event) {
+        handlePlace(event.getPlayer(), event.getBlock().getLocation(), event);
+    }
+
+    private void handlePlace(Player player, Location location, Cancellable event) {
 
         if (PermissionManager.instance().hasGlobalOverrides(player))
             return;
 
-        if (!PermissionManager.instance().checkLocationPermissions(player, event.getBlock().getLocation(),
+        if (!PermissionManager.instance().checkLocationPermissions(player, location,
                 PermissionType.PLACE)) {
 
             event.setCancelled(true);
-            player.sendMessage(Component.text("§cYou cannot place blocks here."));
+            United.messenger().send(player, "general-errors.not-allowed");
             return;
         }
-
     }
+
+    // Open, interact and switch listeners
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onBlockInteract(PlayerInteractEvent event) {
@@ -69,7 +138,7 @@ public class BlockListener implements Listener {
             if (!PermissionManager.instance().checkLocationPermissions(player, block.getLocation(),
                     PermissionType.CONTAINER)) {
                 event.setCancelled(true);
-                player.sendMessage(Component.text("§cYou cannot open containers here."));
+                United.messenger().send(player, "general-errors.not-allowed");
                 return;
             }
         }
@@ -78,19 +147,21 @@ public class BlockListener implements Listener {
             if (!PermissionManager.instance().checkLocationPermissions(player, block.getLocation(),
                     PermissionType.BLOCK_USE)) {
                 event.setCancelled(true);
-                player.sendMessage(Component.text("§cYou cannot use blocks here."));
+                United.messenger().send(player, "general-errors.not-allowed");
                 return;
             }
         }
 
-        if (UnitedLandsConfig.get().protection().switchBlocks().contains(blockType) || isSwitchMaterialTagProtected(block.getType())) {
+        if (UnitedLandsConfig.get().protection().switchBlocks().contains(blockType)
+                || isSwitchMaterialTagProtected(block.getType())) {
             if (!PermissionManager.instance().checkLocationPermissions(player, block.getLocation(),
                     PermissionType.SWITCH)) {
                 event.setCancelled(true);
-                player.sendMessage(Component.text("§cYou cannot switch here."));
+                United.messenger().send(player, "general-errors.not-allowed");
                 return;
             }
         }
+
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
@@ -102,24 +173,52 @@ public class BlockListener implements Listener {
         var entity = event.getRightClicked();
         var entityType = entity.getType().toString();
         if (UnitedLandsConfig.get().protection().interact().contains(entityType)) {
-            if (!PermissionManager.instance().checkLocationPermissions(player, entity.getLocation(),
-                    PermissionType.INTERACT)) {
-                event.setCancelled(true);
-                player.sendMessage(Component.text("§cYou cannot interact here."));
-                return;
-            }
+            handleInteract(player, entity.getLocation(), event);
         }
 
     }
 
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onGrappleEntity(PlayerFishEvent event) {
+        if (event.getState() == PlayerFishEvent.State.CAUGHT_ENTITY) {
+            Player player = event.getPlayer();
+            Entity caughtEntity = event.getCaught();
+
+            if (caughtEntity != null) {
+                handleInteract(player, caughtEntity.getLocation(), event);
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    public void onBonemeal(BlockFertilizeEvent event) {
+        var player = event.getPlayer();
+        if (PermissionManager.instance().hasGlobalOverrides(player))
+            return;
+
+        handleInteract(player, event.getBlock().getLocation(), event);
+    }
+
+    private void handleInteract(Player player, Location location, Cancellable event) {
+
+        if (PermissionManager.instance().hasGlobalOverrides(player))
+            return;
+
+        if (!PermissionManager.instance().checkLocationPermissions(player, location,
+                PermissionType.INTERACT)) {
+            event.setCancelled(true);
+            United.messenger().send(player, "general-errors.not-allowed");
+        }
+    }
+
+    // Helpers
+
     private boolean isSwitchMaterialTagProtected(Material type) {
 
-        // TODO: Find implementation for tags from config
-
-        // for (var tag : Settings.protectedSwitchTags) {
-        //     if (tag.isTagged(type))
-        //         return true;
-        // }
+        for (var tag : PermissionManager.instance().getProtectedSwitchTags()) {
+            if (tag.isTagged(type))
+                return true;
+        }
         return false;
     }
 

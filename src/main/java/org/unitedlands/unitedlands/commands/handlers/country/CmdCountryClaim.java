@@ -1,6 +1,7 @@
 package org.unitedlands.unitedlands.commands.handlers.country;
 
 import java.util.List;
+
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.unitedlands.annotations.UnitedSubCommand;
@@ -13,6 +14,7 @@ import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.utils.CoordinateUtils;
 import org.unitedlands.unitedlands.utils.CostUtils;
+import org.unitedlands.unitedlands.utils.PolygonUtils;
 import org.unitedlands.utils.United;
 
 @UnitedSubCommand(
@@ -43,29 +45,41 @@ public class CmdCountryClaim extends CountryCommandHandler {
             }
         }
 
-        // TODO: Attribute-based max numbers
+        // Region adjacency
 
-        // var currentClaims = UnitedLandsDataManager.instance().getRegionClaimsOngoing(context.country());
-        // if (currentClaims.size() >= Settings.regionParallelClaimsMax) {
-        //     United.messenger().send(context.player(), "player.country.claim.too-many-claiming", String.valueOf(Settings.regionParallelClaimsMax));
-        //     return;
-        // }
+        boolean connected = false;
+        for (var countryRegion : context.country().getRegions()) {
+            if (PolygonUtils.sharesVertex(countryRegion.getPolygon(), region.getPolygon()))
+                connected = true;
+        }
+        if (!connected) {
+            United.messenger().send(context.player(), "player.country.claim.disconnected");
+            return;
+        }
 
         var claimCost = CostUtils.getRegionClaimCosts(context.country(), region);
 
-        // TODO: Check claim costs
+        var countryBalance = UnitedLandsEconomyManager.instance().getBalance(context.country().getUuid());
+        if (countryBalance.doubleValue() < claimCost) {
+            United.messenger().send(context.player(), "general-errors.no-funds-country", 
+                UnitedLandsEconomyManager.instance().format(claimCost));
+            return;
+        }
 
-        // RegionPreClaimStartEvent preStartClaimEvent = new
-        // RegionPreClaimStartEvent(region, context.country());
-        // preStartClaimEvent.callEvent();
-        // if (preStartClaimEvent.isCancelled())
-        // return;
+        var maxClaimAttribute = context.country().getModifiedAttribute("MAX_PARELLEL_CLAIMS");
+        var currentClaims = UnitedLandsDataManager.instance().getRegionClaimsOngoing(context.country());
+        if (currentClaims.size() >= maxClaimAttribute.getCurrentValue()) {
+            United.messenger().send(context.player(), "player.country.claim.too-many-claiming", String.valueOf(maxClaimAttribute.getCurrentValue()));
+            return;
+        }
 
-        // TODO: Attribute-based claim time
+        var regionClaimTime = (long) context.country().getModifiedAttribute("REGION_CLAIM_TIME").getCurrentValue();
 
-        var confirmationMessage = United.messenger().get("player.country.claim.claim-confirm",
-                //United.formatter().formatDuration(UnitedLandsConfig.get().economy().costs().country(). * 1000),
-                UnitedLandsEconomyManager.instance().format(claimCost)
+        var confirmationMessage = United.messenger().get("player.country.claim.confirm",
+                region.getCleanName(),
+                context.country().getCleanName(),
+                UnitedLandsEconomyManager.instance().format(claimCost),
+                United.formatter().formatDuration(regionClaimTime * 1000)
             );
 
         var doubleClaim = false;
@@ -107,15 +121,14 @@ public class CmdCountryClaim extends CountryCommandHandler {
             if (startClaimEvent.isCancelled())
                 return;
 
-            // TODO: Attribute-based claim time
-            
             region.setClaimantCountry(context.country());
             region.setClaimStartTime(System.currentTimeMillis());
-            region.setClaimEndTime(System.currentTimeMillis() + (5 * 1000));
+            region.setClaimEndTime(System.currentTimeMillis() + (regionClaimTime * 1000));
             region.startClaimTask();
             region.saveAndRender();
 
-            // Pl3xMapRenderer.instance().renderPolyRegion(region);
+            United.messenger().broadcast("player.country.claim.start-broadcast", context.country().getCleanName(), region.getCleanName(), United.formatter().formatDuration(region.getClaimEndTime() - region.getClaimStartTime()));
+
 
         })
                 .setTitle(confirmationMessage)

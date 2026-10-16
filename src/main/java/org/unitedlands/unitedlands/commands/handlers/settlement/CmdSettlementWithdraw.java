@@ -49,7 +49,7 @@ public class CmdSettlementWithdraw extends SettlementCommandHandler {
         }
 
         UnitedLandsEconomyManager.instance().withdraw(context.settlement().getUuid(), amount, "Withdrawn by " + context.player().getName());
-        UnitedLandsEconomyManager.instance().deposit(context.player().getUniqueId(), amount, "Withdrawn from " + context.settlement().getName());
+        UnitedLandsEconomyManager.instance().deposit(context.player().getUniqueId(), amount, "Withdrawn from " + context.settlement().getCleanName());
 
         United.messenger().send(context.player(), "player.settlement.withdraw.success", UnitedLandsEconomyManager.instance().format(amount));
     }

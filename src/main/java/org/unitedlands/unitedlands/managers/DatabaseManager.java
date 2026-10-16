@@ -178,6 +178,28 @@ public class DatabaseManager {
             version.setVersion(8);
             versionDao.update(version);
         }
+
+        if (version.getVersion() < 9) {
+            versionDao.executeRaw("ALTER TABLE settlement DROP COLUMN ruined;");
+            versionDao.executeRaw("ALTER TABLE settlement DROP COLUMN ruin_time;");
+            versionDao.executeRaw("ALTER TABLE settlement ADD COLUMN bankrupt TINYINT(1) NOT NULL;");
+            versionDao.executeRaw("ALTER TABLE settlement ADD COLUMN bankruptcy_timestamp BIGINT NULL;");
+            versionDao.executeRaw("ALTER TABLE region ADD COLUMN bankrupt TINYINT(1) NOT NULL;");
+            versionDao.executeRaw("ALTER TABLE region ADD COLUMN bankruptcy_timestamp BIGINT NULL;");
+            versionDao.executeRaw("ALTER TABLE country ADD COLUMN bankrupt TINYINT(1) NOT NULL;");
+            versionDao.executeRaw("ALTER TABLE country ADD COLUMN bankruptcy_timestamp BIGINT NULL;");
+            version.setVersion(9);
+            versionDao.update(version);
+        }
+
+        if (version.getVersion() < 10) {
+            versionDao.executeRaw("ALTER TABLE settlement DROP COLUMN use_tax_percent;");
+            versionDao.executeRaw("ALTER TABLE country ADD COLUMN tax FLOAT NOT NULL;");
+            version.setVersion(10);
+            versionDao.update(version);
+        }
+
+        
     }
 
     public <T, ID> Dao<T, ID> getDao(Class<T> clazz) throws SQLException {

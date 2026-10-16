@@ -158,7 +158,8 @@ public class PolygonUtils {
 
         if (indices.size() == 3) {
             int a = indices.get(0), b = indices.get(1), c = indices.get(2);
-            result.add(new double[] { points[2 * a], points[2 * a + 1], points[2 * b], points[2 * b + 1], points[2 * c], points[2 * c + 1] });
+            result.add(new double[] { points[2 * a], points[2 * a + 1], points[2 * b], points[2 * b + 1], points[2 * c],
+                    points[2 * c + 1] });
         }
 
         return result;
@@ -168,7 +169,8 @@ public class PolygonUtils {
         return ((bx - ax) * (cy - ay) - (by - ay) * (cx - ax)) > 0;
     }
 
-    private static boolean pointInTriangle(double px, double py, double ax, double ay, double bx, double by, double cx, double cy) {
+    private static boolean pointInTriangle(double px, double py, double ax, double ay, double bx, double by, double cx,
+            double cy) {
         double d1 = sign(px, py, ax, ay, bx, by);
         double d2 = sign(px, py, bx, by, cx, cy);
         double d3 = sign(px, py, cx, cy, ax, ay);
@@ -252,7 +254,8 @@ public class PolygonUtils {
         double[] result = new double[vertices.length];
         for (int i = 0; i < n; i++) {
             int prev = (i - 1 + n) % n;
-            double[] p = intersectLines(refX[prev], refY[prev], dirX[prev], dirY[prev], refX[i], refY[i], dirX[i], dirY[i]);
+            double[] p = intersectLines(refX[prev], refY[prev], dirX[prev], dirY[prev], refX[i], refY[i], dirX[i],
+                    dirY[i]);
             result[2 * i] = p[0];
             result[2 * i + 1] = p[1];
         }
@@ -260,7 +263,8 @@ public class PolygonUtils {
         return result;
     }
 
-    private static double[] intersectLines(double p1x, double p1y, double d1x, double d1y, double p2x, double p2y, double d2x, double d2y) {
+    private static double[] intersectLines(double p1x, double p1y, double d1x, double d1y, double p2x, double p2y,
+            double d2x, double d2y) {
         double cross = d1x * d2y - d1y * d2x;
         if (Math.abs(cross) < 1e-12) {
             // Parallel edges (or a straight-through vertex) — the two offset
@@ -304,6 +308,28 @@ public class PolygonUtils {
         }
 
         return Math.abs(signedArea) / 2.0;
+    }
+
+    public static boolean sharesVertex(double[] a, double[] b, double epsilon) {
+        if (a.length % 2 != 0 || b.length % 2 != 0) {
+            throw new IllegalArgumentException("Vertex arrays must contain x,y pairs");
+        }
+
+        for (int i = 0; i < a.length; i += 2) {
+            double ax = a[i];
+            double ay = a[i + 1];
+            for (int j = 0; j < b.length; j += 2) {
+                if (Math.abs(ax - b[j]) <= epsilon && Math.abs(ay - b[j + 1]) <= epsilon) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /** Convenience overload with a default tolerance of 1e-9. */
+    public static boolean sharesVertex(double[] a, double[] b) {
+        return sharesVertex(a, b, 1e-9);
     }
 
 }

@@ -51,16 +51,9 @@ public class Settlement extends GeopolObject implements PermissionHolder {
 
     @DatabaseField(canBeNull = false, columnName = "tax")
     private float tax = 0.0f;
-    @DatabaseField(canBeNull = false, columnName = "use_tax_percent")
-    private boolean useTaxPercent = true;
 
     @DatabaseField(canBeNull = false, columnName = "public")
     private boolean isPublic = true;
-
-    @DatabaseField(canBeNull = false, columnName = "ruined")
-    private boolean ruined = true;
-    @DatabaseField(canBeNull = true, columnName = "ruin_time")
-    private Long ruinedTime;
 
     @DatabaseField(canBeNull = true, dataType = DataType.LONG_STRING, columnName = "citizens_serialized")
     private String citizensSerialized;
@@ -316,14 +309,6 @@ public class Settlement extends GeopolObject implements PermissionHolder {
 
     public void setTax(float tax) {
         this.tax = tax;
-    }
-
-    public boolean useTaxPercent() {
-        return useTaxPercent;
-    }
-
-    public void setUseTaxPercent(boolean useTaxPercent) {
-        this.useTaxPercent = useTaxPercent;
     }
 
     public boolean isPublic() {

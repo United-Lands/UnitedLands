@@ -50,19 +50,25 @@ public class NewDayScheduler {
             scheduleTask = Bukkit.getScheduler().runTaskLater(UnitedLands.instance(), () -> {
                 scheduleNewDay();
             }, newScheduleSeconds * 20L);
-            United.logger().info("Rescheduling new day in " + United.formatter().formatDuration(newScheduleSeconds * 1000), "UnitedLands");
+            United.logger().info(
+                    "Rescheduling new day in " + United.formatter().formatDuration(newScheduleSeconds * 1000),
+                    "UnitedLands");
         } else {
             if (scheduleTask != null)
                 scheduleTask.cancel();
-            newDayTask = Bukkit.getScheduler().runTaskLater(UnitedLands.instance(), new NewDayTask(), secondsToNewDay * 20L);
-            United.logger().info("Scheduling new day in " + United.formatter().formatDuration(secondsToNewDay * 1000), "UnitedLands");
+            newDayTask = Bukkit.getScheduler().runTaskLater(UnitedLands.instance(), new NewDayTask(),
+                    secondsToNewDay * 20L);
+            United.logger().info("Scheduling new day in " + United.formatter().formatDuration(secondsToNewDay * 1000),
+                    "UnitedLands");
         }
 
     }
 
     public void finishNewDay() {
         lastExecutionTime = System.currentTimeMillis();
-        Bukkit.getScheduler().runTaskLater(UnitedLands.instance(), () -> {
+        if (scheduleTask != null)
+            scheduleTask.cancel();
+        scheduleTask = Bukkit.getScheduler().runTaskLater(UnitedLands.instance(), () -> {
             scheduleNewDay();
         }, 200L);
     }
@@ -84,7 +90,8 @@ public class NewDayScheduler {
         }
 
         LocalDateTime now = LocalDateTime.now(); // or LocalDateTime.now(ZoneId.of("Europe/Berlin"))
-        LocalDateTime target = now.withHour(targetTime.getHour()).withMinute(targetTime.getMinute()).withSecond(0).withNano(0);
+        LocalDateTime target = now.withHour(targetTime.getHour()).withMinute(targetTime.getMinute()).withSecond(0)
+                .withNano(0);
 
         if (!target.isAfter(now)) {
             target = target.plusDays(1);

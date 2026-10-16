@@ -6,11 +6,11 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.logging.log4j.util.InternalException;
+import org.bukkit.Bukkit;
 import org.unitedlands.unitedlands.UnitedLands;
 import org.unitedlands.unitedlands.classes.BankRecord;
 import org.unitedlands.unitedlands.classes.Citizen;
 import org.unitedlands.unitedlands.classes.Settlement;
-import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.integrations.economy.IEconomyProvider;
 import org.unitedlands.unitedlands.integrations.economy.VaultEconomyProvider;
 import org.unitedlands.utils.United;
@@ -133,47 +133,46 @@ public class UnitedLandsEconomyManager {
     // Helper methods for tax modes
 
     public boolean depositAndTax(Citizen citizen, double amount, String reason) {
-
-        if (UnitedLandsConfig.get().economy().taxes().get("settlement").taxMode().equals("INCOME")) {
-            if (!citizen.hasSettlement()) {
-                return deposit(citizen.getUuid(), amount, reason);
-            } else {
-                var percent = citizen.getSettlement().getTax();
-
-                var settlementShare = amount * percent;
-
-                // Do two separate transactions so that the bankhistory properly shows taxes
-                deposit(citizen.getUuid(), amount, reason);
-                withdraw(citizen.getUuid(), settlementShare, "Tax");
-
-                depositAndTax(citizen.getSettlement(), settlementShare, "Tax");
-                return true;
-            }
-        } else {
+        if (!citizen.hasSettlement()) {
             return deposit(citizen.getUuid(), amount, reason);
+        } else {
+            var percent = citizen.getSettlement().getTax();
+
+            if (percent == 0)
+                return deposit(citizen.getUuid(), amount, reason);
+
+            var settlementShare = amount * percent;
+
+            // Do two separate transactions so that the bankhistory properly shows taxes
+            deposit(citizen.getUuid(), amount, reason);
+            withdraw(citizen.getUuid(), settlementShare, "Tax");
+
+            // Run a tick later to show message after other payment messages in this tick
+            Bukkit.getScheduler().runTaskLater(UnitedLands.instance(), () -> {
+                United.messenger().send(citizen.getPlayer(), "player.money.paid-taxes", UnitedLandsEconomyManager.instance().format(settlementShare));
+            }, 1);
+
+            depositAndTax(citizen.getSettlement(), settlementShare, "Tax");
+            return true;
         }
     }
 
     public boolean depositAndTax(Settlement settlement, double amount, String reason) {
-
-        if (UnitedLandsConfig.get().economy().taxes().get("country").taxMode().equals("INCOME")) {
-            if (!settlement.hasCountry()) {
-                return deposit(settlement.getUuid(), amount, reason);
-            } else {
-
-                // TODO: Country tax implementation
-                var percent = 0.1f; // settlement.getCountry().getTax();
-
-                var countryShare = amount * percent;
-
-                deposit(settlement.getUuid(), amount, reason);
-                withdraw(settlement.getUuid(), countryShare, "Tax");
-
-                deposit(settlement.getCountry().getUuid(), countryShare, "Tax");
-                return true;
-            }
-        } else {
+        if (!settlement.hasCountry()) {
             return deposit(settlement.getUuid(), amount, reason);
+        } else {
+            var percent = settlement.getCountry().getTax();
+
+            if (percent == 0)
+                return deposit(settlement.getUuid(), amount, reason);
+
+            var countryShare = amount * percent;
+
+            deposit(settlement.getUuid(), amount, reason);
+            withdraw(settlement.getUuid(), countryShare, "Tax");
+
+            deposit(settlement.getCountry().getUuid(), countryShare, "Tax");
+            return true;
         }
     }
 

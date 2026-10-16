@@ -7,7 +7,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Tag;
 import org.bukkit.entity.Player;
 import org.unitedlands.unitedlands.UnitedLands;
 import org.unitedlands.unitedlands.classes.Citizen;
@@ -35,13 +39,15 @@ public class PermissionManager {
         this.plugin = plugin;
         instance = this;
 
-        reloadRankPermissions();
+        reloadConfigs();
     }
 
-    List<String> settlementRanks = new ArrayList<>();
-    List<String> countryRanks = new ArrayList<>();
+    private List<String> settlementRanks = new ArrayList<>();
+    private List<String> countryRanks = new ArrayList<>();
 
-    Map<String, Set<String>> rankPermissions = new HashMap<>();
+    private List<Tag<Material>> protectedSwitchTags = new ArrayList<>();
+
+    private Map<String, Set<String>> rankPermissions = new HashMap<>();
 
     // *************************************************************
     // Global admin overrides
@@ -57,10 +63,9 @@ public class PermissionManager {
     // Permissions related to settlement, region and country ranks
     // *************************************************************
 
-    public void reloadRankPermissions() {
+    public void reloadConfigs() {
 
         rankPermissions = new HashMap<>();
-
         var config = plugin.getPermissionConfig().get();
 
         var settlementRankSection = config.getConfigurationSection("settlement");
@@ -83,7 +88,18 @@ public class PermissionManager {
             }
         }
 
-        United.logger().info("Permissions loaded.", "UnitedLands");
+        protectedSwitchTags = new ArrayList<>();
+        for (var strTag : UnitedLandsConfig.get().protection().switchTags()) {
+            NamespacedKey key = NamespacedKey.minecraft(strTag);
+            Tag<Material> tag = Bukkit.getTag(Tag.REGISTRY_BLOCKS, key, Material.class);
+            if (tag != null) {
+                protectedSwitchTags.add(tag);
+            } else {
+                United.logger().warning("Unknown block tag: " + strTag, "UnitedLands");
+            }
+        }
+
+        United.logger().info("Permissions config loaded.", "UnitedLands");
     }
 
     public boolean hasRankPermission(String permission, Citizen citizen) {
@@ -115,7 +131,8 @@ public class PermissionManager {
             var playerCache = PlayerCacheManager.instance().getPlayerCache(player);
             boolean hasSettlementChunkPermission = false;
             if (settlementChunk.equals(playerCache.getCachedSettlementChunk())) {
-                hasSettlementChunkPermission = hasLocationPermissions(settlementChunk, playerCache.getChunkMembership(), type);
+                hasSettlementChunkPermission = hasLocationPermissions(settlementChunk, playerCache.getChunkMembership(),
+                        type);
             } else {
                 var eventLocationMembership = calculateChunkMembership(settlementChunk, player);
                 hasSettlementChunkPermission = hasLocationPermissions(settlementChunk, eventLocationMembership, type);
@@ -129,7 +146,8 @@ public class PermissionManager {
         } else {
             // var regionCoords =
             // CoordinateUtils.locationToRegionCoordinates(eventLocation);
-            var region = UnitedLandsDataManager.instance().getRegion(CoordinateUtils.locationToChunkCenterCoordinates(eventLocation));
+            var region = UnitedLandsDataManager.instance()
+                    .getRegion(CoordinateUtils.locationToChunkCenterCoordinates(eventLocation));
 
             if (region != null) {
                 var playerCache = PlayerCacheManager.instance().getPlayerCache(player);
@@ -150,20 +168,20 @@ public class PermissionManager {
 
     public int getLocationPermissions(PermissionHolder holder, PermissionType type) {
         switch (type) {
-        case BREAK:
-            return holder.getBreakPermissions();
-        case PLACE:
-            return holder.getPlacePermissions();
-        case CONTAINER:
-            return holder.getContainerPermissions();
-        case SWITCH:
-            return holder.getSwitchPermissions();
-        case BLOCK_USE:
-            return holder.getBlockUsePermissions();
-        case INTERACT:
-            return holder.getInteractPermissions();
-        default:
-            return 0;
+            case BREAK:
+                return holder.getBreakPermissions();
+            case PLACE:
+                return holder.getPlacePermissions();
+            case CONTAINER:
+                return holder.getContainerPermissions();
+            case SWITCH:
+                return holder.getSwitchPermissions();
+            case BLOCK_USE:
+                return holder.getBlockUsePermissions();
+            case INTERACT:
+                return holder.getInteractPermissions();
+            default:
+                return 0;
         }
     }
 
@@ -247,6 +265,14 @@ public class PermissionManager {
         // TODO: Outlaw
 
         return LocationMembership.FOREIGNER;
+    }
+
+    // *************************************************************
+    // Getters
+    // *************************************************************
+
+    public List<Tag<Material>> getProtectedSwitchTags() {
+        return protectedSwitchTags;
     }
 
 }

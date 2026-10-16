@@ -30,7 +30,7 @@ public class CmdAdminReload implements UnitedCommandExecutor {
         UnitedMessagesRegistrar.reload(UnitedLands.instance());
         Pl3xMapRenderer.instance().loadMessages();
         
-        PermissionManager.instance().reloadRankPermissions();
+        PermissionManager.instance().reloadConfigs();
 
         UnitedLands.instance().getWebServices().reloadConfig();
 

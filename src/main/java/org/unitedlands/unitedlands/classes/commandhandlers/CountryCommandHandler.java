@@ -45,6 +45,11 @@ public class CountryCommandHandler implements UnitedCommandExecutor {
         if (country == null)
             return null;
 
+        if (country.isBankrupt()) {
+            United.messenger().send(player, "general-errors.country-bankrupt");
+            return null;
+        }
+
         if (permission != null)
             if (!hasPermission(permission, citizen))
                 return null;

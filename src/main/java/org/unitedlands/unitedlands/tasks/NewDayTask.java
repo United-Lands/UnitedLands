@@ -1,21 +1,16 @@
 package org.unitedlands.unitedlands.tasks;
 
-import java.util.Set;
-
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.unitedlands.unitedlands.classes.Country;
 import org.unitedlands.unitedlands.classes.Settlement;
+import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.unitedlands.schedulers.NewDayScheduler;
 import org.unitedlands.unitedlands.utils.CostUtils;
 import org.unitedlands.utils.United;
 
-import net.kyori.adventure.audience.Audience;
-
 public class NewDayTask implements Runnable {
-
 
     @Override
     public void run() {
@@ -24,73 +19,98 @@ public class NewDayTask implements Runnable {
 
         var settlements = UnitedLandsDataManager.instance().getSettlements();
 
-        //Map<Country, Double> countryTaxTotals = new HashMap<>();
+        // Map<Country, Double> countryTaxTotals = new HashMap<>();
 
         for (Settlement settlement : settlements) {
 
-            // var totalTax = 0;
-            // for (Citizen citizen : settlement.getCitizens()) {
-            //     var citizenBalance = UnitedLandsEconomyManager.instance().getBalance(citizen.getUuid()).doubleValue();
-            //     if (settlement.useTaxPercent()) {
-            //         // Percentage tax
-            //         var tax = citizenBalance * settlement.getTax();
-            //         UnitedLandsEconomyManager.instance().withdraw(citizen.getUuid(), tax, "Daily taxes");
-            //         totalTax += tax;
-            //         notifyPlayer(citizen.getOfflinePlayer().getPlayer(), "new-day.citizen-tax-notice", tax);
-            //     } else {
-            //         // Flat tax
-            //         var tax = settlement.getTax();
-            //         if (citizenBalance >= tax) {
-            //             UnitedLandsEconomyManager.instance().withdraw(citizen.getUuid(), tax, "Daily taxes");
-            //             totalTax += tax;
-            //             notifyPlayer(citizen.getOfflinePlayer().getPlayer(), "new-day.citizen-tax-notice", tax);
-            //         } else {
-            //             // TODO: kick citizen?
-            //             notifyPlayer(settlement.getMayor().getOfflinePlayer().getPlayer(), "new-day.citizen-BANKRUPT", tax);
-            //         }
-            //     }
-            // }
+            if (settlement.isBankrupt()) {
 
-            // United.logger().info("Settlement " + settlement.getName() + " collected " + UnitedLandsEconomyManager.instance().format(totalTax) + " taxes.", "UnitedLands");
-            // UnitedLandsEconomyManager.instance().deposit(settlement.getUuid(), totalTax, "Citizen taxes");
-            // notifyPlayers(settlement.getOnlinePlayers(), "new-day.settlement-tax-notice", totalTax);
+                var gracePeriod = UnitedLandsConfig.get().economy().costs().settlement().bankruptcyGracePeriod() * 1000;
+                var elapsedTime = System.currentTimeMillis() - settlement.getBankruptcyTimestamp();
 
-            var balance = UnitedLandsEconomyManager.instance().getBalance(settlement.getUuid()).doubleValue();
-            var upkeep = CostUtils.getSettlementUpkeep(settlement);
+                if (elapsedTime > gracePeriod) {
+                       // TODO: actual removal
+                }
 
-            if (balance >= upkeep) {
-                UnitedLandsEconomyManager.instance().withdraw(settlement.getUuid(), upkeep, "Daily upkeep");
-                United.logger().info("Settlement " + settlement.getName() + " paid " + UnitedLandsEconomyManager.instance().format(upkeep) + " upkeep.", "UnitedLands");
-                notifyPlayers(settlement.getOnlinePlayers(), "new-day.settlement-upkeep-notice", upkeep);
             } else {
-                // Do town fall
+                var balance = UnitedLandsEconomyManager.instance().getBalance(settlement.getUuid()).doubleValue();
+                var upkeep = CostUtils.getSettlementUpkeep(settlement);
+
+                UnitedLandsEconomyManager.instance().withdraw(settlement.getUuid(), upkeep, "Daily upkeep");
+                United.logger().info("Settlement " + settlement.getName() + " paid "
+                        + UnitedLandsEconomyManager.instance().format(upkeep) + " upkeep.", "UnitedLands");
+
+                United.messenger().send(settlement.getOnlinePlayers(),
+                        "new-day.settlement-upkeep-notice",
+                        UnitedLandsEconomyManager.instance().format(upkeep));
+
+                // If the new balance is below 0, mark the settlement as bankrupt.
+                if (balance - upkeep < 0) {
+                    settlement.setBankrupt(true);
+                    settlement.setBankruptcyTimestamp(System.currentTimeMillis());
+                    settlement.save();
+
+                    United.messenger().broadcast("new-day.settlement-bankrupt-broadcast",
+                            settlement.getCleanName());
+
+                    United.messenger().send(settlement.getOnlinePlayers(),
+                            "new-day.settlement-bankrupt-notice",
+                            UnitedLandsEconomyManager.instance().format(
+                                    UnitedLandsConfig.get().economy().costs().settlement().bankruptcyStopThreshold()),
+                            United.formatter().formatDuration(
+                                UnitedLandsConfig.get().economy().costs().settlement().bankruptcyGracePeriod() * 1000
+                            ));
+                }
             }
-
-            if (settlement.hasCountry()) {
-
-                // TODO: nation taxes
-            }
-
 
         }
 
-        for (Country country : UnitedLandsDataManager.instance().getCountries()) {
-            for (Settlement settlement : country.getSettlements()) {
+        for (
+
+        Country country : UnitedLandsDataManager.instance().getCountries()) {
+
+            if (country.isBankrupt()) {
+                var gracePeriod = UnitedLandsConfig.get().economy().costs().country().bankruptcyGracePeriod() * 1000;
+                var elapsedTime = System.currentTimeMillis() - country.getBankruptcyTimestamp();
+
+                if (elapsedTime > gracePeriod) {
+                       // TODO: actual removal
+                }
                 
+            } else {
+
+                var balance = UnitedLandsEconomyManager.instance().getBalance(country.getUuid()).doubleValue();
+                var upkeep = CostUtils.getCountryUpkeep(country);
+
+                UnitedLandsEconomyManager.instance().withdraw(country.getUuid(), upkeep, "Daily upkeep");
+                United.logger().info("Country " + country.getName() + " paid "
+                        + UnitedLandsEconomyManager.instance().format(upkeep) + " upkeep.", "UnitedLands");
+
+                United.messenger().send(country.getOnlinePlayers(),
+                        "new-day.country-upkeep-notice",
+                        UnitedLandsEconomyManager.instance().format(upkeep));
+
+                // If the new balance is below 0, mark the settlement as bankrupt.
+                if (balance - upkeep < 0) {
+                    country.setBankrupt(true);
+                    country.setBankruptcyTimestamp(System.currentTimeMillis());
+                    country.save();
+
+                    United.messenger().broadcast("new-day.country-bankrupt-broadcast",
+                            country.getCleanName());
+
+                    United.messenger().send(country.getOnlinePlayers(),
+                            "new-day.country-bankrupt-notice",
+                            UnitedLandsEconomyManager.instance()
+                                    .format(UnitedLandsConfig.get().economy().costs().country().bankruptcyStopThreshold()),
+                            United.formatter().formatDuration(
+                                UnitedLandsConfig.get().economy().costs().country().bankruptcyGracePeriod() * 1000
+                            ));
+                }
             }
         }
 
         NewDayScheduler.instance().finishNewDay();
-    }
-
-    private void notifyPlayer(Player player, String message, double amount) {
-        if (player == null || !player.isOnline())
-            return;
-        United.messenger().send(player, message, UnitedLandsEconomyManager.instance().format(amount));
-    }
-
-    private void notifyPlayers(Set<Player> players, String message, double amount) {
-        United.messenger().send(Audience.audience(players), message, UnitedLandsEconomyManager.instance().format(amount));
     }
 
 }

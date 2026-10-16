@@ -19,6 +19,7 @@ admin:
       success: <aqua>Country {1} successfully deleted.</aqua>
     deposit:
       success: <aqua>Deposited {1} into the country bank of {2}.</aqua>
+      bankruptcy-stopped: <green>Your country is no longer bankrupt. All commands have been enabled.</green>
     removerank:
       success: <aqua>Successfully removed rank {1} from {2} in country {3}.</aqua>
     removesettlement:
@@ -55,6 +56,11 @@ admin:
       success: <aqua>Successfully deleted settlement {1}.</aqua>
     deposit:
       success: <aqua>Deposited {1} into the settlement bank of {2}.</aqua>
+      bankruptcy-stopped: <green>Your settlement is no longer bankrupt. All commands have been enabled.</green>
+    permission:
+      success: <aqua>Settlement {1} permission {2} for {3} set to {4}.</aqua>
+      unknown-membership: '<yellow>Unknown group: {1}.</yellow>'
+      unknown-permission: '<yellow>Unknown permission: {1}.</yellow>'
     removecitizen:
       success: <aqua>Successfully removed {1} from settlement {2}.</aqua>
     removerank:
@@ -81,6 +87,7 @@ admin:
       success-settlement: <aqua>Settlement import finished.</aqua>
 general-errors:
   citizen-not-found: <yellow>Citizen {1} not found.</yellow>
+  country-bankrupt: <red>You cannot use this command while the country is bankrupt.</red>
   country-not-found: <yellow>Country {1} not found.</yellow>
   damage-disabled: <yellow>You cannot do any damage here.</yellow>
   no-citizen-data: <yellow>Missing citizen data for player {1}.</yellow>
@@ -92,12 +99,14 @@ general-errors:
   no-permission: <yellow>You don't have permission to perform this action.</yellow>
   no-region-permission: <yellow>You don't have permissions in this region.</yellow>
   no-settlement-permission: <yellow>You don't have the necessary settlement rank do this ({perm}).</yellow>
+  not-allowed: <yellow>Sorry, you're not allowed to do that here, this area is protected.</yellow>
   not-in-claim: <yellow>You're not inside of a claimed area.</yellow>
   not-in-country: <yellow>You're not part of a country.</yellow>
   not-in-settlement: <yellow>You are not member of a settlement.</yellow>
   player-not-found: <yellow>Player {1} not found.</yellow>
   player-not-in-country: <yellow>You are not a member of {1}.</yellow>
   region-not-found: <yellow>Region {1} not found.</yellow>
+  settlement-bankrupt: <red>You cannot use this command while the settlement is bankrupt.</red>
   settlement-not-found: <yellow>Settlement {1} not found.</yellow>
   wrong-color-format: <yellow>Wrong color format, must be hex (#000000).</yellow>
   wrong-number-format: <yellow>Invalid number format.</yellow>
@@ -164,8 +173,12 @@ new-day:
   citizen-tax-notice: <aqua>You paid {1} of taxes to your settlement.</aqua>
   country-tax-notice: <aqua>Your country has collected {1} of taxes from its settlements.</aqua>
   country-upkeep-notice: <aqua>Your country has paid {1} of upkeep.</aqua>
+  country-bankrupt-notice: <red><b>Your country went bankrupt.</b> Raise the country's balance above {1} to avoid its removal in {2}.</red>
+  country-bankrupt-broadcast: <red><b>The country of {1} just went bankrupt.</b></red>
   settlement-tax-notice: <aqua>Your town has collected {1} of taxes from its residents.</aqua>
   settlement-upkeep-notice: <aqua>Your town has paid {1} of upkeep.</aqua>
+  settlement-bankrupt-notice: <red><b>Your settlement went bankrupt.</b> Raise the settlement's balance above {1} to avoid its removal in {2}.</red>
+  settlement-bankrupt-broadcast: <red><b>The settlement {1} just went bankrupt.</b></red>
   start: <aqua><bold>A new day is starting.</bold> Collecting taxes from settlements and countries...</aqua>
 player:
   country:
@@ -180,7 +193,10 @@ player:
       no-region: <yellow>There is no region in this location.</yellow>
       start-broadcast: <aqua><green>{1}</green> has started claiming the region of <red>{2}</red>. They will take control of it in {3}.</aqua>
       too-many-claiming: <yellow>You cannot claim more than {1} region(s) at the same time.</yellow>
+      disconnected: "<yellow>You cannot claim this region because it doesn't share a border with your country.</yellow>"
+      confirm: <white>Claiming <red>{1}</red> for <blue>{2}</blue> will cost <gold>{3}</gold> and will take {4} to complete. Continue?</white>
     create:
+      confirm: <white>You will create the country of <green>{1}</green> with capital <blue>{2}</blue>. This will cost you {3}. Continue?</white>
       broadcast-message: '<aqua>{1} has created the country of <green>{2}</green> (Region: <red>{3}</red>)'
       player-message: <aqua>Congratulations, you have crated the country of <green>{1}</green>! Find out how to manage it on our /wiki and don't hesitate to ask other players in the chat.</aqua>
       region-occupied: <yellow>This region is already owned by {1}</yellow>
@@ -198,6 +214,10 @@ player:
       success: <aqua>Successfully changed your country's color to {1}</aqua>
     setname:
       success: <aqua>Successfully changed your country's name to {1}</aqua>
+    settax:
+      above-max: <yellow>You can't set taxes higher than {1}, using maximum allowed value.</yellow>
+      below-min: <yellow>You can't set taxes lower than {1}, using minimum allowed value.</yellow>
+      success: <aqua>Taxes for {1} set to {2}</aqua>
     unclaim:
       confirm: <yellow>You will lose control of this region. Continue?</yellow>
       confirm-warn-leader: '<red>WARNING: You will lose leadership of the country!</red>'
@@ -211,6 +231,7 @@ player:
     withdraw:
       success: <aqua>You took {1} from the country bank.</aqua>
   money:
+    paid-taxes: "<gray>You paid {1} taxes to your settlement.</gray>"
     balance: "<gray><b>{1}</b>'s Balance: {2}</gray>"
     pay:
       received: "<aqua>You received {1} from {2}.</aqua>"
@@ -246,7 +267,8 @@ player:
       has-country: <yellow>This region belongs to {1}, and you lack the permission
         to claim here.</yellow>
       outside-of-region: <yellow>You cannot claim outside of your region.</yellow>
-      success: <aqua>Claimed chunk {1} for {2} for {3}</aqua>
+      disconnected-warning: "<yellow>This chunk is not connected to an existing claim. Please make sure you read the rules about disconnected claims on our /wiki.</yellow>"
+      success: <aqua>Claimed chunk {2} for {1} for {3}</aqua>
     create:
       already-claimed: <yellow>This space is already claimed.</yellow>
       already-in-settlement: <yellow>You are already a member of a settlement. Leave your current settlement first.</yellow>
@@ -323,7 +345,7 @@ player:
       tp-cancel: <white>Teleport cancelled.</white>
       tp-start: <white>Teleporting in 3 seconds. Move to cancel.</white>
     toggle:
-      success: <aqua>Toggled settlement {1} to {2}</aqua>
+      success: <aqua>Toggled settlement flag {1} to {2}</aqua>
       unknown-toggle: '<yellow>Unknown toggle: {1}.</yellow>'
     unclaim:
       has-spawn: <yellow>Cannot unclaim the chunk that contains the settlement spawn. Move the spawn first.</yellow>
@@ -331,7 +353,7 @@ player:
       is-home-chunk: <yellow>You cannot unclaim the settlement's home chunk</yellow>
       not-claimed: <yellow>This chunk is not claimed</yellow>
       not-in-settlement: <yellow>This chunk does not belong to your settlement</yellow>
-      success: <aqua>Unclaimed chunk at {1}</aqua>
+      success: <aqua>Unclaimed chunk at {2} from {1}</aqua>
     usetaxpercent:
       success: <aqua>Percentage tax for {1} is now {2}.</aqua>
     withdraw:

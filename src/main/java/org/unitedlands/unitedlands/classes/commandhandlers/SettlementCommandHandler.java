@@ -43,6 +43,11 @@ public class SettlementCommandHandler implements UnitedCommandExecutor {
         if (settlement == null)
             return null;
 
+        if (settlement.isBankrupt()) {
+            United.messenger().send(player, "general-errors.settlement-bankrupt");
+            return null;
+        }
+
         if (permission != null)
             if (!hasPermission(permission, citizen))
                 return null;

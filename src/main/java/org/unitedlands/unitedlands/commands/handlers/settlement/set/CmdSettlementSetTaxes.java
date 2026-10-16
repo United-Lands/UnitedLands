@@ -5,14 +5,13 @@ import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.unitedlands.classes.commandhandlers.SettlementCommandHandler;
 import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
-import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.utils.United;
 
 @UnitedSubCommand(
         parent = CmdSettlementSet.class,
         name = "taxes",
         description = "Sets the settlement taxes",
-        usage = "/settlement set taxes <amount>",
+        usage = "/settlement set taxes <percentage>",
         playerOnly = true
 )
 public class CmdSettlementSetTaxes extends SettlementCommandHandler {
@@ -37,36 +36,25 @@ public class CmdSettlementSetTaxes extends SettlementCommandHandler {
             return;
         }
 
-        if (context.settlement().useTaxPercent()) {
-            if (value < UnitedLandsConfig.get().economy().taxes().get("settlement").minPercent()) {
-                United.messenger().send(context.player(), "player.settlement.settax.below-min", 
-                    String.format("%.2f%%", UnitedLandsConfig.get().economy().taxes().get("settlement").minPercent() * 100));
-                value = UnitedLandsConfig.get().economy().taxes().get("settlement").minPercent();
-            } else if (value > UnitedLandsConfig.get().economy().taxes().get("settlement").maxPercent()) {
-                United.messenger().send(context.player(), "player.settlement.settax.above-max", 
-                    String.format("%.2f%%", UnitedLandsConfig.get().economy().taxes().get("settlement").maxPercent() * 100));
-                value = UnitedLandsConfig.get().economy().taxes().get("settlement").maxPercent();
-            }
-        } else {
-            if (value < UnitedLandsConfig.get().economy().taxes().get("settlement").minAmount()) {
-                United.messenger().send(context.player(), "player.settlement.settax.below-min", 
-                    UnitedLandsEconomyManager.instance().format(UnitedLandsConfig.get().economy().taxes().get("settlement").minAmount()));
-                value = UnitedLandsConfig.get().economy().taxes().get("settlement").minAmount();
-            } else if (value > UnitedLandsConfig.get().economy().taxes().get("settlement").maxAmount()) {
-                United.messenger().send(context.player(), "player.settlement.settax.above-max", 
-                    UnitedLandsEconomyManager.instance().format(UnitedLandsConfig.get().economy().taxes().get("settlement").maxAmount()));
-                value = UnitedLandsConfig.get().economy().taxes().get("settlement").maxAmount();
-            }
+        // If players enter percentage as full numbers (e.g. 25), divide by 100
+        if (value > 1.0) {
+            value /= 100.0;
+        }
+
+        if (value < UnitedLandsConfig.get().economy().taxes().get("settlement").minPercent()) {
+            United.messenger().send(context.player(), "player.settlement.settax.below-min", 
+                String.format("%.2f%%", UnitedLandsConfig.get().economy().taxes().get("settlement").minPercent() * 100));
+            value = UnitedLandsConfig.get().economy().taxes().get("settlement").minPercent();
+        } else if (value > UnitedLandsConfig.get().economy().taxes().get("settlement").maxPercent()) {
+            United.messenger().send(context.player(), "player.settlement.settax.above-max", 
+                String.format("%.2f%%", UnitedLandsConfig.get().economy().taxes().get("settlement").maxPercent() * 100));
+            value = UnitedLandsConfig.get().economy().taxes().get("settlement").maxPercent();
         }
 
         context.settlement().setTax((float) value);
-
-        var valueString = context.settlement().useTaxPercent() ? String.format("%.2f%%", value * 100)
-                : UnitedLandsEconomyManager.instance().format((double) value);
-
         context.settlement().save();
         
-        United.messenger().send(context.player(), "player.settlement.settax.success", context.settlement().getCleanName(), valueString);
+        United.messenger().send(context.player(), "player.settlement.settax.success", context.settlement().getCleanName(), String.format("%.2f%%", value * 100));
     }
 
     @Override

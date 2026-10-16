@@ -37,6 +37,12 @@ public class GeopolObject implements Identifiable, MetadataHolder {
     @DatabaseField(columnName = "founding_timestamp")
     protected long foundingTimestamp;
 
+    @DatabaseField(columnName = "bankrupt")
+    protected boolean bankrupt;
+
+    @DatabaseField(columnName = "bankruptcy_timestamp", canBeNull = true)
+    protected Long bankruptcyTimestamp;
+
     @DatabaseField(canBeNull = true, dataType = DataType.LONG_STRING, columnName = "metadata_serialized", columnDefinition = "MEDIUMTEXT")
     private String metadataSerialized;
     @DatabaseField(canBeNull = true, dataType = DataType.LONG_STRING, columnName = "attributes_serialized", columnDefinition = "MEDIUMTEXT")
@@ -113,6 +119,22 @@ public class GeopolObject implements Identifiable, MetadataHolder {
 
     public void setFoundingTimestamp(long foundingTimestamp) {
         this.foundingTimestamp = foundingTimestamp;
+    }
+
+    public boolean isBankrupt() {
+        return bankrupt;
+    }
+
+    public void setBankrupt(boolean bankrupt) {
+        this.bankrupt = bankrupt;
+    }
+
+    public Long getBankruptcyTimestamp() {
+        return bankruptcyTimestamp;
+    }
+
+    public void setBankruptcyTimestamp(Long bankruptcyTimestamp) {
+        this.bankruptcyTimestamp = bankruptcyTimestamp;
     }
 
     @Override

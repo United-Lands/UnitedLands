@@ -84,48 +84,30 @@ economy:
 
   taxes:
     settlement:
-      # Settlement tax mode. Options are:
-      # INCOME: for each supported trade income (UnitedTrade and QuickShop Hikari), a percentage is automatically put in the settlement bank.
-      # WEALTH (default): on each new day, the set percentage or flat amount is deducted from the player balance and put in the settlement bank. 
-      tax-mode: INCOME
-
-      # Min and max percentage are used in both WEALTH and INCOME tax mode
-      min-percent: 1.0
-      max-percent: 25.0
-
-      # Min and max amount are only considered in WEALTH tax mode
-      min-amount: 1.0
-      max-amount: 10000.0
-
-      # Absolute cap of tax taken in a single transaction 
-      tax-cap: 10000.0
-    
+      # Min and max percentage for citizen taxation
+      min-percent: 0.0
+      max-percent: 1.0
     country:
-      # Country tax mode. Options are:
-      # INCOME: for each settlement deposit, a percentage is automatically put in the country bank.
-      # WEALTH (default): on each new day, the set percentage or flat amount is deducted from the settlement balances and put in the country bank. 
-      tax-mode: INCOME
-
-      # Min and max percentage are used in both WEALTH and INCOME tax mode
-      min-percent: 1.0
-      max-percent: 25.0
-
-      # Min and max amount are only considered in WEALTH tax mode
-      min-amount: 1.0
-      max-amount: 10000.0
-
-      # Absolute cap of tax taken in a single transaction 
-      tax-cap: 10000.0
+      # Min and max percentage for settlement taxation
+      min-percent: 0.0
+      max-percent: 1.0
 
   costs:
     settlement:
       create: 8000
+      # The balance that a settlement's bank must meet after bankruptcy to stop the removal process
+      bankruptcy-stop-threshold: 5000
+      # How many seconds must have passed since bankruptcy to trigger removal
+      bankruptcy-grace-period: 259195
       plot-claim-base: 48
       plot-claim-cost-formula: "base"
       plot-upkeep-base: 3
       upkeep-per-plot-formula: "base"
     country:
       create: 80000
+      # The balance that a country's bank must meet after bankruptcy to stop the removal process
+      bankruptcy-stop-threshold: 10000 
+      bankruptcy-grace-period: 259195
       region-claim-base: 10000
       region-claim-cost-formula: "base + (base * 0.1 * (distance / 512))"
       region-upkeep-base: 250
@@ -187,15 +169,107 @@ protection:
     - WAXED_EXPOSED_COPPER_CHEST
     - WAXED_WEATHERED_COPPER_CHEST
     - WAXED_OXIDIZED_COPPER_CHEST
+    - SHULKER_BOX
+    - RED_SHULKER_BOX
+    - PURPLE_SHULKER_BOX
+    - PINK_SHULKER_BOX
+    - MAGENTA_SHULKER_BOX
+    - BLUE_SHULKER_BOX
+    - LIGHT_BLUE_SHULKER_BOX
+    - GREEN_SHULKER_BOX
+    - LIME_SHULKER_BOX
+    - CYAN_SHULKER_BOX
+    - YELLOW_SHULKER_BOX
+    - BROWN_SHULKER_BOX
+    - GRAY_SHULKER_BOX
+    - LIGHT_GRAY_SHULKER_BOX
+    - BLACK_SHULKER_BOX
+    - WHITE_SHULKER_BOX
+    - ORANGE_SHULKER_BOX
+    - HOPPER
+    - DISPENSER
+    - DROPPER
+    - CRAFTER
   use-blocks:
-    - CRAFTING_TABLE
-    - SMITHING_TABLE
-    - ENCHANTING_TABLE
-    - FLETCHING_TABLE
-    - FURNACE
+    - ANVIL
+    - BEACON
+    - BEE_NEST
+    - BEEHIVE
+    - BELL
+    - BIG_DRIPLEAF
     - BLAST_FURNACE
-    - CARTOGRAPHY_TABLE
     - BREWING_STAND
+    - CAKE
+    - CAMPFIRE
+    - CANDLE
+    - CARTOGRAPHY_TABLE
+    - CAULDRON
+    - CAVE_VINES_PLANT
+    - CHIPPED_ANVIL
+    - CHISELED_BOOKSHELF
+    - COMPARATOR
+    - COMPOSTER
+    - CRAFTING_TABLE
+    - DAMAGED_ANVIL
+    - DAYLIGHT_DETECTOR
+    - DRAGON_EGG
+    - ENCHANTING_TABLE
+    - END_CRYSTAL
+    - FLETCHING_TABLE
+    - FLOWER_POT
+    - FURNACE
+    - GRINDSTONE
+    - JUKEBOX
+    - LECTERN
+    - LODESTONE
+    - LOOM
+    - OBSERVER
+    - PUMPKIN
+    - REDSTONE_WIRE
+    - REPEATER
+    - RESPAWN_ANCHOR
+    - SEA_PICKLE
+    - SMITHING_TABLE
+    - SMOKER
+    - SOUL_CAMPFIRE
+    - STONECUTTER
+    - SUSPICIOUS_GRAVEL
+    - SUSPICIOUS_SAND
+    - TURTLE_EGG
+    
+    - RED_BED
+    - PURPLE_BED
+    - MAGENTA_BED
+    - PINK_BED
+    - LIGHT_BLUE_BED
+    - BLUE_BED
+    - CYAN_BED
+    - GREEN_BED
+    - LIME_BED
+    - YELLOW_BED
+    - ORANGE_BED
+    - BROWN_BED
+    - GRAY_BED
+    - LIGHT_GRAY_BED
+    - BLACK_BED
+    - WHITE_BED
+    
+    - RED_CANDLE
+    - PURPLE_CANDLE
+    - MAGENTA_CANDLE
+    - PINK_CANDLE
+    - LIGHT_BLUE_CANDLE
+    - BLUE_CANDLE
+    - CYAN_CANDLE
+    - GREEN_CANDLE
+    - LIME_CANDLE
+    - YELLOW_CANDLE
+    - ORANGE_CANDLE
+    - BROWN_CANDLE
+    - GRAY_CANDLE
+    - LIGHT_GRAY_CANDLE
+    - BLACK_CANDLE
+    - WHITE_CANDLE
   switch-tags: # Minecraft material tags
     - doors
     - trapdoors
@@ -203,30 +277,112 @@ protection:
   switch-blocks:
     - LEVER
   interact:
-    - VILLAGER
+    - ALLAY
+    - ARMADILLO
+    - ARMOR_STAND
+    - AXOLOTL
+    - BAT
+    - CAMEL
+    - CAT
+    - CHEST_MINECART
+    - CHICKEN
+    - COD
     - COW
+    - DOG
+    - DONKEY
+    - END_CRYSTAL
+    - FOX
+    - FROG
+    - GLOW SQUID
+    - GLOW_ITEM_FRAME
+    - HAPPY_GHAST
+    - HOPPER_MINECART
+    - HORSE
+    - ITEM_FRAME
+    - LLAMA
+    - MINECART
+    - MOOSHROOM
+    - MULE
+    - NAUTILUS
+    - OCELOT
+    - PARROT
+    - PIG
+    - PUFFERFISH
+    - RABBIT
+    - REDSTONE
+    - SALMON
     - SHEEP
+    - SKELETON_HORSE
+    - SNIFFER
+    - SNOW GOLEM
+    - SQUID
+    - STRIDER
+    - SULFUR_CUBE
+    - TADPOLE
+    - TROPICAL_FISH
+    - TURTLE
+    - VILLAGER
+  # Hostile mobs that won't spawn naturally or via spawn eggs in settlement claims
   monsters:
-    - ZOMBIE
-    - ZOMBIE_VILLAGER
-    - HUSK
-    - SKELETON
+    - BLAZE
+    - BOGGED
+    - BREEZE
+    - CAMEL_HUSK
+    - CREAKING
     - CREEPER
-    - SPIDER
-    - CAVE_SPIDER
-    - SLIME
-    - PARCHED
     - DROWNED
+    - ELDER_GUARDIAN
+    - ENDER_DRAGON
+    - ENDERMITE
+    - EVOKER
+    - GHAST
+    - GIANT
+    - GUARDIAN
+    - HOGLIN
+    - HUSK
+    - MAGMA_CUBE
+    - PARCHED
     - PHANTOM
+    - PIGLIN_BRUTE
     - PILLAGER
     - RAVAGER
-    - ENDERMAN
+    - SHULKER
+    - SILVERFISH
+    - SKELETON
+    - SLIME
+    - STRAY
+    - VEX
     - VINDICATOR
+    - WARDEN
+    - WITCH
+    - WITHER
+    - WITHER_SKELETON
+    - ZOGLIN
+    - ZOMBIE
+    - ZOMBIE_VILLAGER
+    - ZOMBIFIED_PIGLIN
+  # Passive mobs that won't spawn naturally or via spawn eggs in settlement claims
   animals:
+    - ARMADILLO
+    - AXOLOTL
+    - BAT
+    - CAMEL
+    - CAT
     - CHICKEN
     - COW
-    - SHEEP
+    - DOG
+    - DONKEY
+    - FOX
+    - FROG
+    - HORSE
+    - LLAMA
+    - MOOSHROOM
+    - MULE
+    - OCELOT
+    - PARROT
     - PIG
+    - RABBIT
+    - SHEEP
 
 settlement-chunks:
   none:

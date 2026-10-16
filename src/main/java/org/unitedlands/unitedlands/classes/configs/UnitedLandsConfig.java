@@ -76,12 +76,8 @@ public interface UnitedLandsConfig extends UnitedConfigHandler {
     ) { }
 
     record TaxSettings(
-        @UnitedSetting(key = "tax-mode",   def = "WEALTH") String taxMode, 
         @UnitedSetting(key = "min-percent",   def = "0.0") double minPercent, 
-        @UnitedSetting(key = "max-percent",   def = "25.0") double maxPercent, 
-        @UnitedSetting(key = "min-amount",   def = "0.0") double minAmount, 
-        @UnitedSetting(key = "max-amount",   def = "0.0") double maxAmount, 
-        @UnitedSetting(key = "tax-cap",   def = "10000.0") double taxCap
+        @UnitedSetting(key = "max-percent",   def = "25.0") double maxPercent
     ) { }
 
     public record GeopolAttributeDefaults(
@@ -104,15 +100,19 @@ public interface UnitedLandsConfig extends UnitedConfigHandler {
     ) {}
 
     record SettlementCostSettings(
-        @UnitedSetting(key = "create",   def = "8000")                  int     createCosts, 
-        @UnitedSetting(key = "plot-claim-base",   def = "48")           int     plotClaimBaseCosts, 
-        @UnitedSetting(key = "plot-claim-cost-formula",   def = "base") String  plotClaimCostFormula, 
-        @UnitedSetting(key = "plot-upkeep-base",   def = "3")           int     plotUpkeepBaseCosts, 
-        @UnitedSetting(key = "upkeep-per-plot-formula",   def = "base") String  upkeepPerPlotFormula 
+        @UnitedSetting(key = "create",                      def = "8000")   int     createCosts, 
+        @UnitedSetting(key = "bankruptcy-stop-threshold",   def = "10000")  int     bankruptcyStopThreshold, 
+        @UnitedSetting(key = "bankruptcy-grace-period",     def = "259195") long    bankruptcyGracePeriod, 
+        @UnitedSetting(key = "plot-claim-base",             def = "48")     int     plotClaimBaseCosts, 
+        @UnitedSetting(key = "plot-claim-cost-formula",     def = "base")   String  plotClaimCostFormula, 
+        @UnitedSetting(key = "plot-upkeep-base",            def = "3")      int     plotUpkeepBaseCosts, 
+        @UnitedSetting(key = "upkeep-per-plot-formula", def = "base")       String  upkeepPerPlotFormula 
     ) {}
 
     record CountryCostSettings(
         @UnitedSetting(key = "create",                      def = "80000")  int     createCosts, 
+        @UnitedSetting(key = "bankruptcy-stop-threshold",   def = "10000")  int     bankruptcyStopThreshold, 
+        @UnitedSetting(key = "bankruptcy-grace-period",     def = "259195") long    bankruptcyGracePeriod, 
         @UnitedSetting(key = "region-claim-base",           def = "8000")   int     regionClaimBaseCosts, 
         @UnitedSetting(key = "region-claim-cost-formula",   def = "base")   String  regionClaimCostFormula, 
         @UnitedSetting(key = "region-upkeep-base",          def = "250")    int     regionUkeepBaseCosts, 
