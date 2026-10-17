@@ -2,7 +2,6 @@ package org.unitedlands.unitedlands;
 
 import org.bukkit.plugin.java.JavaPlugin;
 import org.unitedlands.classes.ConfigFile;
-import org.unitedlands.services.UnitedLanguageService;
 import org.unitedlands.unitedlands.integrations.Pl3xMap.Pl3xMapRenderer;
 import org.unitedlands.unitedlands.listeners.BlockListener;
 import org.unitedlands.unitedlands.listeners.ChatListener;
@@ -16,6 +15,7 @@ import org.unitedlands.unitedlands.listeners.ServerEventListener;
 import org.unitedlands.unitedlands.managers.ChatChannelManager;
 import org.unitedlands.unitedlands.managers.ConfirmationManager;
 import org.unitedlands.unitedlands.managers.DisplayManager;
+import org.unitedlands.unitedlands.managers.FlightManager;
 import org.unitedlands.unitedlands.managers.IntegrationManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.unitedlands.schedulers.NewDayScheduler;
@@ -32,22 +32,21 @@ public class UnitedLands extends JavaPlugin {
 
     private ConfigFile permissionConfig;
 
-    UnitedLandsDataManager globalDataManager;
-    UnitedLandsEconomyManager economyManager;
-    DisplayManager displayManager;
-    ConfirmationManager confirmationManager;
-    PermissionManager permissionManager;
-    PlayerCacheManager playerCacheManager;
-    ChatChannelManager chatChannelManager;
-    IntegrationManager integrationManager;
+    // UnitedLandsDataManager globalDataManager;
+    // UnitedLandsEconomyManager economyManager;
+    // DisplayManager displayManager;
+    // ConfirmationManager confirmationManager;
+    // PermissionManager permissionManager;
+    // PlayerCacheManager playerCacheManager;
+    // ChatChannelManager chatChannelManager;
+    // IntegrationManager integrationManager;
+    // FlightManager flightManager;
 
-    private Pl3xMapRenderer mapRenderer;
+    //private Pl3xMapRenderer mapRenderer;
 
     private UnitedLandsWebServices webServices;
 
     private NewDayScheduler newDayScheduler;
-
-    private UnitedLanguageService languageProvider;
 
     @Override
     public void onEnable() {
@@ -60,7 +59,7 @@ public class UnitedLands extends JavaPlugin {
 
         permissionConfig = new ConfigFile(this, "permissions.yml");
 
-        loadManagers();
+        createManagers();
         registerListeners();
 
         webServices = new UnitedLandsWebServices(this);
@@ -77,17 +76,17 @@ public class UnitedLands extends JavaPlugin {
         Pl3xMapRenderer.instance().shutdown();
     }
 
-    private void loadManagers() {
+    private void createManagers() {
 
-        mapRenderer = new Pl3xMapRenderer();
-        permissionManager = new PermissionManager(this);
-        globalDataManager = new UnitedLandsDataManager(this, mapRenderer);
-        displayManager = new DisplayManager(this);
-        confirmationManager = new ConfirmationManager(this);
-        playerCacheManager = new PlayerCacheManager(this);
-        economyManager = new UnitedLandsEconomyManager(this);
-        chatChannelManager = new ChatChannelManager(this);
-        integrationManager = new IntegrationManager();
+        new PermissionManager(this);
+        new UnitedLandsDataManager(this, new Pl3xMapRenderer());
+        new DisplayManager(this);
+        new ConfirmationManager(this);
+        new PlayerCacheManager(this);
+        new UnitedLandsEconomyManager(this);
+        new ChatChannelManager(this);
+        new IntegrationManager();
+        new FlightManager();
 
         newDayScheduler = new NewDayScheduler();
     }
@@ -118,10 +117,6 @@ public class UnitedLands extends JavaPlugin {
 
     public NewDayScheduler getNewDayScheduler() {
         return newDayScheduler;
-    }
-
-    public UnitedLanguageService getLanguageProvider() {
-        return languageProvider;
     }
 
 }

@@ -230,6 +230,11 @@ player:
       success: <aqua>You have forfeited your claims to region {1}.</aqua>
     withdraw:
       success: <aqua>You took {1} from the country bank.</aqua>
+  flight:
+    activated: <aqua>Flight mode acivated</aqua>
+    no-permission: <yellow>Sorry, you're not allowed to fly here.</yellow>
+    removing: <yellow>You are outside of an allowed flight zone. Flight will be removed in 5s unless you return to an allowed zone.</yellow>
+    removed: <gray>Flight removed.</gray>
   money:
     paid-taxes: "<gray>You paid {1} taxes to your settlement.</gray>"
     balance: "<gray><b>{1}</b>'s Balance: {2}</gray>"

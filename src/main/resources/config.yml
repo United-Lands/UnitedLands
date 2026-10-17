@@ -40,6 +40,28 @@ general:
   # Should settlements be able to claim across region borders?
   allow-settlement-claims-outside-home-region: false
 
+  # Manage flight permissions
+  flight:
+    # Enable or disable flight management
+    enabled: true
+    # Required permissions to use flight command (any of the following)
+    permissions: 
+    - townyflight.command.tfly
+    - united.lands.flight
+    # Permissions that will override the cancellation of flight in non-trusted settlements (any of the following)
+    any-settlement-override-permission:
+    - group.admin
+    - group.moderator
+    # Permissions that will override the cancellation of flight outside of claimed areas (any of the following)
+    wilderness-override-permission:
+    - group.admin
+    - group.moderator
+    # Permissions that will override the cancellation of flight in non-UL-managed worlds (any of the following)
+    dimension-override-permission:
+    - group.admin
+
+    
+
 import:
   # Scale multiplier for the import SVG
   scale: 1

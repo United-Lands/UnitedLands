@@ -27,6 +27,7 @@ import org.unitedlands.unitedlands.classes.events.player.PlayerExitRegionEvent;
 import org.unitedlands.unitedlands.classes.events.player.PlayerExitSettlementEvent;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.managers.ChatChannelManager;
+import org.unitedlands.unitedlands.managers.FlightManager;
 import org.unitedlands.unitedlands.managers.PlayerCacheManager;
 import org.unitedlands.unitedlands.utils.CoordinateUtils;
 import org.unitedlands.utils.United;
@@ -223,6 +224,16 @@ public class PlayerMovementListener implements Listener {
                 exitRegionEvent.callEvent();
                 if (exitRegionEvent.isCancelled())
                     return false;
+            }
+
+            // Check and update flight permission
+
+            if (UnitedLandsConfig.get().general().flight().enabled()) {
+                if (!FlightManager.instance().isAllowedToFly(player, playerCache)) {
+                    FlightManager.instance().removeFlight(player, playerCache);
+                } else {
+                    FlightManager.instance().activateFlight(player);
+                }
             }
 
             // General event

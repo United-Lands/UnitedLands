@@ -108,7 +108,8 @@ public class Settlement extends GeopolObject implements PermissionHolder {
     public Integer getStrokeColor() {
         if (hasCountry())
             return getCountry().getStrokeColor();
-        return strokeColor != null ? strokeColor : UnitedLandsConfig.get().mapRendering().get("settlement-default").stroke();
+        return strokeColor != null ? strokeColor
+                : UnitedLandsConfig.get().mapRendering().get("settlement-default").stroke();
     }
 
     public void setStrokeColor(String hexColor) {
@@ -329,6 +330,10 @@ public class Settlement extends GeopolObject implements PermissionHolder {
         return getCitizens().contains(citizen);
     }
 
+    public boolean hasCitizen(Player player) {
+        return getCitizens().stream().anyMatch(c -> c.getUuid().equals(player.getUniqueId()));
+    }
+
     public void addCitizen(Citizen citizen) {
         var c = new HashSet<>(getCitizens());
         c.add(citizen);
@@ -383,6 +388,14 @@ public class Settlement extends GeopolObject implements PermissionHolder {
     public void setTrustList(Set<Citizen> trustList) {
         this.trustList = trustList;
         this.trustListSerialized = SerializationUtils.serializeIdentifiableList(trustList);
+    }
+
+    public boolean hasTrusted(Citizen citizen) {
+        return getTrustList().contains(citizen);
+    }
+
+    public boolean hasTrusted(Player player) {
+        return getTrustList().stream().anyMatch(c -> c.getUuid().equals(player.getUniqueId()));
     }
 
     public Citizen getMayor() {
@@ -551,13 +564,13 @@ public class Settlement extends GeopolObject implements PermissionHolder {
         }
     }
 
-    @Override 
+    @Override
     public void save() {
         PlayerCacheManager.instance().refreshMembershipsForSettlement(this);
         UnitedLandsDataManager.instance().updateSettlementDbData(this, false);
     }
 
-    @Override 
+    @Override
     public void saveAndRender() {
         PlayerCacheManager.instance().refreshMembershipsForSettlement(this);
         UnitedLandsDataManager.instance().updateSettlementDbData(this, true);

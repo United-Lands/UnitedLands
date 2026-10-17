@@ -61,7 +61,9 @@ public interface UnitedLandsConfig extends UnitedConfigHandler {
         @UnitedSection(key = "new-day")                                 NewDaySettings newDay,
         @UnitedSetting(key = "playtime-record-threshold", def = "60")                       long    playtimeRecordThreshold,
         @UnitedSetting(key = "protect-unclaimed-land", def = "false")                       boolean protectUnclaimedLand,
-        @UnitedSetting(key = "allow-settlement-claims-outside-home-region", def = "true")   boolean allowSettlementClaimsOutsideHomeRegion
+        @UnitedSetting(key = "allow-settlement-claims-outside-home-region", def = "true")   boolean allowSettlementClaimsOutsideHomeRegion,
+        @UnitedSection(key = "flight")                                 FlightSettings flight
+
     ) {}
 
     record NewDaySettings(
@@ -69,6 +71,14 @@ public interface UnitedLandsConfig extends UnitedConfigHandler {
             @UnitedSetting(key = "interval-seconds", def = "3600")   int     intervalSeconds,
             @UnitedSetting(key = "new-day-time",     def = "12:00")  String  newDayTime
     ) {}
+
+    record FlightSettings(
+            @UnitedSetting(key = "enabled", def = "false")          boolean         enabled,
+            @UnitedSetting(key = "permissions")                     List<String>    permissions,
+            @UnitedSetting(key = "any-settlement-override-permission")  List<String>  anySettlementOverridePermissions,
+            @UnitedSetting(key = "wilderness-override-permission")  List<String>    wildernessOverridePermissions,
+            @UnitedSetting(key = "dimension-override-permission")  List<String>    dimensionOverridePermissions
+    ) { }
 
     record EconomySettings(
         @UnitedSection (key = "taxes") UnitedDynamicSection<TaxSettings> taxes,
@@ -137,7 +147,7 @@ public interface UnitedLandsConfig extends UnitedConfigHandler {
 
     public record SettlementChunkSettings(
         @UnitedSetting(key = "map-icon",            def = "+")  String  mapIcon, 
-        @UnitedSetting(key = "map-icon-color",      def = "+")  String  mapIconColor, 
+        @UnitedSetting(key = "map-icon-color",      def = "§f") String  mapIconColor, 
         @UnitedSetting(key = "max-per-settlement",  def = "-1") int     maxPerSettlement
     ) {}
 

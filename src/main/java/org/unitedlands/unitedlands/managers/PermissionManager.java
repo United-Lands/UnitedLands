@@ -102,6 +102,15 @@ public class PermissionManager {
         United.logger().info("Permissions config loaded.", "UnitedLands");
     }
 
+    public boolean hasAnyPermission(Player player, List<String> perms) {
+        for (var perm : perms) {
+            if (player.hasPermission(perm))
+                return true;
+        }
+
+        return false;
+    }
+
     public boolean hasRankPermission(String permission, Citizen citizen) {
         var requiredRanks = new HashSet<>(rankPermissions.computeIfAbsent(permission, k -> new HashSet<>()));
         var citizenRanks = new HashSet<>();
