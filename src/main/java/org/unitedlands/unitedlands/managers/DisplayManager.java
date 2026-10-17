@@ -18,6 +18,7 @@ import org.unitedlands.unitedlands.UnitedLands;
 import org.unitedlands.unitedlands.classes.Coordinates;
 import org.unitedlands.unitedlands.classes.Region;
 import org.unitedlands.unitedlands.classes.Settlement;
+import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.utils.CoordinateUtils;
 
 import io.papermc.paper.scoreboard.numbers.NumberFormat;
@@ -150,7 +151,7 @@ public class DisplayManager {
             if (chunk.isForSale())
                 return "$";
             if (chunk.getChunkType() != null)
-                return null; //Settings.settlementChunkTypes.get(chunk.getChunkType()).icon;
+                return UnitedLandsConfig.get().settlementChunks().get(chunk.getChunkType()).mapIcon();
             return "+";
         }
         return "-";

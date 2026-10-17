@@ -1,7 +1,5 @@
 package org.unitedlands.unitedlands;
 
-import org.bukkit.Bukkit;
-import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.unitedlands.classes.ConfigFile;
 import org.unitedlands.services.UnitedLanguageService;
@@ -22,7 +20,6 @@ import org.unitedlands.unitedlands.managers.IntegrationManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.unitedlands.schedulers.NewDayScheduler;
 import org.unitedlands.unitedlands.utils.FontUtils;
-import org.unitedlands.unitedlands.utils.UnitedLanguageServiceImplementation;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.managers.PermissionManager;
 import org.unitedlands.unitedlands.managers.PlayerCacheManager;
@@ -67,10 +64,6 @@ public class UnitedLands extends JavaPlugin {
         registerListeners();
 
         webServices = new UnitedLandsWebServices(this);
-
-        languageProvider = new UnitedLanguageServiceImplementation();
-        Bukkit.getServicesManager().register(UnitedLanguageService.class, languageProvider, this,
-                ServicePriority.Highest);
 
         FontUtils.load(this);
 

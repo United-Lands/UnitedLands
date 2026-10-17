@@ -7,6 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.unitedlands.unitedlands.classes.db.Identifiable;
 import org.unitedlands.unitedlands.classes.interfaces.CoordinateHolder;
+import org.unitedlands.unitedlands.managers.PlayerCacheManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.utils.SerializationUtils;
 import org.unitedlands.libs.ormlite.field.DataType;
@@ -411,6 +412,7 @@ public class SettlementChunk implements Identifiable, PermissionHolder, Coordina
     }
 
     public void save() {
+        PlayerCacheManager.instance().refreshMembershipsForSettlementChunk(this);
         UnitedLandsDataManager.instance().updateSettlementChunkDbData(this);
     }
 

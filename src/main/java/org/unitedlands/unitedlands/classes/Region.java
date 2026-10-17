@@ -12,6 +12,7 @@ import org.bukkit.scheduler.BukkitTask;
 import org.unitedlands.unitedlands.UnitedLands;
 import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.classes.events.region.RegionClaimedEvent;
+import org.unitedlands.unitedlands.managers.PlayerCacheManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.utils.PolygonUtils;
 import org.unitedlands.unitedlands.utils.SerializationUtils;
@@ -452,11 +453,13 @@ public class Region extends GeopolObject implements PermissionHolder {
 
     @Override 
     public void save() {
+        PlayerCacheManager.instance().refreshMembershipsForRegion(this);
         UnitedLandsDataManager.instance().updateRegionDbData(this, false);
     }
 
     @Override 
     public void saveAndRender() {
+        PlayerCacheManager.instance().refreshMembershipsForRegion(this);
         UnitedLandsDataManager.instance().updateRegionDbData(this, true);
     }
 

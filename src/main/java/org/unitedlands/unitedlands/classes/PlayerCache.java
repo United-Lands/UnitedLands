@@ -41,13 +41,13 @@ public class PlayerCache {
         return cachedSettlementChunk;
     }
 
-    public void updateChunkCache(Coordinates chunkCoordinates, SettlementChunk settlementChunk) {
+    public void updateSettlementChunkCache(Coordinates chunkCoordinates, SettlementChunk settlementChunk) {
         this.cachedChunkCoordinates = chunkCoordinates;
         this.cachedSettlementChunk = settlementChunk;
         this.cachedSettlement = settlementChunk.getSettlement();
     }
 
-    public void clearChunkCache() {
+    public void clearSettlementChunkCache() {
         this.cachedChunkCoordinates = null;
         this.cachedSettlementChunk = null;
         this.cachedSettlement = null;

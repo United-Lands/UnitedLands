@@ -15,6 +15,7 @@ import org.bukkit.entity.Player;
 import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.unitedlands.UnitedLands;
 import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
+import org.unitedlands.unitedlands.managers.PlayerCacheManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.utils.ColorUtils;
 import org.unitedlands.unitedlands.utils.CostUtils;
@@ -552,11 +553,13 @@ public class Settlement extends GeopolObject implements PermissionHolder {
 
     @Override 
     public void save() {
+        PlayerCacheManager.instance().refreshMembershipsForSettlement(this);
         UnitedLandsDataManager.instance().updateSettlementDbData(this, false);
     }
 
     @Override 
     public void saveAndRender() {
+        PlayerCacheManager.instance().refreshMembershipsForSettlement(this);
         UnitedLandsDataManager.instance().updateSettlementDbData(this, true);
     }
 

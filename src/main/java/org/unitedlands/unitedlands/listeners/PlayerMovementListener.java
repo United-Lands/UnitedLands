@@ -155,7 +155,7 @@ public class PlayerMovementListener implements Listener {
                     // The player entered from the wilderness.
                     enteredSettlement = true;
                 }
-                playerCache.updateChunkCache(toChunkCoords, settlementChunk);
+                playerCache.updateSettlementChunkCache(toChunkCoords, settlementChunk);
             } else {
                 // Entered the wilderness
                 if (playerCache.getCachedSettlementChunk() != null) {
@@ -163,7 +163,7 @@ public class PlayerMovementListener implements Listener {
                     leftSettlement = true;
                     lastSettlement = playerCache.getCachedSettlement();
                 }
-                playerCache.clearChunkCache();
+                playerCache.clearSettlementChunkCache();
             }
 
             if (enteredSettlement) {
