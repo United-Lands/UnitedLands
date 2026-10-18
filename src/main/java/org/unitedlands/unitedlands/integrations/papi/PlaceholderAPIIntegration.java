@@ -14,6 +14,8 @@ public class PlaceholderAPIIntegration {
 
     public PlaceholderAPIIntegration() {
         instance = this;
+        
+        new UnitedLandsPAPIExpansion().register();        
     }
 
     public String setPlaceholders(Player player, String text) {

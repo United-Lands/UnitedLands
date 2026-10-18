@@ -4,7 +4,7 @@ import java.util.List;
 import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.unitedlands.classes.commandhandlers.RegionCommandHandler;
-
+import org.unitedlands.unitedlands.utils.ColorUtils;
 import org.unitedlands.utils.United;
 
 @UnitedSubCommand(
@@ -27,6 +27,11 @@ public class CmdRegionSetName extends RegionCommandHandler {
         var context = validate(sender, "region.setname");
         if (context == null)
             return;
+
+        if (ColorUtils.containsColourCharacters(args[0])) {
+            United.messenger().send(sender, "general-errors.illegal-characters", args[0]);
+            return;
+        }
 
         var oldname = context.region().getName();
 

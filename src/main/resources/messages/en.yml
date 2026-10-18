@@ -90,6 +90,7 @@ general-errors:
   country-bankrupt: <red>You cannot use this command while the country is bankrupt.</red>
   country-not-found: <yellow>Country {1} not found.</yellow>
   damage-disabled: <yellow>You cannot do any damage here.</yellow>
+  illegal-characters: <yellow>Your input {1} contains blacklisted characters.</yellow>
   no-citizen-data: <yellow>Missing citizen data for player {1}.</yellow>
   no-claim-permission: <yellow>You don't have permissions in this claim.</yellow>
   no-country-permission: <yellow>You don't have the necessary country rank do this ({1}).</yellow>
@@ -231,7 +232,7 @@ player:
     withdraw:
       success: <aqua>You took {1} from the country bank.</aqua>
   flight:
-    activated: <aqua>Flight mode acivated</aqua>
+    activated: <aqua>Flight mode activated</aqua>
     no-permission: <yellow>Sorry, you're not allowed to fly here.</yellow>
     removing: <yellow>You are outside of an allowed flight zone. Flight will be removed in 5s unless you return to an allowed zone.</yellow>
     removed: <gray>Flight removed.</gray>

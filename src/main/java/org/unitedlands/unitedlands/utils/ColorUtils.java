@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.unitedlands.utils.United;
+
 public class ColorUtils {
     public static Color hexToColor(String hex) {
         if (hex.startsWith("#")) {
@@ -30,11 +32,20 @@ public class ColorUtils {
                 argb & 0xFF);
     }
 
-    private static final String HEX_WEBCOLOR_PATTERN = "^#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$";
-    private static final Pattern pattern = Pattern.compile(HEX_WEBCOLOR_PATTERN);
+    private static final String HEX_WEBCOLOR_PATTERN = "^#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$";    
+    private static final Pattern hexPattern = Pattern.compile(HEX_WEBCOLOR_PATTERN);
+
+    private static final String COLOUR_CHARACTERS_PATTERN = "[$&<>.;:#]";
+    private static final Pattern colorPattern = Pattern.compile(COLOUR_CHARACTERS_PATTERN);
 
     public static boolean isValidHexColor(final String colorCode) {
-        Matcher matcher = pattern.matcher(colorCode);
+        Matcher matcher = hexPattern.matcher(colorCode);
         return matcher.matches();
+    }
+
+    public static boolean containsColourCharacters(final String str) {
+        United.logger().debug("Testing " + str);
+        Matcher matcher = colorPattern.matcher(str);
+        return matcher.find();
     }
 }

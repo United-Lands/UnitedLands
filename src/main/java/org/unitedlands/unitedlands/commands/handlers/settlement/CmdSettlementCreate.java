@@ -10,6 +10,7 @@ import org.unitedlands.unitedlands.classes.commandhandlers.SettlementCommandHand
 import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
+import org.unitedlands.unitedlands.utils.ColorUtils;
 import org.unitedlands.unitedlands.utils.CoordinateUtils;
 import org.unitedlands.utils.United;
 
@@ -39,6 +40,11 @@ public class CmdSettlementCreate extends SettlementCommandHandler {
         var citizen = getCitizen(player);
         if (citizen == null)
             return;
+
+        if (ColorUtils.containsColourCharacters(args[0])) {
+            United.messenger().send(player, "general-errors.illegal-characters", args[0]);
+            return;
+        }
 
         if (citizen.hasSettlement()) {
             United.messenger().send(player, "player.settlement.create.already-in-settlement", citizen.getSettlement().getCleanName());

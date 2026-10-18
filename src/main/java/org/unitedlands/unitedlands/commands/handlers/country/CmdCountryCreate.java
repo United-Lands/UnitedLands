@@ -10,6 +10,7 @@ import org.unitedlands.registrars.command.UnitedCommandExecutor;
 import org.unitedlands.unitedlands.classes.Confirmation;
 import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
+import org.unitedlands.unitedlands.utils.ColorUtils;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.utils.United;
 
@@ -34,6 +35,11 @@ public class CmdCountryCreate implements UnitedCommandExecutor {
         var citizen = UnitedLandsDataManager.instance().getCitizen(player);
         if (citizen == null || citizen.getSettlement() == null) {
             United.messenger().send(player, "general-errors.not-in-settlement");
+            return;
+        }
+
+        if (ColorUtils.containsColourCharacters(args[0])) {
+            United.messenger().send(player, "general-errors.illegal-characters", args[0]);
             return;
         }
 
