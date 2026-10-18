@@ -1,13 +1,11 @@
 package org.unitedlands.unitedlands.commands.handlers.channel;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.registrars.command.UnitedCommandExecutor;
-import org.unitedlands.unitedlands.classes.ChatChannel;
 import org.unitedlands.unitedlands.managers.ChatChannelManager;
 
 @UnitedSubCommand(
@@ -23,7 +21,7 @@ public class CmdChannelJoin implements UnitedCommandExecutor{
     @Override
     public List<String> handleTab(CommandSender sender, String[] args) {
         if (args.length == 1) {
-            return Arrays.stream(ChatChannel.values()).map(Enum::toString).toList();
+            return ChatChannelManager.instance().getChannelNames();
         }
         return null;
     }
@@ -34,7 +32,7 @@ public class CmdChannelJoin implements UnitedCommandExecutor{
         if (args.length < 1)
             return;
 
-        ChatChannelManager.instance().switchChannel((Player) sender, ChatChannel.valueOf(args[0]));
+        ChatChannelManager.instance().switchChannel((Player) sender, args[0], args.length > 1 ? args[1] : null);
     }
 
 }

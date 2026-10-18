@@ -4,8 +4,6 @@ import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
 import org.unitedlands.unitedlands.UnitedLands;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
-import org.unitedlands.utils.United;
-
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 
 public class UnitedLandsPAPIExpansion extends PlaceholderExpansion {
@@ -32,7 +30,6 @@ public class UnitedLandsPAPIExpansion extends PlaceholderExpansion {
 
     @Override
     public String onRequest(OfflinePlayer player, @NotNull String params) {
-        United.logger().debug("PAPI query");
         var citizen = UnitedLandsDataManager.instance().getCitizen(player.getUniqueId());
         if (citizen == null)
             return "MISSING_CITIZEN_DATA";
@@ -43,7 +40,7 @@ public class UnitedLandsPAPIExpansion extends PlaceholderExpansion {
         if (params.equalsIgnoreCase("player_country")) {
             return citizen.hasCountry() ? applyBrackets(citizen.getCountry().getCleanName()) : null; //
         }
-        return null; //
+        return null; 
     }
 
     String applyBrackets(String str) {

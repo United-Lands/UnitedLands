@@ -415,3 +415,55 @@ settlement-chunks:
     map-icon: "F"
     map-icon-color: "§f"
     max-per-settlement: 1
+
+chat:
+  show-empty-channel-message: false
+  tag-open: "<dark_gray>[</dark_gray>"
+  tag-close: "<dark_gray>]</dark_gray> "
+  player-name-placeholder: "%cmi_user_nickname%"
+  delimiter: "<gray>: </gray>"
+  custom-channel-color: "#80cfc5"
+  channels:
+    # Default channels. Do not remove or change keys.
+    global:
+      key: GLOBAL
+      color: white
+      tag: <white><bold>G</bold></white>
+      prefix: "%luckperms_prefix% "
+      notify-join: false
+    local: 
+      key: LOCAL
+      color: gold
+      tag: <gold><bold>L</bold></gold>
+      prefix: "%luckperms_prefix% "
+      notify-join: false
+    staff: 
+      key: STAFF
+      color: dark_green
+      tag: <dark_green><bold>STAFF</bold></dark_green>
+      prefix: "%luckperms_prefix% "
+      notify-join: false
+    settlement: 
+      key: SETTLEMENT
+      color: blue
+      tag: <blue><bold>S</bold></blue>
+      prefix: "%luckperms_prefix% "
+      notify-join: false
+    country: 
+      key: COUNTRY
+      color: green
+      tag: <green><bold>C</bold></green>
+      prefix: "%luckperms_prefix% "
+      notify-join: false
+    german:
+      key: GERMAN
+      color: gray
+      tag: <b><gradient:#353535:#FF0000:#FCD05C>DEUTSCH</gradient></b>
+      prefix: ""
+      notify-join: true
+    french:
+      key: FRENCH
+      color: gray
+      tag: <b><gradient:#FF0000:#FFFFFF:#3955F6>FRANÇAIS</gradient></b>
+      prefix: ""
+      notify-join: true

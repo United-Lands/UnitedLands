@@ -1,7 +1,7 @@
 package org.unitedlands.unitedlands.integrations.papi;
 
 import org.bukkit.entity.Player;
-
+import org.unitedlands.unitedlands.utils.LegacyFormatUtils;
 import me.clip.placeholderapi.PlaceholderAPI;
 
 public class PlaceholderAPIIntegration {
@@ -14,12 +14,15 @@ public class PlaceholderAPIIntegration {
 
     public PlaceholderAPIIntegration() {
         instance = this;
-        
-        new UnitedLandsPAPIExpansion().register();        
+
+        new UnitedLandsPAPIExpansion().register();
     }
 
     public String setPlaceholders(Player player, String text) {
-        return PlaceholderAPI.setPlaceholders(player, text);
+
+        String papiResolved = PlaceholderAPI.setPlaceholders(player, text);
+
+        return LegacyFormatUtils.convert(papiResolved);
     }
 
 }

@@ -84,7 +84,7 @@ public class UnitedLands extends JavaPlugin {
         new ConfirmationManager(this);
         new PlayerCacheManager(this);
         new UnitedLandsEconomyManager(this);
-        new ChatChannelManager(this);
+        new ChatChannelManager();
         new IntegrationManager();
         new FlightManager();
 

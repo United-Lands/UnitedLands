@@ -85,6 +85,17 @@ admin:
       finished: <aqua>Import finished.</aqua>
       success-country: <aqua>Country import finished.</aqua>
       success-settlement: <aqua>Settlement import finished.</aqua>
+
+chat:
+  create:
+    channel-exists: <yellow>This channel already exists.</yellow>
+    success: <gray>Created chat channel <b>{1}</b>. Please remember that custom chat channels are also subject to rules and moderation.</gray>
+    success-private: <gray>Created chat channel <b>{1}</b> with password <i>{2}</i>. Please remember that custom chat channels are also subject to rules and moderation.</gray>
+  join: <aqua>{1} joined channel {2}.</aqua>
+  switch: <gray>Now talking in <{1}>{2}</{1}>.</gray>
+  no-audience: <dark_gray>No one can hear you.</dark_gray>
+  wrong-password: <yellow>Wrong password for channel {1}.</yellow>
+
 general-errors:
   citizen-not-found: <yellow>Citizen {1} not found.</yellow>
   country-bankrupt: <red>You cannot use this command while the country is bankrupt.</red>
