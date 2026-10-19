@@ -29,9 +29,11 @@ public class CmdChannelJoin implements UnitedCommandExecutor{
     @Override
     public void handleCommand(CommandSender sender, String[] args) {
         
-        if (args.length < 1)
+        if (args.length < 1) {
+            sendUsage(sender);
             return;
-
+        }
+        
         ChatChannelManager.instance().switchChannel((Player) sender, args[0], args.length > 1 ? args[1] : null);
     }
 

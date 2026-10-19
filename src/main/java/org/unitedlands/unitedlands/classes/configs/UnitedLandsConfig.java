@@ -40,9 +40,6 @@ public interface UnitedLandsConfig extends UnitedConfigHandler {
     @UnitedSection (key = "settlement-chunks")
     UnitedDynamicSection<SettlementChunkSettings> settlementChunks();
 
-    @UnitedSection (key = "chat")
-    ChatSettings chat();
-
     record MapRenderSettings(
         @UnitedSetting(key = "fill",    def = "0")  int     fill,
         @UnitedSetting(key = "stroke",  def = "0")  int     stroke,
@@ -154,24 +151,7 @@ public interface UnitedLandsConfig extends UnitedConfigHandler {
         @UnitedSetting(key = "max-per-settlement",  def = "-1") int     maxPerSettlement
     ) {}
 
-    public record ChatSettings(
-        @UnitedSetting (key = "show-empty-channel-message", def = "true")   boolean showEmptyChannelMessage,
-        @UnitedSetting (key = "tag-open", def = "[")   String tagOpen,
-        @UnitedSetting (key = "tag-close",  def = "]")  String tagClose,
-        @UnitedSetting (key = "delimiter", def = ": ")  String delimiter,
-        @UnitedSetting (key = "player-name-placeholder")  String playerNamePlaceholder,
-        @UnitedSetting (key = "custom-channel-color", def = "white")  String customChannelColor,
-        @UnitedSection (key = "channels")   UnitedDynamicSection<ChatChannelSettings> channels
-    ) {}
 
-
-    public record ChatChannelSettings(
-        @UnitedSetting(key = "key")                             String  key, 
-        @UnitedSetting(key = "color", def = "white")            String  color, 
-        @UnitedSetting(key = "tag")                             String  tag,
-        @UnitedSetting(key = "prefix")                          String  prefix,
-        @UnitedSetting(key = "notify-join", def = "false")      boolean notifyJoin
-    ) {}
 
 
 }

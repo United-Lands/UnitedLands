@@ -25,6 +25,7 @@ public class CmdAdminReload implements UnitedCommandExecutor {
     public void handleCommand(CommandSender sender, String[] args) {
 
         UnitedLandsConfig.get().reload();
+        UnitedLandsConfig.get().reload();
         UnitedLandsTitlesConfig.get().reload();
 
         UnitedMessagesRegistrar.reload(UnitedLands.instance());

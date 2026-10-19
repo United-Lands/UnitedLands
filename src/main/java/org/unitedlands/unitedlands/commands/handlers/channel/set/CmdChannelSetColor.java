@@ -33,7 +33,7 @@ public class CmdChannelSetColor implements UnitedCommandExecutor {
             return;
         }
 
-        if (!player.equals(channel.getCreator())) {
+        if (!player.getUniqueId().equals(channel.getCreator())) {
             United.messenger().send(player, "chat.not-creator");
             return;
         }
@@ -44,7 +44,8 @@ public class CmdChannelSetColor implements UnitedCommandExecutor {
         }
 
         channel.setColor(args[0]);
-
+        channel.save();
+        
         United.messenger().send(player, "chat.color-set", args[0]);
 
     }

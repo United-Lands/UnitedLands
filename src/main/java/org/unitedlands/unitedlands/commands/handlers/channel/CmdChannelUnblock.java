@@ -24,7 +24,7 @@ public class CmdChannelUnblock implements UnitedCommandExecutor {
         if (args.length == 1) { 
             var channel = ChatChannelManager.instance().getPlayerChannel((Player) sender);
             if (channel != null) {
-                return channel.getBlockedPlayers().stream().map(Player::getName).toList();
+                return channel.getBlockedPlayers().stream().map(uuid -> Bukkit.getPlayer(uuid).getName()).toList();
             }
         }
         return null;
@@ -46,7 +46,7 @@ public class CmdChannelUnblock implements UnitedCommandExecutor {
             return;
         }
 
-        if (!player.equals(channel.getCreator())) {
+        if (!player.getUniqueId().equals(channel.getCreator())) {
             United.messenger().send(player, "chat.not-creator");
             return;
         }
@@ -57,12 +57,13 @@ public class CmdChannelUnblock implements UnitedCommandExecutor {
             return;
         }
 
-        if (!channel.isBlocked(targetPlayer)) {
+        if (!channel.isBlocked(targetPlayer.getUniqueId())) {
             United.messenger().send(player, "chat.not-blocked");
             return;
         }
 
-        channel.removeBlockedPlayer(targetPlayer);
+        channel.removeBlockedPlayer(targetPlayer.getUniqueId());
+        channel.save();
 
         United.messenger().send(targetPlayer, "chat.got-unblocked", channel.getKey());
         United.messenger().send(player, "chat.unblocked", targetPlayer.getName());

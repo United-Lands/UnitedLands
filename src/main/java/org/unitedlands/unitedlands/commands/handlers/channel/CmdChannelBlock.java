@@ -43,7 +43,7 @@ public class CmdChannelBlock implements UnitedCommandExecutor {
             return;
         }
 
-        if (!player.equals(channel.getCreator())) {
+        if (!player.getUniqueId().equals(channel.getCreator())) {
             United.messenger().send(player, "chat.not-creator");
             return;
         }
@@ -54,7 +54,8 @@ public class CmdChannelBlock implements UnitedCommandExecutor {
             return;
         }
 
-        channel.addBlockedPlayer(targetPlayer);
+        channel.addBlockedPlayer(targetPlayer.getUniqueId());
+        channel.save();
 
         if (ChatChannelManager.instance().isInChannel(targetPlayer, channel.getKey())) {
             ChatChannelManager.instance().switchChannel(targetPlayer, "GLOBAL", null);

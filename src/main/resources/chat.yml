@@ -1,0 +1,69 @@
+# Should players be notified when they're speaking alone in a channel
+show-empty-channel-message: false
+
+# Opening and closing characters for the leading channel tag
+tag-open: <dark_gray>[</dark_gray>
+tag-close: '<dark_gray>]</dark_gray> '
+
+# Test color of newly created channels
+custom-channel-color: '#CCCCCC'
+# How long a custom channel will be kept in the config after the
+# last recorded activity (in seconds)
+custom-channel-lifetime: 259200
+
+# The custom player name placeholder. If empty or missing, will
+# use player.getName()
+player-name-placeholder: '%cmi_user_nickname%'
+
+# The divider between the message header / name and the message
+delimiter: '<gray>: </gray>'
+
+# Default channels. Do not remove or change the keys.
+default-channels:
+  global:
+    key: GLOBAL
+    color: white
+    tag: <bold>G</bold>
+    prefix: '%luckperms_prefix% '
+    notify-activity: false
+  local:
+    key: LOCAL
+    color: gold
+    tag: <bold>L</bold>
+    prefix: '%luckperms_prefix% '
+    notify-activity: false
+  staff:
+    key: STAFF
+    color: dark_green
+    tag: <bold>STAFF</bold>
+    prefix: '%luckperms_prefix% '
+    notify-activity: false
+  settlement:
+    key: SETTLEMENT
+    color: blue
+    tag: <bold>S</bold>
+    prefix: '%luckperms_prefix% '
+    notify-activity: false
+  country:
+    key: COUNTRY
+    color: green
+    tag: <bold>C</bold>
+    prefix: '%luckperms_prefix% '
+    notify-activity: false
+  german:
+    key: GERMAN
+    color: white
+    tag: <b><gradient:#353535:#FF0000:#FCD05C>DEUTSCH</gradient></b>
+    prefix: ''
+    notify-activity: true
+  french:
+    key: FRENCH
+    color: white
+    tag: <b><gradient:#FF0000:#FFFFFF:#3955F6>FRANÇAIS</gradient></b>
+    prefix: ''
+    notify-activity: true
+
+# Custom player-made channels. These will be pruned automatically depending
+# on lifetime on startup.
+
+custom-channels: { }

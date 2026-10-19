@@ -9,7 +9,6 @@ import org.unitedlands.unitedlands.managers.ChatChannelManager;
 @UnitedSubCommand(
     parent = CmdChannel.class,
     name            = "leave",
-    aliases         = { "j" },
     description     = "Leaves the current chat channel",
     usage           = "/channel leave",
     playerOnly      = true

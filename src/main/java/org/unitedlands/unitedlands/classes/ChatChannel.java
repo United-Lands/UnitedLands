@@ -2,34 +2,48 @@ package org.unitedlands.unitedlands.classes;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
-import org.bukkit.entity.Player;
+import org.unitedlands.unitedlands.managers.ChatChannelManager;
 
 public class ChatChannel {
 
     private final String key;
     private final String prefix;
-    private final boolean notifyJoin;
-    private final boolean removeEmpty;
+    private final boolean custom;
+    private final boolean notifyActvity;
 
     private String tag;
-    private Player creator;
+    private UUID creator;
     private String color;
     private String password;
+    private long lastActivity;
 
-    private Set<Player> blockedPlayers = new HashSet<>();
+    private Set<UUID> blockedPlayers = new HashSet<>();
 
-    public ChatChannel(String key, String tag, String color, String prefix, boolean notifyJoin, boolean removeEmpty) {
+    public ChatChannel(String key, String tag, String color, String prefix, boolean notifyJoin, boolean custom) {
         this.key = key;
         this.tag = tag;
         this.color = color;
         this.prefix = prefix;
-        this.notifyJoin = notifyJoin;
-        this.removeEmpty = removeEmpty;
+        this.notifyActvity = notifyJoin;
+        this.custom = custom;
     }
 
     public String getKey() {
         return key;
+    }
+
+    public String getPrefix() {
+        return prefix != null ? prefix : "";
+    }
+
+    public boolean isCustom() {
+        return custom;
+    }
+
+    public boolean notifyActvity() {
+        return notifyActvity;
     }
 
     public String getTag() {
@@ -40,11 +54,11 @@ public class ChatChannel {
         this.tag = tag;
     }
 
-    public Player getCreator() {
+    public UUID getCreator() {
         return creator;
     }
 
-    public void setCreator(Player creator) {
+    public void setCreator(UUID creator) {
         this.creator = creator;
     }
 
@@ -54,18 +68,6 @@ public class ChatChannel {
 
     public void setColor(String color) {
         this.color = color;
-    }
-
-    public String getPrefix() {
-        return prefix != null ? prefix : "";
-    }
-
-    public boolean notifyJoin() {
-        return notifyJoin;
-    }
-
-    public boolean removeEmpty() {
-        return removeEmpty;
     }
 
     public String getPassword() {
@@ -80,55 +82,36 @@ public class ChatChannel {
         return password != null;
     }
 
-    public void addBlockedPlayer(Player player) {
-        blockedPlayers.add(player);
+    public long getLastActivity() {
+        return lastActivity;
     }
 
-    public void removeBlockedPlayer(Player player) {
-        blockedPlayers.remove(player);
+    public void setLastActivity(long lastLeave) {
+        this.lastActivity = lastLeave;
     }
 
-    public boolean isBlocked(Player player) {
-        return blockedPlayers.contains(player);
+    public void addBlockedPlayer(UUID playerId) {
+        blockedPlayers.add(playerId);
     }
 
-    public Set<Player> getBlockedPlayers() {
+    public void removeBlockedPlayer(UUID playerId) {
+        blockedPlayers.remove(playerId);
+    }
+
+    public boolean isBlocked(UUID playerId) {
+        return blockedPlayers.contains(playerId);
+    }
+
+    public Set<UUID> getBlockedPlayers() {
         return blockedPlayers;
     }
 
+    public void setBlockedPlayers(Set<UUID> blockedPlayers) {
+        this.blockedPlayers = blockedPlayers;
+    }
+
+    public void save() {
+        ChatChannelManager.instance().saveChannel(this);
+    }
+
 }
-
-// public enum ChatChannel {
-
-// GLOBAL("white", "[<white><bold>G</bold></white>] %luckperms_prefix% ",
-// false),
-// SETTLEMENT("blue", "[<blue><bold>S</bold></blue>] %luckperms_prefix% ",
-// true),
-// COUNTRY("green", "[<green><bold>C</bold></green>] %luckperms_prefix% " ,
-// true),
-// STAFF("dark_green", "[<dark_green><bold>STAFF</bold></dark_green>]
-// %luckperms_prefix% ", false),
-// LOCAL("gold", "[<gold><bold>L</bold></gold>] %luckperms_prefix% ", false);
-
-// private final String color;
-// private final String prefix;
-// private final boolean removeEmpty;
-
-// private ChatChannel(String color, String prefix, boolean removeEmpty) {
-// this.color = color;
-// this.prefix = prefix;
-// this.removeEmpty = removeEmpty;
-// }
-
-// public String getColor() {
-// return color;
-// }
-
-// public String getPrefix() {
-// return prefix;
-// }
-
-// public boolean removeEmpty() {
-// return removeEmpty;
-// }
-// }

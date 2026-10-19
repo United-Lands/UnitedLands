@@ -48,7 +48,7 @@ public class CmdChannelKick implements UnitedCommandExecutor {
             return;
         }
 
-        if (!player.equals(channel.getCreator())) {
+        if (!player.getUniqueId().equals(channel.getCreator())) {
             United.messenger().send(player, "chat.not-creator");
             return;
         }

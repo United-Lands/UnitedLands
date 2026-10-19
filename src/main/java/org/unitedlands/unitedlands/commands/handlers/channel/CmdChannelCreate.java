@@ -5,7 +5,7 @@ import org.bukkit.entity.Player;
 import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.registrars.command.UnitedCommandExecutor;
 import org.unitedlands.unitedlands.classes.ChatChannel;
-import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
+import org.unitedlands.unitedlands.classes.configs.UnitedLandsChatConfig;
 import org.unitedlands.unitedlands.managers.ChatChannelManager;
 import org.unitedlands.utils.United;
 
@@ -32,7 +32,7 @@ public class CmdChannelCreate implements UnitedCommandExecutor {
             return;
         }
 
-        var customChannelColor = UnitedLandsConfig.get().chat().customChannelColor();
+        var customChannelColor = UnitedLandsChatConfig.get().customChannelColor();
 
         var chatChannel = new ChatChannel(
                 args[0], 
@@ -42,7 +42,8 @@ public class CmdChannelCreate implements UnitedCommandExecutor {
                 true,
                 true);
 
-        chatChannel.setCreator((Player) sender);
+        chatChannel.setCreator(((Player) sender).getUniqueId());
+        chatChannel.setLastActivity(System.currentTimeMillis());
 
         if (args.length == 2)
             chatChannel.setPassword(args[1]);

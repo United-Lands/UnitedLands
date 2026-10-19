@@ -32,12 +32,13 @@ public class CmdChannelSetPassword implements UnitedCommandExecutor {
             return;
         }
 
-        if (!player.equals(channel.getCreator())) {
+        if (!player.getUniqueId().equals(channel.getCreator())) {
             United.messenger().send(player, "chat.not-creator");
             return;
         }
 
         channel.setPassword(args[0]);
+        channel.save();
 
         United.messenger().send(player, "chat.password-set", args[0]);
 
