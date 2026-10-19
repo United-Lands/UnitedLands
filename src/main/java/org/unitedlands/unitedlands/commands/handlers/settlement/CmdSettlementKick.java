@@ -10,16 +10,10 @@ import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.unitedlands.classes.Citizen;
 import org.unitedlands.unitedlands.classes.commandhandlers.SettlementCommandHandler;
 import org.unitedlands.unitedlands.classes.events.settlement.SettlementPlayerLeaveEvent;
-
+import org.unitedlands.unitedlands.managers.ChatChannelManager;
 import org.unitedlands.utils.United;
 
-@UnitedSubCommand(
-        parent = CmdSettlement.class,
-        name = "kick",
-        description = "Kicks a player from the settlement",
-        usage = "/settlement kick <player>",
-        playerOnly = true
-)
+@UnitedSubCommand(parent = CmdSettlement.class, name = "kick", description = "Kicks a player from the settlement", usage = "/settlement kick <player>", playerOnly = true)
 public class CmdSettlementKick extends SettlementCommandHandler {
 
     @Override
@@ -80,6 +74,10 @@ public class CmdSettlementKick extends SettlementCommandHandler {
         targetCitizen.save();
 
         (new SettlementPlayerLeaveEvent(context.settlement(), targetPlayer)).callEvent();
+
+        if (ChatChannelManager.instance().isInChannel(targetCitizen.getPlayer(), "SETTLEMENT")) {
+            ChatChannelManager.instance().switchChannel(targetCitizen.getPlayer(), "GLOBAL", null);
+        }
 
         if (targetPlayer.isOnline()) {
             United.messenger().send(targetPlayer, "player.settlement.kick.kicked", context.settlement().getCleanName());

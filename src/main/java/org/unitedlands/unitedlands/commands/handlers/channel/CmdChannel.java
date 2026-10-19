@@ -6,7 +6,7 @@ import org.unitedlands.registrars.command.UnitedCommandExecutor;
 
 @UnitedCommand(
     name            = "channel",
-    aliases         = { "chan" },
+    aliases         = { "ch", "chan" },
     description     = "Chat channel commands",
     usage           = "/channel <command>",
     playerOnly      = true

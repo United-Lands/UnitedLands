@@ -333,6 +333,33 @@ public class UnitedLandsDataManager {
         return settlement;
     }
 
+    public void removeSettlement(Settlement settlement) {
+
+        if (settlement.hasRegion()) {
+            var region = settlement.getRegion();
+            region.removeSettlement(settlement);
+        }
+
+        if (settlement.hasCountry()) {
+            var country = settlement.getCountry();
+            country.removeSettlement(settlement);
+        }
+
+        for (var settlementCitizen : settlement.getCitizens()) {
+            settlementCitizen.removeSettlement();
+            settlementCitizen.removeSettlementRanks();
+            settlementCitizen.removeCountryRanks();
+            settlementCitizen.save();
+
+            if (ChatChannelManager.instance().isInChannel(settlementCitizen.getPlayer(), "SETTLEMENT"))
+                ChatChannelManager.instance().switchChannel(settlementCitizen.getPlayer(), "GLOBAL", null);
+        }
+
+        UnitedLandsEconomyManager.instance().deleteAccount(settlement.getUuid());
+        UnitedLandsDataManager.instance().removeSettlementDbData(settlement);
+        Pl3xMapRenderer.instance().removeSettlement(settlement);
+    }
+
     // Database operations
 
     public void createSettlementDbData(Settlement settlement) {
@@ -528,7 +555,7 @@ public class UnitedLandsDataManager {
     // Countries
     // **************************************************
 
-    public Country creatCountry(String name, Region region, Settlement capital, Citizen leader) {
+    public Country createCountry(String name, Region region, Settlement capital, Citizen leader) {
 
         Country country = new Country();
         country.setUuid(UUID.randomUUID());
@@ -586,6 +613,9 @@ public class UnitedLandsDataManager {
             for (var settlementCitizen : settlement.getCitizens()) {
                 settlementCitizen.removeCountryRanks();
                 settlementCitizen.save();
+
+                if (ChatChannelManager.instance().isInChannel(settlementCitizen.getPlayer(), "COUNTRY"))
+                    ChatChannelManager.instance().switchChannel(settlementCitizen.getPlayer(), "GLOBAL", null);
             }
             settlement.removeCountry();
             settlement.saveAndRender();

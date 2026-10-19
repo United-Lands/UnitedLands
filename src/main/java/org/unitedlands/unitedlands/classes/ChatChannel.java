@@ -1,15 +1,23 @@
 package org.unitedlands.unitedlands.classes;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.bukkit.entity.Player;
+
 public class ChatChannel {
 
     private final String key;
-    private final String tag;
     private final String prefix;
     private final boolean notifyJoin;
     private final boolean removeEmpty;
 
+    private String tag;
+    private Player creator;
     private String color;
     private String password;
+
+    private Set<Player> blockedPlayers = new HashSet<>();
 
     public ChatChannel(String key, String tag, String color, String prefix, boolean notifyJoin, boolean removeEmpty) {
         this.key = key;
@@ -26,6 +34,18 @@ public class ChatChannel {
 
     public String getTag() {
         return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
+    }
+
+    public Player getCreator() {
+        return creator;
+    }
+
+    public void setCreator(Player creator) {
+        this.creator = creator;
     }
 
     public String getColor() {
@@ -58,6 +78,22 @@ public class ChatChannel {
 
     public boolean hasPassword() {
         return password != null;
+    }
+
+    public void addBlockedPlayer(Player player) {
+        blockedPlayers.add(player);
+    }
+
+    public void removeBlockedPlayer(Player player) {
+        blockedPlayers.remove(player);
+    }
+
+    public boolean isBlocked(Player player) {
+        return blockedPlayers.contains(player);
+    }
+
+    public Set<Player> getBlockedPlayers() {
+        return blockedPlayers;
     }
 
 }

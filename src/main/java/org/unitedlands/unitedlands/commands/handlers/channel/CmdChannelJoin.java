@@ -21,7 +21,7 @@ public class CmdChannelJoin implements UnitedCommandExecutor{
     @Override
     public List<String> handleTab(CommandSender sender, String[] args) {
         if (args.length == 1) {
-            return ChatChannelManager.instance().getChannelNames();
+            return ChatChannelManager.instance().getPublicChannelNames();
         }
         return null;
     }

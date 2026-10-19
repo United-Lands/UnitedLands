@@ -61,10 +61,25 @@ public class ChatChannelManager {
         return  channels.keySet().stream().toList();
     }
 
+    public List<String> getPublicChannelNames() {
+        return  channels.entrySet().stream().filter(c -> !c.getValue().hasPassword()).map(Entry::getKey).toList();
+    }
+
+    public ChatChannel getPlayerChannel(Player player) {
+        return channels.get(playerChannels.get(player));
+    }
+
+    public List<Player> getPlayersInChannel(String channelKey) {
+        return playerChannels.entrySet().stream().filter(e -> e.getValue().equals(channelKey)).map(Entry::getKey).toList();
+    }
+
+    public boolean isInChannel(Player player, String key) {
+        return playerChannels.get(player).equals(key);
+    }
+
     public void switchChannel(Player player, String key, String password) {
 
-        var senderViewer = viewers.stream().filter(c -> c.getUuid().equals(player.getUniqueId())).findFirst()
-                .orElse(null);
+        var senderViewer = viewers.stream().filter(c -> c.getUuid().equals(player.getUniqueId())).findFirst().orElse(null);
         if (senderViewer == null) {
             return;
         }
@@ -74,6 +89,7 @@ public class ChatChannelManager {
             return;
         }
 
+        var oldChannel = getPlayerChannel(player);
         var channel = channels.get(key);
 
         switch (key) {
@@ -101,11 +117,18 @@ public class ChatChannelManager {
         if (channel.hasPassword()) {
             if (!channel.getPassword().equals(password)) {
                 United.messenger().send(player, "chat.wrong-password");
+                return;
             }
         }
 
         playerChannels.put(player, key);
         United.messenger().send(player, "chat.switch", channel.getColor(), channel.getKey());
+
+        // Notify the audience that in the old channel that someone left. We'll use the same settings
+        // as join messages.
+        if (oldChannel.notifyJoin()) {
+            sendChannelNotification(oldChannel.getKey(), United.messenger().get("chat.left", player.getName(), oldChannel.getKey()));
+        }
 
         // Notify the audience that someone joined a channel
         if (channel.notifyJoin()) {
@@ -120,7 +143,7 @@ public class ChatChannelManager {
         var abandonedChannels = channels.values().stream().filter(c -> !playerChannelKeys.contains(c.getKey())).toList();
         for (var channel : abandonedChannels) {
             if (channel.removeEmpty()) {
-                United.logger().info("Rmoving empty chat channel " + channel.getKey());
+                United.logger().info("Removing empty chat channel " + channel.getKey());
                 channels.remove(channel.getKey());
             }
         }
@@ -200,10 +223,6 @@ public class ChatChannelManager {
         }
     }
 
-    private List<Player> getPlayersInChannel(String channelKey) {
-        return playerChannels.entrySet().stream().filter(e -> e.getValue().equals(channelKey)).map(Entry::getKey).toList();
-    }
-
     public void handleMessage(AsyncChatEvent event) {
 
         var channel = channels.get(playerChannels.get(event.getPlayer()));
@@ -247,7 +266,13 @@ public class ChatChannelManager {
             return Component.empty();
         }
 
-        var tag = UnitedLandsConfig.get().chat().tagOpen() + channel.getTag() + UnitedLandsConfig.get().chat().tagClose();
+        var tag = 
+            UnitedLandsConfig.get().chat().tagOpen() + 
+            "<" + channel.getColor() + ">" +
+            channel.getTag() + 
+            "</" + channel.getColor() + ">" +
+            UnitedLandsConfig.get().chat().tagClose();
+
         var prefix = channel.getPrefix();
         if (prefix != null && IntegrationManager.instance().usePAPI()) {
             prefix = PlaceholderAPIIntegration.instance().setPlaceholders(source, prefix);

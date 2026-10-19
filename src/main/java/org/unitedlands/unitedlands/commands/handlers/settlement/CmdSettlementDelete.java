@@ -9,8 +9,6 @@ import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.unitedlands.classes.Confirmation;
 import org.unitedlands.unitedlands.classes.commandhandlers.SettlementCommandHandler;
 
-import org.unitedlands.unitedlands.integrations.Pl3xMap.Pl3xMapRenderer;
-import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.utils.United;
 
@@ -40,32 +38,9 @@ public class CmdSettlementDelete extends SettlementCommandHandler {
             return;
         }
 
-        Confirmation leave = new Confirmation("settlement-delete");
-        leave.setRunnable(() -> {
-
-            if (context.settlement().hasRegion()) {
-                var region = context.settlement().getRegion();
-                region.removeSettlement(context.settlement());
-            }
-
-            if (context.settlement().hasCountry()) {
-                var country = context.settlement().getCountry();
-                country.removeSettlement(context.settlement());
-            }
-
-            for (var settlementCitizen : context.settlement().getCitizens()) {
-                settlementCitizen.removeSettlement();
-                settlementCitizen.removeSettlementRanks();
-                settlementCitizen.removeCountryRanks();
-                settlementCitizen.save();
-            }
-
-            UnitedLandsEconomyManager.instance().deleteAccount(context.settlement().getUuid());
-
-            UnitedLandsDataManager.instance().removeSettlementDbData(context.settlement());
-
-            Pl3xMapRenderer.instance().removeSettlement(context.settlement());
-
+        Confirmation delete = new Confirmation("settlement-delete");
+        delete.setRunnable(() -> {
+            UnitedLandsDataManager.instance().removeSettlement(context.settlement());
             United.messenger().send(Bukkit.getServer(), "player.settlement.delete.broadcast-message", context.settlement().getCleanName());
         })
                 .setTitle("player.settlement.delete.CONFIRM")

@@ -14,7 +14,7 @@ import org.unitedlands.utils.United;
     name            = "create",
     aliases         = { "c" },
     description     = "Creates a chat channel",
-    usage           = "/channel create <name> [password] [color]",
+    usage           = "/channel create <name> [password]",
     playerOnly      = true
 )
 public class CmdChannelCreate implements UnitedCommandExecutor {
@@ -36,11 +36,13 @@ public class CmdChannelCreate implements UnitedCommandExecutor {
 
         var chatChannel = new ChatChannel(
                 args[0], 
-                "<" + customChannelColor + ">" + args[0] + "</" + customChannelColor + ">", 
+                args[0], 
                 customChannelColor, 
                 null, 
                 true,
                 true);
+
+        chatChannel.setCreator((Player) sender);
 
         if (args.length == 2)
             chatChannel.setPassword(args[1]);

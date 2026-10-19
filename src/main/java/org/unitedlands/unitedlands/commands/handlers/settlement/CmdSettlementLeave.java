@@ -7,7 +7,7 @@ import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.unitedlands.classes.Confirmation;
 import org.unitedlands.unitedlands.classes.commandhandlers.SettlementCommandHandler;
 import org.unitedlands.unitedlands.classes.events.settlement.SettlementPlayerLeaveEvent;
-
+import org.unitedlands.unitedlands.managers.ChatChannelManager;
 import org.unitedlands.utils.United;
 
 @UnitedSubCommand(
@@ -53,6 +53,9 @@ public class CmdSettlementLeave extends SettlementCommandHandler {
 
             (new SettlementPlayerLeaveEvent(context.settlement(), context.player())).callEvent();
 
+            if (ChatChannelManager.instance().isInChannel(context.citizen().getPlayer(), "SETTLEMENT")) {
+                ChatChannelManager.instance().switchChannel(context.citizen().getPlayer(), "GLOBAL", null);
+            }
 
             United.messenger().send(context.settlement().getOnlinePlayers(), "player.settlement.player-left", context.player().getName());
             United.messenger().send(context.player(), "player.settlement.leave.settlement-left", context.settlement().getCleanName());

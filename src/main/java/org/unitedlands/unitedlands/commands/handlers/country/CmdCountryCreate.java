@@ -65,7 +65,7 @@ public class CmdCountryCreate implements UnitedCommandExecutor {
         var confirmation = new Confirmation("country");
         confirmation.setRunnable(() -> {
 
-            var country = UnitedLandsDataManager.instance().creatCountry(args[0], region, settlement, citizen);
+            var country = UnitedLandsDataManager.instance().createCountry(args[0], region, settlement, citizen);
             
             United.messenger().send(player, "player.country.create.player-message", country.getCleanName());
             United.messenger().send(Bukkit.getServer(), "player.country.create.broadcast-message", player.getName(), country.getCleanName(),

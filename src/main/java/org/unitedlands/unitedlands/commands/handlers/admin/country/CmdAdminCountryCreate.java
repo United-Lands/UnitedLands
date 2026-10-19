@@ -53,7 +53,7 @@ public class CmdAdminCountryCreate extends CountryAdminCommandHandler {
             return;
         }
 
-        var country = UnitedLandsDataManager.instance().creatCountry(args[0], region, settlement, null);
+        var country = UnitedLandsDataManager.instance().createCountry(args[0], region, settlement, null);
 
         United.messenger().send(player, "admin.country.create.success", country.getCleanName(), settlement.getName(), region.getName());
 

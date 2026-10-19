@@ -92,7 +92,21 @@ chat:
     success: <gray>Created chat channel <b>{1}</b>. Please remember that custom chat channels are also subject to rules and moderation.</gray>
     success-private: <gray>Created chat channel <b>{1}</b> with password <i>{2}</i>. Please remember that custom chat channels are also subject to rules and moderation.</gray>
   join: <aqua>{1} joined channel {2}.</aqua>
-  switch: <gray>Now talking in <{1}>{2}</{1}>.</gray>
+  left: <aqua>{1} left the channel.</aqua>
+  player-not-in-channel: <yellow>Player is not in the channel.</yellow>
+  not-in-channel: <yellow>You're not in a channel.</yellow>
+  not-creator: <yellow>This command can only be used by the creator of the channel.</yellow>
+  color-set: <aqua>Channel color set to {1}.</aqua>
+  password-set: <aqua>Channel password set to {1}.</aqua>
+  tag-set: <aqua>Tag set to {1}.</aqua>
+  switch: <gray>Now talking in <{1}>{2}</{1}></gray>
+  kicked: <aqua>Kicked player {1} from the channel.</aqua>
+  got-kicked: <aqua>You got kicked from channel {1}.</aqua>
+  got-blocked: <aqua>You're blocked from joining channel {1}.</aqua>
+  blocked: <aqua>Blocked {1} from this channel.</aqua>
+  not-blocked: <yellow>The player isn't blocked.</yellow>
+  unblock: <aqua>Unblocked {1} from this channel.</aqua>
+  got-unblocked: <aqua>You were unblocked from joining channel {1}.</aqua>
   no-audience: <dark_gray>No one can hear you.</dark_gray>
   wrong-password: <yellow>Wrong password for channel {1}.</yellow>
 
