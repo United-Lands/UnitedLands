@@ -1,14 +1,13 @@
 package org.unitedlands.unitedlands.commands.handlers.settlement.trust;
 
 import java.util.List;
-import java.util.stream.Collectors;
-
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.unitedlands.annotations.UnitedSubCommand;
+import org.unitedlands.unitedlands.classes.Citizen;
 import org.unitedlands.unitedlands.classes.commandhandlers.SettlementCommandHandler;
-
+import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.utils.United;
 
 @UnitedSubCommand(
@@ -23,7 +22,9 @@ public class CmdSettlementTrustRemove extends SettlementCommandHandler {
     @Override
     public List<String> handleTab(CommandSender sender, String[] args) {
         if (args.length == 1) {
-            return Bukkit.getOnlinePlayers().stream().map(Player::getName).collect(Collectors.toList());
+            var settlement = UnitedLandsDataManager.instance().getSettlement((Player) sender);
+            if (settlement != null)
+                return settlement.getTrustList().stream().map(Citizen::getName).toList();
         }
         return null;
     }

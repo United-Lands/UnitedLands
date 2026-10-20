@@ -8,6 +8,7 @@ import org.unitedlands.unitedlands.classes.events.player.PlayerEnterRegionEvent;
 import org.unitedlands.unitedlands.classes.events.player.PlayerEnterSettlementEvent;
 import org.unitedlands.unitedlands.classes.events.player.PlayerExitSettlementEvent;
 import org.unitedlands.unitedlands.managers.DisplayManager;
+import org.unitedlands.utils.United;
 
 public class PlayerListener implements Listener {
 
@@ -17,6 +18,11 @@ public class PlayerListener implements Listener {
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onEnterSettlement(PlayerEnterSettlementEvent event) {
         DisplayManager.instance().showSettlementNameDisplay(event.getSettlement(), event.getPlayer());
+
+        // Test for banishment upon entering settlement
+        if (event.getSettlement().isBanished(event.getPlayer())) {
+            United.messenger().send(event.getPlayer(), "player.settlement.banish-notice");
+        }
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)

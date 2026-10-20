@@ -64,6 +64,10 @@ public class Settlement extends GeopolObject implements PermissionHolder {
     private String trustListSerialized;
     private transient Set<Citizen> trustList;
 
+    @DatabaseField(canBeNull = true, dataType = DataType.LONG_STRING, columnName = "banish_list_serialized")
+    private String banishListSerialized;
+    private transient Set<Citizen> banishList;
+
     @DatabaseField(canBeNull = false, columnName = "break_permissions")
     private int breakPermissions = LocationMembership.OWNER | LocationMembership.TRUSTED
             | LocationMembership.SETTLEMENT_RESIDENT;
@@ -396,6 +400,39 @@ public class Settlement extends GeopolObject implements PermissionHolder {
 
     public boolean hasTrusted(Player player) {
         return getTrustList().stream().anyMatch(c -> c.getUuid().equals(player.getUniqueId()));
+    }
+
+    public void addBanished(Citizen citizen) {
+        var t = new HashSet<>(getBanishList());
+        t.add(citizen);
+        setBanishList(t);
+    }
+
+    public void removeBanished(Citizen citizen) {
+        var t = new HashSet<>(getBanishList());
+        t.remove(citizen);
+        setBanishList(t);
+    }
+
+    public Set<Citizen> getBanishList() {
+        if (banishList == null) {
+            banishList = SerializationUtils.deserializeUuidListToSet(banishListSerialized,
+                    UnitedLandsDataManager.instance()::getCitizen);
+        }
+        return banishList;
+    }
+
+    public void setBanishList(Set<Citizen> banishList) {
+        this.banishList = banishList;
+        this.banishListSerialized = SerializationUtils.serializeIdentifiableList(banishList);
+    }
+
+    public boolean isBanished(Citizen citizen) {
+        return getBanishList().contains(citizen);
+    }
+
+    public boolean isBanished(Player player) {
+        return getBanishList().stream().anyMatch(c -> c.getUuid().equals(player.getUniqueId()));
     }
 
     public Citizen getMayor() {

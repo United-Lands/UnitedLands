@@ -428,6 +428,15 @@ public class UnitedLandsDataManager {
         return settlements.get(settlementId);
     }
 
+    public Settlement getSettlement(Player player) {
+        var citizen = getCitizen(player);
+        if (citizen != null)
+            return citizen.getSettlement();
+
+        return null;
+    }
+
+
     public List<String> getSettlementNames() {
         CompletableFuture<List<String>> future = CompletableFuture.supplyAsync(() -> {
             return settlements.values().stream().map(Settlement::getName).collect(Collectors.toList());

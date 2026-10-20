@@ -26,6 +26,10 @@ settlement:
     - settlement.usetaxpercent
     - settlement.settaxes
     - settlement.bankhistory
+    - settlement.addtrust
+    - settlement.removetrust
+    - settlement.addbanish
+    - settlement.removebanish
   co-mayor:
     - settlement.claim
     - settlement.manage.perms

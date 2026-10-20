@@ -9,10 +9,10 @@ import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.utils.United;
 
 @UnitedSubCommand(
-        parent = CmdAdminSettlementSet.class,
-        name = "name",
-        description = "Changes a settlement's name",
-        usage = "/ula settlement set name <settlement_name> <new_name>"
+    parent          = CmdAdminSettlementSet.class,
+    name            = "name",
+    description     = "Changes a settlement's name",
+    usage           = "/ula settlement set name <settlement_name> <new_name>"
 )
 public class CmdAdminSettlementSetName extends SettlementAdminCommandHandler {
 

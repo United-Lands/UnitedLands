@@ -39,12 +39,16 @@ admin:
     withdraw:
       success: <aqua>Withdrew {1} from the country bank of {2}.</aqua>
   settlement:
+    addbanish:
+      success: <aqua>Banished {1} from {2}.</aqua>
     addcitizen:
       already-in-settlement: <yellow>{1} is already part of {2}.</yellow>
       success: <aqua>Successfully added {1} to settlement {2}.</aqua>
     addrank:
       success: <aqua>Successfully added rank {1} to {2} in settlement {3}.</aqua>
     citizen-not-in-settlement: <yellow>{1} is not a member of {2}.</yellow>
+    addtrust:
+      success: <aqua>Gave trust to {1} in {2}.</aqua>
     claim:
       already-claimed: <yellow>The chunk is already claimed.</yellow>
       success: <aqua>Chunk {1} claimed for {2}.</aqua>
@@ -61,6 +65,12 @@ admin:
       success: <aqua>Settlement {1} permission {2} for {3} set to {4}.</aqua>
       unknown-membership: '<yellow>Unknown group: {1}.</yellow>'
       unknown-permission: '<yellow>Unknown permission: {1}.</yellow>'
+    removebanish:
+      not-banished: <yellow>{1} is not on the banish list.</yellow>
+      success: <aqua>Removed {1} from the banish list of {2}.</aqua>
+    removetrust:
+      not-trusted: <yellow>{1} is not on the trust list.</yellow>
+      success: <aqua>Removed trust from {1} in {2}.</aqua>
     removecitizen:
       success: <aqua>Successfully removed {1} from settlement {2}.</aqua>
     removerank:
@@ -294,6 +304,13 @@ player:
       cannot-trust-yourself: <yellow>You can't add yourself.</yellow>
       success: <aqua>Added {1} to trust list.</aqua>
       trusted: <aqua>You have been trusted in {1}.</aqua>
+    addbanish:
+      cannot-banish-yourself: <yellow>You can't add yourself.</yellow>
+      success: <aqua>Banished {1} to from the town.</aqua>
+      banished: <aqua>You have been banished from {1}.</aqua>
+    banishlist: '<aqua>Banished players in {1}: <gray>{2}</gray></aqua>'
+    banish-notice: "<yellow>You are banished from this town. If you die, your inventory will be dropped to the ground.</yellow>"
+    banish-punishment: "<red>Because you died in a settlement that has banished you, you will not be given a grave. Your inventory has been dropped to the ground.</red>"
     claim:
       already-claimed: <yellow>This chunk is already claimed.</yellow>
       has-country: <yellow>This region belongs to {1}, and you lack the permission
@@ -348,6 +365,10 @@ player:
       unknown-membership: '<yellow>Unknown group: {1}.</yellow>'
       unknown-permission: '<yellow>Unknown permission: {1}.</yellow>'
     player-left: <yellow>{1} is not a member of the settlement.</yellow>
+    removebanish:
+      not-banished: <yellow>{1} is not on the banish list.</yellow>
+      success: <aqua>Removed {1} from the banish list.</aqua>
+      untrusted: <aqua>You are no longer banished from in {1}.</aqua>
     removerank:
       cannot-remove-mayor: <yellow>You cannot remove the mayor rank. You can only pass it to another citizen.</yellow>
       lost: <aqua>You lost the settlement rank {1}.
@@ -379,6 +400,7 @@ player:
     toggle:
       success: <aqua>Toggled settlement flag {1} to {2}</aqua>
       unknown-toggle: '<yellow>Unknown toggle: {1}.</yellow>'
+    trustlist: '<aqua>Trusted players in {1}: <gray>{2}</gray></aqua>'
     unclaim:
       has-spawn: <yellow>Cannot unclaim the chunk that contains the settlement spawn. Move the spawn first.</yellow>
       has-visitor-spawn: <yellow>Cannot unclaim the chunk that contains the settlement visitor spawn. Move the spawn first.</yellow>

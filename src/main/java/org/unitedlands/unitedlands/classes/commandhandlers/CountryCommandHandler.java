@@ -1,8 +1,6 @@
 package org.unitedlands.unitedlands.classes.commandhandlers;
 
 import java.util.List;
-import java.util.Map;
-
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.unitedlands.registrars.command.UnitedCommandExecutor;
@@ -76,8 +74,7 @@ public class CountryCommandHandler implements UnitedCommandExecutor {
 
     protected boolean hasPermission(String permission, Citizen citizen) {
         if (!PermissionManager.instance().hasRankPermission(permission, citizen)) {
-            United.messenger().send((Player) citizen.getPlayer(), "general-errors.no-country-permission",
-                    Map.of("perm", permission));
+            United.messenger().send((Player) citizen.getPlayer(), "general-errors.no-country-permission", permission);
             return false;
         }
         return true;

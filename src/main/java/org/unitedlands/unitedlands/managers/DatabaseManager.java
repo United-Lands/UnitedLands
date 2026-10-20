@@ -199,7 +199,11 @@ public class DatabaseManager {
             versionDao.update(version);
         }
 
-        
+        if (version.getVersion() < 11) {
+            versionDao.executeRaw("ALTER TABLE settlement ADD COLUMN banish_list_serialized MEDIUMTEXT NULL;");
+            version.setVersion(11);
+            versionDao.update(version);
+        }
     }
 
     public <T, ID> Dao<T, ID> getDao(Class<T> clazz) throws SQLException {

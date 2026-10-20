@@ -6,10 +6,10 @@ import org.unitedlands.registrars.command.UnitedCommandExecutor;
 import org.unitedlands.unitedlands.commands.handlers.admin.settlement.CmdAdminSettlement;
 
 @UnitedSubCommand(
-        parent = CmdAdminSettlement.class,
-        name = "set",
-        description = "Admin settlement set commands",
-        usage = "/ula settlement set <command> <argument>"
+    parent          = CmdAdminSettlement.class,
+    name            = "set",
+    description     = "Admin settlement set commands",
+    usage           = "/ula settlement set <command> <argument>"
 )
 public class CmdAdminSettlementSet implements UnitedCommandExecutor {
 
