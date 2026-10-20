@@ -15,11 +15,14 @@ import org.bukkit.entity.Player;
 import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.unitedlands.UnitedLands;
 import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
+import org.unitedlands.unitedlands.classes.events.settlement.SettlementPreClaimEvent;
 import org.unitedlands.unitedlands.managers.PlayerCacheManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.utils.ColorUtils;
+import org.unitedlands.unitedlands.utils.CoordinateUtils;
 import org.unitedlands.unitedlands.utils.CostUtils;
 import org.unitedlands.unitedlands.utils.SerializationUtils;
+import org.unitedlands.utils.United;
 import org.unitedlands.libs.ormlite.field.DataType;
 import org.unitedlands.libs.ormlite.field.DatabaseField;
 
@@ -599,6 +602,81 @@ public class Settlement extends GeopolObject implements PermissionHolder {
         } catch (ExecutionException e) {
             return CostUtils.getSettlementUpkeep(this);
         }
+    }
+
+    public void tryClaimChunk(Player player, Location location) {
+
+        var chunkCoords = CoordinateUtils.locationToChunkCoordinates(location);
+
+        var existingChunk = UnitedLandsDataManager.instance().getSettlementChunk(chunkCoords);
+        if (existingChunk != null) {
+            United.messenger().send(player, "player.settlement.claim.already-claimed");
+            return;
+        }
+
+        var region = UnitedLandsDataManager.instance()
+                .getRegion(CoordinateUtils.locationToChunkCenterCoordinates(location));
+        if (region != null) {
+            if (!region.equals(this.getRegion())
+                    && !UnitedLandsConfig.get().general().allowSettlementClaimsOutsideHomeRegion()) {
+                United.messenger().send(player, "player.settlement.claim.outside-of-region");
+                return;
+            }
+
+            if (region.hasCountry()) {
+                // If trying to claim in another country's region, check the claim whitelist
+                if (!region.getCountry().equals(this.getCountry())) {
+                    if (!region.getCountry().getSettlementClaimWhitelist().contains(this)) {
+                        United.messenger().send(player, "player.settlement.claim.has-country",
+                                region.getCountry().getCleanName());
+                        return;
+                    }
+                }
+            }
+        }
+
+        var claimCosts = CostUtils.getSettlementClaimCosts(this);
+        if (!UnitedLandsEconomyManager.instance().has(this.getUuid(), claimCosts)) {
+            United.messenger().send(player, "general-errors.no-funds-settlement",
+                    UnitedLandsEconomyManager.instance().format(claimCosts));
+            return;
+        }
+
+        var preEvent = new SettlementPreClaimEvent(this, chunkCoords);
+        preEvent.callEvent();
+        if (preEvent.isCancelled())
+            return;
+
+        var chunk = new SettlementChunk();
+
+        chunk.setUuid(UUID.randomUUID());
+        chunk.setCoordinates(chunkCoords);
+        chunk.setWorld(player.getLocation().getWorld());
+        chunk.setClaimTimestamp(System.currentTimeMillis());
+        chunk.setSettlement(this);
+
+        this.addChunk(chunk);
+
+        UnitedLandsDataManager.instance().createSettlementChunkDbData(chunk);
+
+        UnitedLandsEconomyManager.instance().withdraw(this.getUuid(), claimCosts, "Chunk claiming");
+
+        var coordNorth = new Coordinates(chunkCoords.getX(), chunkCoords.getZ() - 1, chunkCoords.getWorldName());
+        var coordEast = new Coordinates(chunkCoords.getX() + 1, chunkCoords.getZ(), chunkCoords.getWorldName());
+        var coordSouth = new Coordinates(chunkCoords.getX(), chunkCoords.getZ() + 1, chunkCoords.getWorldName());
+        var coordWest = new Coordinates(chunkCoords.getX() - 1, chunkCoords.getZ(), chunkCoords.getWorldName());
+
+        boolean connected = this.hasChunkAtCoordinates(coordNorth) ||
+                this.hasChunkAtCoordinates(coordEast) ||
+                this.hasChunkAtCoordinates(coordWest) ||
+                this.hasChunkAtCoordinates(coordSouth);
+        if (!connected) {
+            United.messenger().send(player, "player.settlement.claim.disconnected-warning");
+        }
+        United.messenger().send(player, "player.settlement.claim.success",
+                this.getCleanName(), 
+                chunkCoords.toCleanShortString(),
+                UnitedLandsEconomyManager.instance().format(claimCosts));
     }
 
     @Override

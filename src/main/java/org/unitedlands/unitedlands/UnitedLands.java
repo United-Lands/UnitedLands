@@ -82,7 +82,7 @@ public class UnitedLands extends JavaPlugin {
         new UnitedLandsDataManager(this, new Pl3xMapRenderer());
         new DisplayManager(this);
         new ConfirmationManager(this);
-        new PlayerCacheManager(this);
+        new PlayerCacheManager();
         new UnitedLandsEconomyManager(this);
         new ChatChannelManager();
         new IntegrationManager();

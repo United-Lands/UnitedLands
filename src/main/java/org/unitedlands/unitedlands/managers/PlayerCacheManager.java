@@ -8,7 +8,6 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.unitedlands.unitedlands.UnitedLands;
 import org.unitedlands.unitedlands.classes.Citizen;
 import org.unitedlands.unitedlands.classes.PlayerCache;
 import org.unitedlands.unitedlands.classes.Region;
@@ -24,11 +23,9 @@ public class PlayerCacheManager {
         return instance;
     }
 
-    private final UnitedLands plugin;
     private Map<UUID, PlayerCache> playerCache = new HashMap<>();
 
-    public PlayerCacheManager(UnitedLands plugin) {
-        this.plugin = plugin;
+    public PlayerCacheManager() {
         instance = this;
     }
 
@@ -41,7 +38,7 @@ public class PlayerCacheManager {
     }
 
     public PlayerCache getPlayerCache(UUID playerUuid) {
-        return playerCache.computeIfAbsent(playerUuid, k -> new PlayerCache(Bukkit.getPlayer(playerUuid), plugin));
+        return playerCache.computeIfAbsent(playerUuid, k -> new PlayerCache(Bukkit.getPlayer(playerUuid)));
     }
 
     // Cache clearing (e.g. when a settlement is removed)

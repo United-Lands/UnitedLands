@@ -1,14 +1,11 @@
 package org.unitedlands.unitedlands.classes;
 
 import org.bukkit.entity.Player;
-import org.unitedlands.unitedlands.UnitedLands;
 import org.unitedlands.unitedlands.managers.PermissionManager;
 
 public class PlayerCache {
 
-    private final Player player; 
-    @SuppressWarnings("unused")
-    private final UnitedLands plugin;
+    private final Player player;
 
     private Coordinates cachedChunkCoordinates;
 
@@ -17,14 +14,15 @@ public class PlayerCache {
     private SettlementChunk cachedSettlementChunk;
 
     private int chunkMembership;
-
     private int regionMembership;
 
-    public PlayerCache(Player player, UnitedLands plugin) {
+    private boolean autoclaimActive = false;
+    private Settlement autoclaimSettlement;
+
+    public PlayerCache(Player player) {
         this.player = player;
-        this.plugin = plugin;
     }
-    
+
     public Coordinates getCachedChunkCoordinates() {
         return cachedChunkCoordinates;
     }
@@ -80,6 +78,22 @@ public class PlayerCache {
 
     public int getRegionMembership() {
         return regionMembership;
+    }
+
+    public boolean isAutoclaimActive() {
+        return autoclaimActive;
+    }
+
+    public void setAutoclaimActive(boolean autoclaimActive) {
+        this.autoclaimActive = autoclaimActive;
+    }
+
+    public Settlement getAutoclaimSettlement() {
+        return autoclaimSettlement;
+    }
+
+    public void setAutoclaimSettlement(Settlement autoclaimSettlement) {
+        this.autoclaimSettlement = autoclaimSettlement;
     }
 
 }

@@ -15,7 +15,7 @@ import org.unitedlands.utils.United;
         usage = "/ula settlement trust remove <settlement> <player>",
         playerOnly = true
 )
-public class CmdSettlementTrustRemove extends SettlementAdminCommandHandler {
+public class CmdAdminSettlementTrustRemove extends SettlementAdminCommandHandler {
 
     @Override
     public List<String> handleTab(CommandSender sender, String[] args) {

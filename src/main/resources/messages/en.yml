@@ -308,6 +308,10 @@ player:
       cannot-banish-yourself: <yellow>You can't add yourself.</yellow>
       success: <aqua>Banished {1} to from the town.</aqua>
       banished: <aqua>You have been banished from {1}.</aqua>
+    autoclaim:
+      not-in-chunk: <yellow>The auto-claim command can only be used in an existing settlement chunk.</yellow>
+      switched-on: <aqua>Auto-claim toggled <green><b>on</b></green>. Move into unclaimed chunks to claim them for your settlement.</aqua>
+      switched-off: <aqua>Auto-claim toggled <red><b>off</b></red>. 
     banishlist: '<aqua>Banished players in {1}: <gray>{2}</gray></aqua>'
     banish-notice: "<yellow>You are banished from this town. If you die, your inventory will be dropped to the ground.</yellow>"
     banish-punishment: "<red>Because you died in a settlement that has banished you, you will not be given a grave. Your inventory has been dropped to the ground.</red>"

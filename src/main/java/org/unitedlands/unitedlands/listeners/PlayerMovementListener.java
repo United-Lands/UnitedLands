@@ -131,6 +131,12 @@ public class PlayerMovementListener implements Listener {
 
             var playerCache = PlayerCacheManager.instance().getPlayerCache(player);
 
+            // Check if the player is autoclaiming
+
+            if (playerCache.isAutoclaimActive()) {
+                playerCache.getAutoclaimSettlement().tryClaimChunk(player, to);
+            }
+            
             // Settlement handling
 
             boolean enteredSettlement = false;
