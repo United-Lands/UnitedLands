@@ -43,12 +43,18 @@ public class Country extends GeopolObject {
     @DatabaseField(dataType = DataType.LONG_STRING, columnName = "settlement_claim_whitelist")
     private String settlementClaimWhitelistSerialized;
 
+    @DatabaseField(dataType = DataType.LONG_STRING, columnName = "claimed_titles_serialized")
+    private String claimedTitlesSerialized;
+    @DatabaseField(columnName = "equipped_title")
+    private String equippedTitle;
+
     @DatabaseField(canBeNull = false, columnName = "tax")
     private float tax = 0.0f;
 
     private transient Location spawn;
     private transient Settlement capital;
     private transient Country overlord;
+    private transient Set<String> claimedTitles;
     private transient Set<Region> regions = new HashSet<>();
     private transient Set<Settlement> settlements = new HashSet<>();
     private transient Set<Settlement> settlementClaimWhitelist = new HashSet<>();
@@ -91,6 +97,51 @@ public class Country extends GeopolObject {
 
     public void setBonusRegions(int bonusRegions) {
         this.bonusRegions = bonusRegions;
+    }
+
+    public String getClaimedTitlesSerialized() {
+        return claimedTitlesSerialized;
+    }
+
+    public void setClaimedTitlesSerialized(String claimedTitlesSerialized) {
+        this.claimedTitlesSerialized = claimedTitlesSerialized;
+    }
+
+    public void addClaimedTitle(String title) {
+        var titles = new HashSet<>(getClaimedTitles());
+        titles.add(title);
+        setClaimedTitles(titles);
+    }
+
+    public void removeClaimedTitle(String title) {
+        var titles = new HashSet<>(getClaimedTitles());
+        titles.remove(title);
+        setClaimedTitles(titles);
+    }
+
+    public boolean hasClaimedTitle(String title) {
+        return getClaimedTitles().contains(title);
+    }
+
+    public Set<String> getClaimedTitles() {
+        if (claimedTitles == null) {
+            claimedTitles = SerializationUtils.deserializeStringSet(claimedTitlesSerialized);
+        }
+        return claimedTitles;
+    }
+
+    public void setClaimedTitles(Set<String> claimedTitles) {
+        this.claimedTitles = claimedTitles;
+        this.claimedTitlesSerialized = SerializationUtils.serializeStringSet(claimedTitles);
+    }
+
+
+    public String getEquippedTitle() {
+        return equippedTitle;
+    }
+
+    public void setEquippedTitle(String equippedTitle) {
+        this.equippedTitle = equippedTitle;
     }
 
     public float getTax() {
@@ -219,7 +270,8 @@ public class Country extends GeopolObject {
 
     public Set<Settlement> getSettlementClaimWhitelist() {
         if (settlementClaimWhitelist == null) {
-            this.settlementClaimWhitelist = SerializationUtils.deserializeUuidListToSet(settlementClaimWhitelistSerialized,
+            this.settlementClaimWhitelist = SerializationUtils.deserializeUuidListToSet(
+                    settlementClaimWhitelistSerialized,
                     UnitedLandsDataManager.instance()::getSettlement);
         }
         return settlementClaimWhitelist;
@@ -227,7 +279,8 @@ public class Country extends GeopolObject {
 
     public void setSettlementClaimWhitelist(Set<Settlement> settlementClaimWhitelist) {
         this.settlementClaimWhitelist = settlementClaimWhitelist;
-        this.settlementClaimWhitelistSerialized = SerializationUtils.serializeIdentifiableList(settlementClaimWhitelist);
+        this.settlementClaimWhitelistSerialized = SerializationUtils
+                .serializeIdentifiableList(settlementClaimWhitelist);
     }
 
     // TODO: Neutrality
@@ -258,15 +311,14 @@ public class Country extends GeopolObject {
         }
     }
 
-    @Override 
+    @Override
     public void save() {
         UnitedLandsDataManager.instance().updateCountryDbData(this, false);
     }
 
-    @Override 
+    @Override
     public void saveAndRender() {
         UnitedLandsDataManager.instance().updateCountryDbData(this, true);
     }
-
 
 }

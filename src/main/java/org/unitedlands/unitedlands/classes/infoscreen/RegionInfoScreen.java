@@ -8,6 +8,7 @@ import org.unitedlands.unitedlands.classes.Region;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.unitedlands.utils.CostUtils;
+import org.unitedlands.utils.United;
 
 public class RegionInfoScreen extends InfoScreen {
 
@@ -16,24 +17,46 @@ public class RegionInfoScreen extends InfoScreen {
         var header = buildHeader(region.getCleanName());
         addComponent("header", header);
 
-        addComponent(player, "owner", "info-screens.region.owner", 
+
+        if (region.hasCountry()) {
+
+            addComponent(player, "owner", "info-screens.region.owner", 
                 region.getCountry() != null ? region.getCountry().getCleanName() : "-", 
                 region.getClaimedTime() != null ? new SimpleDateFormat("dd-MM-yyyy HH:mm").format(region.getClaimedTime()) : "-");
 
-        if (region.hasCountry()) {
             addComponent(player, "upkeep", "info-screens.region.costs",
                     UnitedLandsEconomyManager.instance().format(CostUtils.getRegionUpkeep(region, region.getCountry())));
         } else {
-            var citizen = UnitedLandsDataManager.instance().getCitizen(player);
-            if (citizen != null && citizen.hasCountry()) {
-                addComponent(player, "upkeep", "info-screens.region.costs-projected",
-                        UnitedLandsEconomyManager.instance().format(CostUtils.getRegionUpkeep(region, citizen.getCountry())),
-                        UnitedLandsEconomyManager.instance().format(CostUtils.getRegionClaimCosts(citizen.getCountry(), region)));
+
+            if (region.getClaimEndTime() != null && region.getClaimantCountry() != null) {
+                addComponent(player, "upkeep", "info-screens.region.claiming",
+                    region.getClaimantCountry().getCleanName(),
+                    United.formatter().formatDuration(region.getClaimEndTime() - System.currentTimeMillis()));
+            } else {
+                addComponent(player, "owner", "info-screens.region.owner", 
+                    "(unclaimed)", "-");
+                var citizen = UnitedLandsDataManager.instance().getCitizen(player);
+                if (citizen != null && citizen.hasCountry()) {
+                    addComponent(player, "upkeep", "info-screens.region.costs-projected",
+                            UnitedLandsEconomyManager.instance().format(CostUtils.getRegionClaimCosts(citizen.getCountry(), region)),
+                            UnitedLandsEconomyManager.instance().format(CostUtils.getRegionUpkeep(region, citizen.getCountry()))
+                        );
+                }
             }
+
+
         }
 
-        addComponent(player, "administrator", "info-screens.region.administrator",
-                region.getAdministrator() != null ? region.getAdministrator().getName() : "-");
+        var regionAdminStr = "";
+        if (region.getAdministrator() != null) {
+            if (region.getAdministratorTitle() != null) {
+                regionAdminStr += region.getAdministratorTitle() + " ";
+            }
+            regionAdminStr += region.getAdministrator().getName();
+        } else {
+            regionAdminStr = "-";
+        }
+        addComponent(player, "administrator", "info-screens.region.administrator", regionAdminStr);
 
         addComponent(player, "area", "info-screens.region.area",
                 String.format("%,.0f", region.getArea()));

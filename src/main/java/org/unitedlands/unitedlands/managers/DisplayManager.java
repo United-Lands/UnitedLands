@@ -14,7 +14,6 @@ import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
-import org.unitedlands.unitedlands.UnitedLands;
 import org.unitedlands.unitedlands.classes.Coordinates;
 import org.unitedlands.unitedlands.classes.Region;
 import org.unitedlands.unitedlands.classes.Settlement;
@@ -37,16 +36,12 @@ public class DisplayManager {
         return instance;
     }
 
-    @SuppressWarnings("unused")
-    private final UnitedLands plugin;
-
     private Map<Settlement, BossBar> settlementNameDisplays = new HashMap<>();
     private Map<Settlement, Set<Player>> settlementNameDisplayViewers = new HashMap<>();
 
     private Map<Player, Scoreboard> playerScoreboards = new HashMap<>();
 
-    public DisplayManager(UnitedLands plugin) {
-        this.plugin = plugin;
+    public DisplayManager() {
         instance = this;
     }
 

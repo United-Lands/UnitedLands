@@ -2,7 +2,6 @@ package org.unitedlands.unitedlands.managers;
 
 import java.util.HashSet;
 import java.util.Set;
-import org.unitedlands.unitedlands.UnitedLands;
 import org.unitedlands.unitedlands.classes.Confirmation;
 import org.unitedlands.utils.United;
 
@@ -14,13 +13,9 @@ public class ConfirmationManager {
         return instance;
     }
 
-    @SuppressWarnings("unused")
-    private final UnitedLands plugin;
-
     private Set<Confirmation> confirmations = new HashSet<>();
 
-    public ConfirmationManager(UnitedLands plugin) {
-        this.plugin = plugin;
+    public ConfirmationManager() {
         instance = this;
     }
 

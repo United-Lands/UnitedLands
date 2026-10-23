@@ -13,6 +13,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.unitedlands.annotations.UnitedListener;
 import org.unitedlands.unitedlands.classes.Citizen;
 import org.unitedlands.unitedlands.classes.PlaytimeRecord;
 import org.unitedlands.unitedlands.classes.Region;
@@ -32,7 +33,8 @@ import org.unitedlands.unitedlands.managers.PlayerCacheManager;
 import org.unitedlands.unitedlands.utils.CoordinateUtils;
 import org.unitedlands.utils.United;
 
-public class PlayerMovementListener implements Listener {
+@UnitedListener 
+public class BukkitPlayerMovementListener implements Listener {
 
     private Map<UUID, Long> logons = new HashMap<>();
 

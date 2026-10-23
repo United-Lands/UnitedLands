@@ -72,6 +72,9 @@ country:
     - country.settaxes
     - country.claim
     - country.unclaim
+    - country.title.claim
+    - country.title.equip
+    - country.title.unequip
     - region.setname
     - region.setadministrator
     - region.manage.toggle

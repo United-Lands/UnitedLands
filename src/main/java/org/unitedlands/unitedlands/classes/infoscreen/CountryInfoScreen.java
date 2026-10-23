@@ -25,7 +25,7 @@ public class CountryInfoScreen extends InfoScreen {
 
     public CountryInfoScreen(Country country) {
 
-        var header = buildHeader(country.getCleanName());
+        var header = buildHeader(country.getDisplayName());
         addComponent("header", header);
 
         addComponent("founded", "info-screens.country.founded",

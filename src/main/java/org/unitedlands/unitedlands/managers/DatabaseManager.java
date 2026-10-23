@@ -204,6 +204,27 @@ public class DatabaseManager {
             version.setVersion(11);
             versionDao.update(version);
         }
+
+        if (version.getVersion() < 12) {
+            versionDao.executeRaw("ALTER TABLE region ADD COLUMN administrator_title VARCHAR(128) NULL;");
+            version.setVersion(12);
+            versionDao.update(version);
+        }
+
+        if (version.getVersion() < 13) {
+            versionDao.executeRaw("ALTER TABLE settlement ADD COLUMN display_name VARCHAR(255) NULL;");
+            versionDao.executeRaw("ALTER TABLE region ADD COLUMN display_name VARCHAR(255) NULL;");
+            versionDao.executeRaw("ALTER TABLE country ADD COLUMN display_name VARCHAR(255) NULL;");
+            versionDao.executeRaw("ALTER TABLE country ADD COLUMN claimed_titles_serialized MEDIUMTEXT NULL;");
+            version.setVersion(13);
+            versionDao.update(version);
+        }
+
+        if (version.getVersion() < 14) {
+            versionDao.executeRaw("ALTER TABLE country ADD COLUMN equipped_title VARCHAR(255) NULL;");
+            version.setVersion(14);
+            versionDao.update(version);
+        }
     }
 
     public <T, ID> Dao<T, ID> getDao(Class<T> clazz) throws SQLException {

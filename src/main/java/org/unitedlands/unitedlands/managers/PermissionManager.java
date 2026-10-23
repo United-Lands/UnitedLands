@@ -33,13 +33,9 @@ public class PermissionManager {
         return instance;
     }
 
-    private final UnitedLands plugin;
-
-    public PermissionManager(UnitedLands plugin) {
-        this.plugin = plugin;
+    public PermissionManager() {
         instance = this;
-
-        reloadConfigs();
+        loadSettings();
     }
 
     private List<String> settlementRanks = new ArrayList<>();
@@ -63,10 +59,10 @@ public class PermissionManager {
     // Permissions related to settlement, region and country ranks
     // *************************************************************
 
-    public void reloadConfigs() {
+    public void loadSettings() {
 
         rankPermissions = new HashMap<>();
-        var config = plugin.getPermissionConfig().get();
+        var config = UnitedLands.instance().getPermissionConfig().get();
 
         var settlementRankSection = config.getConfigurationSection("settlement");
         for (var key : settlementRankSection.getKeys(false)) {

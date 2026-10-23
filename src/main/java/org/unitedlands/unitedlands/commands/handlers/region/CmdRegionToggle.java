@@ -1,8 +1,6 @@
 package org.unitedlands.unitedlands.commands.handlers.region;
 
 import java.util.List;
-import java.util.Map;
-
 import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.unitedlands.classes.commandhandlers.RegionCommandHandler;
@@ -75,7 +73,10 @@ public class CmdRegionToggle extends RegionCommandHandler {
 
         context.region().saveAndRender();
 
-        United.messenger().send(context.player(), "player.region.toggle.success", Map.of(args[0], enable != null ? (enable == true ? "<green>on</green>" : "<red>off</red>") : "<yellow>unset</yellow>"));
+        United.messenger().send(context.player(), "player.region.toggle.success", 
+            args[0], 
+            enable != null ? (enable == true ? "<green>on</green>" : "<red>off</red>") : "<yellow>unset</yellow>",
+            context.region().getCleanName());
     }
 
 }

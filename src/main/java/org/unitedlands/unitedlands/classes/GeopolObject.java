@@ -27,6 +27,9 @@ public class GeopolObject implements Identifiable, MetadataHolder {
     protected UUID uuid;
     @DatabaseField(width = 255)
     protected String name;
+    @DatabaseField(width = 255, columnName = "display_name")
+    protected String displayName;
+
     @DatabaseField(width = 255, columnName = "world_name")
     protected String worldName;
 
@@ -75,6 +78,16 @@ public class GeopolObject implements Identifiable, MetadataHolder {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getDisplayName() {
+        if (this.displayName == null)
+            return getCleanName();
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 
     public World getWorld() {

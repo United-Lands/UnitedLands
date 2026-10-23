@@ -105,7 +105,7 @@ public class CmdCountryUnclaim extends CountryCommandHandler {
                         region.setClaimEndTime(null);
                         region.saveAndRender();
 
-                        United.messenger().send(context.player(), "player.country.unclaim.success");
+                        United.messenger().send(context.player(), "player.country.unclaim.success", region.getCleanName());
                     }
                 }
             }

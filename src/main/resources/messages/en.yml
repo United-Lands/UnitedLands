@@ -250,11 +250,19 @@ player:
     setcolor:
       success: <aqua>Successfully changed your country's color to {1}</aqua>
     setname:
+      title-not-unlocked: "<yellow>You can't use the title \"{1}\" in your country's name yet, you need to own at least {2} regions. Visit the /wiki to see a list of titles and requirements.</yellow>"
       success: <aqua>Successfully changed your country's name to {1}</aqua>
     settax:
       above-max: <yellow>You can't set taxes higher than {1}, using maximum allowed value.</yellow>
       below-min: <yellow>You can't set taxes lower than {1}, using minimum allowed value.</yellow>
       success: <aqua>Taxes for {1} set to {2}</aqua>
+    titles:
+      unknown-title: "<yellow>Unknown title: {1}</yellow>"
+      already-claimed: <yellow>This title is alreay claimed by {1}</yellow>
+      missing-regions: "<yellow>Your country misses necessary regions to claim this title: {1}</yellow>"
+      success-broadcast: <aqua>{1} has claimed the unique title {2}.</aqua>
+      equipped: <aqua>Successfully equipped country title {1}.</aqua>
+      unequipped: <aqua>Successfully unequipped the current country title.</aqua>
     unclaim:
       confirm: <yellow>You will lose control of this region. Continue?</yellow>
       confirm-warn-leader: '<red>WARNING: You will lose leadership of the country!</red>'
@@ -282,7 +290,7 @@ player:
     info:
       not-in-region: <yellow>You're not in a region.</yellow>
     permission:
-      success: <aqua>Settlement permission {1} for {2} set to {3}.</aqua>
+      success: <aqua>Region permission {1} for {2} set to {3}.</aqua>
       unknown-membership: '<yellow>Unknown group: {1}.</yellow>'
       unknown-permission: '<yellow>Unknown permission: {1}.</yellow>'
     set-setname:
@@ -290,10 +298,12 @@ player:
     setadministrator:
       not-in-country: <yellow>{1} is not part of your country.</yellow>
       success: <aqua>Assigned {1} as the administrator of {2}.</aqua>
+    setadministratortitle:
+      success: <aqua>Set administrator title to {1}.</aqua>
     setname:
       success: <aqua>Successfully changed the region name from {1} to {2}.</aqua>
     toggle:
-      success: <aqua>Toggled plot {1} to {2}</aqua>
+      success: <aqua>Toggled {1} to {2} for region {3}.</aqua>
       unknown-toggle: '<yellow>Unknown toggle: {1}'
   settlement:
     addrank:
@@ -358,11 +368,14 @@ player:
       is-mayor: <yellow>You're the mayor of this settlement, you can't leave.</yellow>
       settlement-left: <aqua>You have left <blue>{1}</blue>.</aqua>
     merge:
-      broadcast: (missing)
-      confirm: (missing)
-      mayor-not-online: (missing)
-      target-has-country: (missing)
-      target-not-in-country: (missing)
+      cannot-merge-self: <yellow>You can't merge with yourself.</yellow>
+      target-is-npc: <yellow>The target town is an NPC town.</yellow>
+      target-mayor-offline: <yellow>The target town's mayor is not online.</yellow>
+      cannot-merge-foreign-settlement: <yellow>You can't merge with a forein settlement.</yellow>
+      cannot-merge-country-settlement: <yellow>You can't merge with a settlement that belongs to a country.</yellow>
+      confirm: <yellow>Doing this will merge your settlement into the target settlement of {1}. <b>This means your settlement will no longer exist.</b> Continue?</yellow>
+      request: <gray>The settlement of {1} requests to be merged into your settlements. You will receive all of their citizens and settlement claims. Accept?</gray>
+      broadcast: <aqua>The settlement of {1} has merged into {2}.</aqua>
     not-in-settlement: <yellow>{1} is not a member of the settlement.</yellow>
     permission:
       success: <aqua>Settlement permission {1} for {2} set to {3}.</aqua>

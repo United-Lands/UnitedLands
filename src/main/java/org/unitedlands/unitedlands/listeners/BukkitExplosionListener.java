@@ -16,12 +16,16 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.vehicle.VehicleDamageEvent;
+import org.unitedlands.annotations.UnitedListener;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.utils.CoordinateUtils;
 
-public class ExplosionListener implements Listener {
+import com.destroystokyo.paper.event.block.BlockDestroyEvent;
 
-    public ExplosionListener() {
+@UnitedListener 
+public class BukkitExplosionListener implements Listener {
+
+    public BukkitExplosionListener() {
     }
 
     @EventHandler
@@ -41,6 +45,14 @@ public class ExplosionListener implements Listener {
         if (!isExplosionAllowed(location)) {
             event.blockList().clear();
             return;
+        }
+    }
+
+    @EventHandler
+    public void onBlockDestroy(BlockDestroyEvent event) {
+        var location = event.getBlock().getLocation();
+        if (!isExplosionAllowed(location)) {    
+            event.setCancelled(true);
         }
     }
 

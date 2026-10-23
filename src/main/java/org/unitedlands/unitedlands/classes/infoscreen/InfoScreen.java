@@ -3,6 +3,7 @@ package org.unitedlands.unitedlands.classes.infoscreen;
 import java.util.LinkedList;
 
 import org.bukkit.plugin.java.JavaPlugin;
+import org.unitedlands.unitedlands.utils.ColorUtils;
 import org.unitedlands.utils.United;
 
 import net.kyori.adventure.audience.Audience;
@@ -104,7 +105,7 @@ public abstract class InfoScreen {
         var titleStart = United.messenger().get("info-screens.header.title-start");
         var titleEnd = United.messenger().get("info-screens.header.title-end");
 
-        var nameLength = name.length();
+        var nameLength = ColorUtils.stripAllColors(name).length();
         var fillerStartLength = fillerStart.length();
         var fillerEndLength = fillerEnd.length();
         var titleStartLength = titleStart.length();

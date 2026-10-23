@@ -149,4 +149,16 @@ public class SerializationUtils {
         }
     }
 
+    public static String serializeStringSet(Set<String> set) {
+        if (set == null || set.isEmpty())
+            return null;
+        return String.join(";", set);
+    }
+
+    public static Set<String> deserializeStringSet(String claimedTitlesSerialized) {
+        if (claimedTitlesSerialized == null)
+            return new HashSet<>();
+        return Arrays.stream(claimedTitlesSerialized.split(";")).collect(Collectors.toSet());
+    }
+
 }

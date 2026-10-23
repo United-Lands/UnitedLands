@@ -20,6 +20,7 @@ import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.unitedlands.annotations.UnitedListener;
 import org.unitedlands.unitedlands.classes.PermissionType;
 import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.managers.PermissionManager;
@@ -27,9 +28,10 @@ import org.unitedlands.utils.United;
 
 import io.papermc.paper.event.player.PlayerItemFrameChangeEvent;
 
-public class BlockListener implements Listener {
+@UnitedListener 
+public class BukkitBlockListener implements Listener {
 
-    public BlockListener() {
+    public BukkitBlockListener() {
     }
 
     // Break listeners

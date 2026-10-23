@@ -7,7 +7,7 @@ import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.unitedlands.classes.commandhandlers.CountryCommandHandler;
 import org.unitedlands.unitedlands.classes.configs.UnitedLandsTitlesConfig;
-import org.unitedlands.unitedlands.utils.ClaimableTitleUtils;
+import org.unitedlands.unitedlands.managers.TitleManager;
 import org.unitedlands.utils.United;
 
 @UnitedSubCommand(
@@ -22,7 +22,7 @@ public class CmdCountryTitleCheck extends CountryCommandHandler {
     @Override
     public List<String> handleTab(CommandSender sender, String[] args) {
         if (args.length == 1)
-            return UnitedLandsTitlesConfig.get().titles().keys().stream().toList();
+            return UnitedLandsTitlesConfig.get().uniqueTitles().keys().stream().toList();
         return null;
     }
 
@@ -34,7 +34,7 @@ public class CmdCountryTitleCheck extends CountryCommandHandler {
             return;
         }
 
-        var titleConfig = UnitedLandsTitlesConfig.get().titles().get(args[0]);
+        var titleConfig = UnitedLandsTitlesConfig.get().uniqueTitles().get(args[0]);
         if (titleConfig == null) {
             return;
         }
@@ -43,7 +43,7 @@ public class CmdCountryTitleCheck extends CountryCommandHandler {
         if (context == null)
             return;
 
-        var titleValidation = ClaimableTitleUtils.validateTitle(context.country(), args[0]);
+        var titleValidation = TitleManager.instance().validateUniqueTitle(context.country(), args[0]);
 
         List<String> primaryRegions = new ArrayList<>();
 
@@ -62,7 +62,7 @@ public class CmdCountryTitleCheck extends CountryCommandHandler {
             secondaryRegions.add("<red>" + region + "</red>");
         }
 
-        String validationResult = titleValidation.claimeble() ? "<green>You can claim this title</green>"
+        String validationResult = titleValidation.claimable() ? "<green>You can claim this title</green>"
                 : "<red>You can't claim this title at this point.</red>";
 
         United.messenger().sendRaw(sender, "<gray>Title check: <bold>" + titleConfig.displayName() + "</bold></gray>");

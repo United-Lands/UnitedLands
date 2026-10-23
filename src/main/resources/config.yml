@@ -40,6 +40,9 @@ general:
   # Should settlements be able to claim across region borders?
   allow-settlement-claims-outside-home-region: false
 
+  # Whether players should gain hunger in their own settlement
+  prevent-hunger-in-settlement: true
+
   # Manage flight permissions
   flight:
     # Enable or disable flight management

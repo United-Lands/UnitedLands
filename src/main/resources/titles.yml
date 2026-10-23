@@ -1,19 +1,40 @@
-titles:
+generic-title-tiers: 4 
+generic-titles:
+  tier-1:
+    region-count: 1
+    titles:
+      - Country
+      - Polis
+      - Estate
+  tier-2:
+    region-count: 3
+    titles:
+      - Dukedom
+      - Jarldom
+      - Emirate
+  tier-3:
+    region-count: 5
+    titles:
+      - Kingdom
+      - Khanate
+      - Republic     
+  tier-4:
+    region-count: 10
+    titles:
+      - Empire
+      - Federation
+      - Commonwealth
+
+
+unique-titles:
   Kingdom_of_France:
-    display-name: "Kingdom of France"
+    display-name: "<b><gradient:#FF0000:#E0E0E0:#1F3DE5>Empire Français</gradient></b>"
     description: "Lorem ipsum dolor sit amet."
     effects-description: "<gray><aqua><i>Imperial Ambitions</i></aqua>: Gives <green>+5%</green> daily mobilization and <green>+1</green> parallel region claims."
     primary-regions:
-    - Ile-de-France
     - Orleans
     - Gascogne
-    - Provence
     secondary-regions:
-    - Champagne
-    - Bourgogne
-    - Hauts-de-France
-    - Normandie
-    - Bretagne
     - Poitiers
     - Anjou
     - Limousin
@@ -26,6 +47,7 @@ titles:
       modifiers:
         mod1:
           attribute-key: MAX_REGION_CLAIMS
+          mod-key: 
           mode: ADD
           value-modifier: 1
           min-value-modifier: 0

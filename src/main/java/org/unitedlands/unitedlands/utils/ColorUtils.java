@@ -6,6 +6,8 @@ import java.util.regex.Pattern;
 
 import org.unitedlands.utils.United;
 
+import net.kyori.adventure.text.minimessage.MiniMessage;
+
 public class ColorUtils {
     public static Color hexToColor(String hex) {
         if (hex.startsWith("#")) {
@@ -32,7 +34,7 @@ public class ColorUtils {
                 argb & 0xFF);
     }
 
-    private static final String HEX_WEBCOLOR_PATTERN = "^#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$";    
+    private static final String HEX_WEBCOLOR_PATTERN = "^#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$";
     private static final Pattern hexPattern = Pattern.compile(HEX_WEBCOLOR_PATTERN);
 
     private static final String COLOUR_CHARACTERS_PATTERN = "[$&<>.;:#]";
@@ -47,5 +49,15 @@ public class ColorUtils {
         United.logger().debug("Testing " + str);
         Matcher matcher = colorPattern.matcher(str);
         return matcher.find();
+    }
+
+    private static final Pattern LEGACY_COLOR_PATTERN = Pattern.compile("(?i)[§&][0-9a-fk-orx]");
+
+    public static String stripAllColors(String input) {
+        if (input == null || input.isEmpty()) {
+            return input;
+        }
+        String cleanLegacy = LEGACY_COLOR_PATTERN.matcher(input).replaceAll("");
+        return MiniMessage.miniMessage().stripTags(cleanLegacy);
     }
 }

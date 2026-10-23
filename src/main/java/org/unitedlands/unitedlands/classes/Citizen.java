@@ -1,14 +1,11 @@
 package org.unitedlands.unitedlands.classes;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
-
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -17,6 +14,8 @@ import org.unitedlands.unitedlands.classes.interfaces.MetadataHolder;
 import org.unitedlands.unitedlands.classes.metadata.MetaDataField;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.utils.JsonUtils;
+import org.unitedlands.unitedlands.utils.SerializationUtils;
+
 import com.google.gson.reflect.TypeToken;
 import org.unitedlands.libs.ormlite.field.DataType;
 import org.unitedlands.libs.ormlite.field.DatabaseField;
@@ -178,24 +177,14 @@ public class Citizen implements Identifiable, MetadataHolder {
 
     public Set<String> getSettlementRanks() {
         if (settlementRanks == null) {
-            if (settlementRanksSerialized != null) {
-                settlementRanks = Arrays.stream(settlementRanksSerialized.split(";"))
-                        .collect(Collectors.toSet());
-            } else {
-                settlementRanks = new HashSet<>();
-            }
+            settlementRanks = SerializationUtils.deserializeStringSet(settlementRanksSerialized);
         }
         return settlementRanks;
     }
 
     public void setSettlementRanks(Set<String> ranks) {
         this.settlementRanks = ranks;
-        if (ranks != null && !ranks.isEmpty()) {
-            this.settlementRanksSerialized = ranks.stream()
-                    .collect(Collectors.joining(";"));
-        } else {
-            this.settlementRanksSerialized = null;
-        }
+        this.settlementRanksSerialized = SerializationUtils.serializeStringSet(ranks);
     }
 
     public void addCountryRank(String rank) {
@@ -233,24 +222,14 @@ public class Citizen implements Identifiable, MetadataHolder {
 
     public Set<String> getCountryRanks() {
         if (countryRanks == null) {
-            if (countryRanksSerialized != null) {
-                countryRanks = Arrays.stream(countryRanksSerialized.split(";"))
-                        .collect(Collectors.toSet());
-            } else {
-                countryRanks = new HashSet<>();
-            }
+           countryRanks = SerializationUtils.deserializeStringSet(countryRanksSerialized);
         }
         return countryRanks;
     }
 
     public void setCountryRanks(Set<String> ranks) {
         this.countryRanks = ranks;
-        if (ranks != null && !ranks.isEmpty()) {
-            this.countryRanksSerialized = ranks.stream()
-                    .collect(Collectors.joining(";"));
-        } else {
-            this.countryRanksSerialized = null;
-        }
+        this.countryRanksSerialized = SerializationUtils.serializeStringSet(ranks);
     }
 
     @Override

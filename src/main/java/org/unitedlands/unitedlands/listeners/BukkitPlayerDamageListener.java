@@ -7,6 +7,7 @@ import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.unitedlands.annotations.UnitedListener;
 import org.unitedlands.unitedlands.classes.PermissionType;
 import org.unitedlands.unitedlands.classes.events.base.PermissablePlayerDamageEvent;
 import org.unitedlands.unitedlands.classes.events.base.PermissablePlayerDamageEvent.DamageType;
@@ -16,7 +17,8 @@ import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.utils.CoordinateUtils;
 import org.unitedlands.utils.United;
 
-public class PlayerDamageListener implements Listener {
+@UnitedListener 
+public class BukkitPlayerDamageListener implements Listener {
 
     @EventHandler
     private void onPlayerDamageByPlayer(EntityDamageByEntityEvent event) {

@@ -3,6 +3,7 @@ package org.unitedlands.unitedlands.listeners;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.unitedlands.annotations.UnitedListener;
 import org.unitedlands.unitedlands.classes.events.base.PlayerChangeChunkEvent;
 import org.unitedlands.unitedlands.classes.events.player.PlayerEnterRegionEvent;
 import org.unitedlands.unitedlands.classes.events.player.PlayerEnterSettlementEvent;
@@ -10,9 +11,10 @@ import org.unitedlands.unitedlands.classes.events.player.PlayerExitSettlementEve
 import org.unitedlands.unitedlands.managers.DisplayManager;
 import org.unitedlands.utils.United;
 
-public class PlayerListener implements Listener {
+@UnitedListener 
+public class UnitedLandsPlayerListener implements Listener {
 
-    public PlayerListener() {
+    public UnitedLandsPlayerListener() {
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)

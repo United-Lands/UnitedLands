@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.unitedlands.unitedlands.UnitedLands;
 import org.unitedlands.unitedlands.classes.BankRecord;
 import org.unitedlands.unitedlands.classes.Citizen;
 import org.unitedlands.unitedlands.classes.Coordinates;
@@ -57,7 +56,7 @@ public class UnitedLandsDataManager {
 
     private LRUCache<Coordinates, Region> coordinateRegionCache = new LRUCache<>(5000);
 
-    public UnitedLandsDataManager(UnitedLands plugin, Pl3xMapRenderer mapRenderer) {
+    public UnitedLandsDataManager(Pl3xMapRenderer mapRenderer) {
         instance = this;
 
         databaseManager = new DatabaseManager();
@@ -215,6 +214,8 @@ public class UnitedLandsDataManager {
         countries = new HashMap<>();
     }
 
+    //#region Citizens
+
     // **************************************************
     // Citizens
     // **************************************************
@@ -266,6 +267,10 @@ public class UnitedLandsDataManager {
     public void unregisterCitizen(Citizen citizen) {
         citizens.remove(citizen.getUuid(), citizen);
     }
+
+    //#endregion
+
+    //#region Settlements
 
     // **************************************************
     // Settlements
@@ -331,6 +336,38 @@ public class UnitedLandsDataManager {
         (new SettlementCreatedEvent(settlement)).callEvent();
 
         return settlement;
+    }
+
+    public void mergeSettlements(Settlement prevailing, Settlement merging) {
+
+        if (prevailing.equals(merging))
+            return;
+        
+        for (var chunk : merging.getChunks()) {
+            prevailing.addChunk(chunk);
+            chunk.setSettlement(prevailing);
+            chunk.save();
+        }
+        for (var citizen : merging.getCitizens()) {
+            citizen.setSettlement(prevailing);
+            citizen.removeSettlementRanks();
+            citizen.save();
+        }
+
+        if (merging.hasRegion()) {
+            var region = merging.getRegion();
+            region.removeSettlement(merging);
+        }
+        if (merging.hasCountry()) {
+            var country = merging.getCountry();
+            country.removeSettlement(merging);
+        }
+
+        UnitedLandsEconomyManager.instance().deposit(prevailing.getUuid(),
+                UnitedLandsEconomyManager.instance().getBalance(merging.getUuid()),
+                "Merging of settlement bank of " + merging.getName());
+                
+        removeSettlement(merging);
     }
 
     public void removeSettlement(Settlement settlement) {
@@ -444,6 +481,10 @@ public class UnitedLandsDataManager {
         return future.join();
     }
 
+    //#endregion
+
+    //#region Settlement Chunks
+
     // **************************************************
     // Settlement Chunks
     // **************************************************
@@ -478,9 +519,17 @@ public class UnitedLandsDataManager {
         settlementChunks.remove(settlementChunk.getCoordinates());
     }
 
-    public SettlementChunk getSettlementChunk(Coordinates regionCoordinates) {
-        return settlementChunks.get(regionCoordinates);
+    public SettlementChunk getSettlementChunk(Coordinates coords) {
+        return settlementChunks.get(coords);
     }
+
+    public SettlementChunk getSettlementChunk(Location location) {
+        return settlementChunks.get(CoordinateUtils.locationToChunkCoordinates(location));
+    }
+
+    //#endregion
+
+    //#region Regions
 
     // **************************************************
     // Regions
@@ -559,6 +608,10 @@ public class UnitedLandsDataManager {
         return regions.values().stream().filter(r -> country.equals(r.getClaimantCountry()))
                 .collect(Collectors.toSet());
     }
+
+    //#endregion
+
+    //#region Countries
 
     // **************************************************
     // Countries
@@ -716,6 +769,10 @@ public class UnitedLandsDataManager {
         return future.join();
     }
 
+    //#endregion
+
+    //#region Records
+
     // **************************************************
     // Bank Records
     // **************************************************
@@ -750,6 +807,10 @@ public class UnitedLandsDataManager {
         }
     }
 
+    //#endregion
+
+    //#region Helpers
+
     // **************************************************
     // Helper classes
     // **************************************************
@@ -767,5 +828,7 @@ public class UnitedLandsDataManager {
             return size() > capacity;
         }
     }
+
+    //#endregion
 
 }

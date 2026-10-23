@@ -5,13 +5,15 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
+import org.unitedlands.annotations.UnitedListener;
 import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.utils.CoordinateUtils;
 
-public class MobListener implements Listener {
+@UnitedListener 
+public class BukkitMobListener implements Listener {
 
-    public MobListener() {
+    public BukkitMobListener() {
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)

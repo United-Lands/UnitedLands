@@ -23,12 +23,9 @@ public class UnitedLandsEconomyManager {
         return instance;
     }
 
-    private final UnitedLands plugin;
-
     private IEconomyProvider economyProvider;
 
-    public UnitedLandsEconomyManager(UnitedLands plugin) {
-        this.plugin = plugin;
+    public UnitedLandsEconomyManager() {
         instance = this;
     }
 
@@ -37,9 +34,9 @@ public class UnitedLandsEconomyManager {
     }
 
     public void loadEconomy() {
-        if (plugin.getServer().getPluginManager().getPlugin("Vault") != null) {
+        if (UnitedLands.instance().getServer().getPluginManager().getPlugin("Vault") != null) {
             try {
-                economyProvider = new VaultEconomyProvider(plugin);
+                economyProvider = new VaultEconomyProvider(UnitedLands.instance());
                 United.logger().info("Found Vault, enabling economy...", "UnitedLands");
             } catch (InternalException ex) {
                 economyProvider = null;

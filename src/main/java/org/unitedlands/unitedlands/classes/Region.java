@@ -50,6 +50,8 @@ public class Region extends GeopolObject implements PermissionHolder {
 
     @DatabaseField(width = 36, columnName = "administrator_uuid")
     private UUID administratorUuid;
+    @DatabaseField(width = 128, columnName = "administrator_title")
+    private String administratorTitle;
 
     @DatabaseField(canBeNull = false, columnName = "break_permissions")
     private int breakPermissions = LocationMembership.OWNER | LocationMembership.TRUSTED;
@@ -283,6 +285,14 @@ public class Region extends GeopolObject implements PermissionHolder {
     public void removeAdministrator() {
         this.administrator = null;
         this.administratorUuid = null;
+    }
+
+    public String getAdministratorTitle() {
+        return administratorTitle;
+    }
+
+    public void setAdministratorTitle(String administratorTitle) {
+        this.administratorTitle = administratorTitle;
     }
 
     public boolean hasCountry() {

@@ -25,15 +25,11 @@ import io.undertow.util.HttpString;
 
 public class UnitedLandsWebServices {
 
-    @SuppressWarnings("unused")
-    private final UnitedLands plugin;
-
     private ConfigFile config;
     private Undertow server;
 
-    public UnitedLandsWebServices(UnitedLands plugin) {
-        this.plugin = plugin;
-        config = new ConfigFile(plugin, "webservices.yml");
+    public UnitedLandsWebServices() {
+        config = new ConfigFile(UnitedLands.instance(), "webservices.yml");
 
         cleanChallenges();
         startWebServices();
@@ -64,10 +60,10 @@ public class UnitedLandsWebServices {
         var host = config.get().getString("host");
         var port = config.get().getInt("port", 8090);
 
-        File webDir = new File(plugin.getDataFolder(), "web");
+        File webDir = new File(UnitedLands.instance().getDataFolder(), "web");
         if (!webDir.exists()) {
             webDir.mkdirs();
-            plugin.saveResource("web/index.html", false);
+            UnitedLands.instance().saveResource("web/index.html", false);
         }
 
         try {
@@ -89,11 +85,11 @@ public class UnitedLandsWebServices {
                 .get("/auth/status/{id}", new AuthStatusHandler())
                 .get("/auth/start", new AuthStartHandler())
                 .post("/auth/finalize", new AuthFinalizeHandler(secret))
-                .get("/citizens/{id}", new CitizenGetHandler(plugin))
-                .get("/countries/{slug}", new CountriesGetHandler(plugin))
-                .get("/settlements/{slug}", new SettlementsGetHandler(plugin))
-                .get("/countries", new CountriesListHandler(plugin))
-                .get("/settlements", new SettlementsListHandler(plugin));
+                .get("/citizens/{id}", new CitizenGetHandler(UnitedLands.instance()))
+                .get("/countries/{slug}", new CountriesGetHandler(UnitedLands.instance()))
+                .get("/settlements/{slug}", new SettlementsGetHandler(UnitedLands.instance()))
+                .get("/countries", new CountriesListHandler(UnitedLands.instance()))
+                .get("/settlements", new SettlementsListHandler(UnitedLands.instance()));
                 
         HttpHandler resourceHandler = new ResourceHandler(
                 new FileResourceManager(webDir, 1024))

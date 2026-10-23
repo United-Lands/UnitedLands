@@ -1,14 +1,11 @@
 package org.unitedlands.unitedlands.commands.handlers.admin.settlement;
 
 import java.util.List;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.registrars.command.UnitedCommandExecutor;
 
-import org.unitedlands.unitedlands.integrations.Pl3xMap.Pl3xMapRenderer;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
-import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.utils.United;
 
 @UnitedSubCommand(
@@ -40,37 +37,9 @@ public class CmdAdminSettlementMerge implements UnitedCommandExecutor {
             return;
         }
 
-        for (var chunk : targetSettlement.getChunks()) {
-            sourceSettlement.addChunk(chunk);
-            chunk.setSettlement(sourceSettlement);
-            chunk.save();
-        }
-        for (var citizen : targetSettlement.getCitizens()) {
-            citizen.setSettlement(sourceSettlement);
-            citizen.removeSettlementRanks();
-            citizen.save();
-        }
+        UnitedLandsDataManager.instance().mergeSettlements(sourceSettlement, targetSettlement);
 
-        if (targetSettlement.hasRegion()) {
-            var region = targetSettlement.getRegion();
-            region.removeSettlement(targetSettlement);
-        }
-        if (targetSettlement.hasCountry()) {
-            var country = targetSettlement.getCountry();
-            country.removeSettlement(targetSettlement);
-        }
-
-        UnitedLandsEconomyManager.instance().deposit(sourceSettlement.getUuid(),
-                UnitedLandsEconomyManager.instance().getBalance(targetSettlement.getUuid()),
-                "Merging of settlement bank of " + targetSettlement.getName());
-        UnitedLandsEconomyManager.instance().deleteAccount(targetSettlement.getUuid());
-
-        var targetSettlementName = targetSettlement.getCleanName();
-        UnitedLandsDataManager.instance().removeSettlementDbData(targetSettlement);
-
-        Pl3xMapRenderer.instance().removeSettlement(targetSettlement);
-
-        United.messenger().send(Bukkit.getServer(), "player.settlement.merge.broadcast", sourceSettlement.getCleanName(), targetSettlementName);
+        // TODO: Message
     }
 
     @Override

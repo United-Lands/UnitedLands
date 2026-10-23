@@ -37,8 +37,7 @@ public class CmdSettlementChunkToggle extends SettlementChunkCommandHandler {
         if (context == null)
             return;
 
-        if (!(isOwner(context.settlementChunk(), context.citizen())
-                || hasPermission("settlement.plot.permissions", context.citizen(), context.settlementChunk()))) {
+        if (!(isOwner(context.settlementChunk(), context.citizen()) || hasPermission("settlement.plot.permissions", context.citizen(), context.settlementChunk()))) {
             return;
         }
 
