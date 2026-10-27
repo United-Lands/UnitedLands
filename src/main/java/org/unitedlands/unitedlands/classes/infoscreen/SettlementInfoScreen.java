@@ -22,7 +22,6 @@ import org.unitedlands.utils.United;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 
 public class SettlementInfoScreen extends InfoScreen {
 
@@ -94,7 +93,7 @@ public class SettlementInfoScreen extends InfoScreen {
                             .collect(Collectors
                                     .toList()));
         }
-        var citizens = MiniMessage.miniMessage().deserialize(United.messenger().get(player, "info-screens.settlement.citizens",
+        var citizens = United.miniMessage().get().deserialize(United.messenger().get(player, "info-screens.settlement.citizens",
                 String.valueOf(citizenCount)))
                 .hoverEvent(
                         HoverEvent.showText(
@@ -137,7 +136,7 @@ public class SettlementInfoScreen extends InfoScreen {
             if (!fields.isEmpty()) {
                 var finalMetaDataString = metaDataWrapper.replace("{metadata}",
                         String.join("<dark_gray> | </dark_gray>", fields));
-                addComponent("metadata", MiniMessage.miniMessage().deserialize(finalMetaDataString));
+                addComponent("metadata", United.miniMessage().get().deserialize(finalMetaDataString));
             }
         }
 

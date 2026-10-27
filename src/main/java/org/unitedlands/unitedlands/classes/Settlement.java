@@ -7,8 +7,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.awt.Color;
-import java.math.BigDecimal;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -16,6 +14,7 @@ import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.unitedlands.UnitedLands;
 import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.classes.events.settlement.SettlementPreClaimEvent;
+import org.unitedlands.unitedlands.managers.DisplayManager;
 import org.unitedlands.unitedlands.managers.PlayerCacheManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.utils.ColorUtils;
@@ -581,10 +580,6 @@ public class Settlement extends GeopolObject implements PermissionHolder {
         return getCitizens().size();
     }
 
-    public BigDecimal getBalance() {
-        return UnitedLandsEconomyManager.instance().getBalance(uuid);
-    }
-
     public double getUpkeep() {
         // Upkeep calculation mus always occur on the main thread due to event handling.
         // This getter may get called asynchronously (e.g. in map rendering), so make
@@ -677,17 +672,23 @@ public class Settlement extends GeopolObject implements PermissionHolder {
                 this.getCleanName(), 
                 chunkCoords.toCleanShortString(),
                 UnitedLandsEconomyManager.instance().format(claimCosts));
+
+        var c = CoordinateUtils.locationToChunkCenterCoordinates(location);
+        var y = location.getWorld().getHighestBlockAt(c.getX(), c.getZ()).getY() + 8;
+        DisplayManager.instance().playFireworkEffect(new Location(location.getWorld(), c.getX(), y, c.getZ()));
     }
 
     @Override
     public void save() {
         PlayerCacheManager.instance().refreshMembershipsForSettlement(this);
+        DisplayManager.instance().refreshSettlementDisplay(this);
         UnitedLandsDataManager.instance().updateSettlementDbData(this, false);
     }
 
     @Override
     public void saveAndRender() {
         PlayerCacheManager.instance().refreshMembershipsForSettlement(this);
+        DisplayManager.instance().refreshSettlementDisplay(this);
         UnitedLandsDataManager.instance().updateSettlementDbData(this, true);
     }
 

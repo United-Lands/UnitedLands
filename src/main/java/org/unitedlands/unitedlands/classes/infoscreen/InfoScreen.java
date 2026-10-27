@@ -8,7 +8,6 @@ import org.unitedlands.utils.United;
 
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 
 public abstract class InfoScreen {
 
@@ -27,35 +26,35 @@ public abstract class InfoScreen {
     }
 
     public void addComponent(String id, String path, Object... values) {
-        components.add(new InfoScreenComponent(id, MiniMessage.miniMessage().deserialize(United.messenger().get(path, values))));
+        components.add(new InfoScreenComponent(id, United.miniMessage().get().deserialize(United.messenger().get(path, values))));
     }
 
     public void addComponent(String id, String path, JavaPlugin plugin, Object... values) {
-        components.add(new InfoScreenComponent(id, MiniMessage.miniMessage().deserialize(United.messenger().get(path, plugin, values))));
+        components.add(new InfoScreenComponent(id, United.miniMessage().get().deserialize(United.messenger().get(path, plugin, values))));
     }
 
     public void addComponent(int index, String id, String path, Object... values) {
-        components.add(index, new InfoScreenComponent(id, MiniMessage.miniMessage().deserialize(United.messenger().get(path, values))));
+        components.add(index, new InfoScreenComponent(id, United.miniMessage().get().deserialize(United.messenger().get(path, values))));
     }
 
     public void addComponent(int index, String id, String path, JavaPlugin plugin, Object... values) {
-        components.add(index, new InfoScreenComponent(id, MiniMessage.miniMessage().deserialize(United.messenger().get(path, plugin, values))));
+        components.add(index, new InfoScreenComponent(id, United.miniMessage().get().deserialize(United.messenger().get(path, plugin, values))));
     }
 
     public void addComponent(Audience sender, String id, String path, Object... values) {
-        components.add(new InfoScreenComponent(id, MiniMessage.miniMessage().deserialize(United.messenger().get(sender, path, values))));
+        components.add(new InfoScreenComponent(id, United.miniMessage().get().deserialize(United.messenger().get(sender, path, values))));
     }
 
     public void addComponent(Audience sender, String id, String path, JavaPlugin plugin, Object... values) {
-        components.add(new InfoScreenComponent(id, MiniMessage.miniMessage().deserialize(United.messenger().get(sender, path, plugin, values))));
+        components.add(new InfoScreenComponent(id, United.miniMessage().get().deserialize(United.messenger().get(sender, path, plugin, values))));
     }
 
     public void addComponent(Audience sender, int index, String id, String path, Object... values) {
-        components.add(index, new InfoScreenComponent(id, MiniMessage.miniMessage().deserialize(United.messenger().get(sender, path, values))));
+        components.add(index, new InfoScreenComponent(id, United.miniMessage().get().deserialize(United.messenger().get(sender, path, values))));
     }
 
     public void addComponent(Audience sender, int index, String id, String path, JavaPlugin plugin, Object... values) {
-        components.add(index, new InfoScreenComponent(id, MiniMessage.miniMessage().deserialize(United.messenger().get(sender, path, plugin, values))));
+        components.add(index, new InfoScreenComponent(id, United.miniMessage().get().deserialize(United.messenger().get(sender, path, plugin, values))));
     }
 
     public void addComponent(String afterKey, String id, Component content) {
@@ -127,7 +126,7 @@ public abstract class InfoScreen {
             header += filler;
         header += fillerEnd + "</" + fillerColor + ">";
 
-        return MiniMessage.miniMessage().deserialize(header);
+        return United.miniMessage().get().deserialize(header);
     }
 
 }

@@ -7,8 +7,11 @@ import java.util.Map;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
+import org.bukkit.FireworkEffect;
 import org.bukkit.Location;
+import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.scoreboard.Criteria;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
@@ -19,14 +22,13 @@ import org.unitedlands.unitedlands.classes.Region;
 import org.unitedlands.unitedlands.classes.Settlement;
 import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.utils.CoordinateUtils;
+import org.unitedlands.utils.United;
 
 import io.papermc.paper.scoreboard.numbers.NumberFormat;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.bossbar.BossBar.Color;
 import net.kyori.adventure.bossbar.BossBar.Overlay;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-
 
 public class DisplayManager {
 
@@ -51,19 +53,37 @@ public class DisplayManager {
             addition = " (" + String.join(" | ", addionalDisplay) + ")";
         }
         player.sendActionBar(
-                MiniMessage.miniMessage().deserialize("<red>" + region.getCleanName() + "</red>" + addition));
+                United.miniMessage().get().deserialize("<red>" + region.getCleanName() + "</red>" + addition));
     }
 
     public void showSettlementNameDisplay(Settlement settlement, Player player) {
 
         var display = settlementNameDisplays.computeIfAbsent(settlement,
-                k -> BossBar.bossBar(Component.text(settlement.getCleanName()), 1f, Color.WHITE, Overlay.PROGRESS));
+                k -> createSettlementNameDisplay(settlement));
 
         var viewers = settlementNameDisplayViewers.computeIfAbsent(settlement, k -> new HashSet<>());
         if (!viewers.contains(player)) {
             display.addViewer(player);
             viewers.add(player);
         }
+    }
+
+    public void refreshSettlementDisplay(Settlement settlement) {
+        var display = settlementNameDisplays.get(settlement);
+        if (display == null)
+            return;
+        var name = settlement.getCleanName();
+        if (settlement.hasCountry())
+            name += " (" + settlement.getCountry().getDisplayName() + ")";
+        display.name(United.miniMessage().get().deserialize(name));
+    }
+
+    private BossBar createSettlementNameDisplay(Settlement settlement) {
+        var name = settlement.getCleanName();
+        if (settlement.hasCountry())
+            name += " (" + settlement.getCountry().getDisplayName() + ")";
+
+        return BossBar.bossBar(United.miniMessage().get().deserialize(name), 1f, Color.WHITE, Overlay.PROGRESS);
     }
 
     public void hideSettlementNameDisplay(Settlement settlement, Player player) {
@@ -81,6 +101,8 @@ public class DisplayManager {
             }
         }
     }
+
+    // #region Chunk Map Display
 
     public boolean isPlayerViewingMap(Player player) {
         return playerScoreboards.containsKey(player);
@@ -151,5 +173,29 @@ public class DisplayManager {
         }
         return "-";
     }
+
+    // #endregion
+
+    // #region Effects
+
+    public void playFireworkEffect(Location location) {
+
+        Firework firework = location.getWorld().spawn(location, Firework.class);
+        FireworkMeta meta = firework.getFireworkMeta();
+        FireworkEffect effect = FireworkEffect.builder()
+                .with(FireworkEffect.Type.BALL_LARGE) // Shape: BALL, BALL_LARGE, STAR, CREEPER, BURST
+                .withColor(org.bukkit.Color.RED, org.bukkit.Color.BLUE) // Main colors
+                .withFade(org.bukkit.Color.WHITE) // Fade out color
+                .flicker(true) // Twinkle/Crackle effect
+                .trail(true) // Tail effect
+                .build();
+
+        meta.addEffect(effect);
+        firework.setFireworkMeta(meta);
+
+        firework.detonate();
+    }
+
+    //#endregion
 
 }

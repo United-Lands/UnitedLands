@@ -425,8 +425,8 @@ public class Pl3xMapRenderer {
             regionInfoMarkerLayer.addMarker(claimMarker);
         }
 
-        var popup = new Popup("<div><p><strong>" + region.getCleanName() + "</strong></p><p><strong>Owner: </strong>"
-                + (region.hasFounder() ? region.getFounderName() : "-") + "</p></div>");
+        // var popup = new Popup("<div><p><strong>" + region.getCleanName() + "</strong></p><p><strong>Owner: </strong>"
+        //         + (region.hasFounder() ? region.getFounderName() : "-") + "</p></div>");
 
         String dash = UnitedLandsConfig.get().mapRendering().get("region-default").dash();
         int strokeWidth = UnitedLandsConfig.get().mapRendering().get("region-default").width();
@@ -452,7 +452,7 @@ public class Pl3xMapRenderer {
                 + (region.hasCountry() ? " (" + region.getCountry().getCleanName() + ")" : "");
         var markerOptions = Options.builder().fill(true).fillType(Fill.Type.NONZERO).fillColor(fillColor).stroke(true)
                 .strokeColor(strokeColor)
-                .strokeDashPattern(dash).strokeWeight(strokeWidth).tooltipContent(tooltip).build().setPopup(popup);
+                .strokeDashPattern(dash).strokeWeight(strokeWidth).tooltipContent(tooltip).build();
 
         var polyPoints = region.getPolygon();
         LinkedList<Point> points = new LinkedList<>();

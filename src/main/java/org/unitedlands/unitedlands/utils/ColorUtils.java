@@ -6,9 +6,8 @@ import java.util.regex.Pattern;
 
 import org.unitedlands.utils.United;
 
-import net.kyori.adventure.text.minimessage.MiniMessage;
-
 public class ColorUtils {
+
     public static Color hexToColor(String hex) {
         if (hex.startsWith("#")) {
             hex = hex.substring(1);
@@ -58,6 +57,6 @@ public class ColorUtils {
             return input;
         }
         String cleanLegacy = LEGACY_COLOR_PATTERN.matcher(input).replaceAll("");
-        return MiniMessage.miniMessage().stripTags(cleanLegacy);
+        return United.miniMessage().get().stripTags(cleanLegacy);
     }
 }

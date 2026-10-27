@@ -12,8 +12,6 @@ import org.unitedlands.unitedlands.utils.FontUtils;
 import org.unitedlands.unitedlands.utils.FontUtils.Align;
 import org.unitedlands.utils.United;
 
-import net.kyori.adventure.text.minimessage.MiniMessage;
-
 @UnitedSubCommand(
         parent = CmdSettlement.class,
         name = "attributes",
@@ -54,11 +52,11 @@ public class CmdSettlementAttributes extends SettlementCommandHandler {
         var firstColWith = 150;
         var colWith = 40;
 
-        var head1 = FontUtils.padTo(MiniMessage.miniMessage().deserialize("<gray>Attribute</gray>"), firstColWith, Align.LEFT);
-        var head2 = FontUtils.padTo(MiniMessage.miniMessage().deserialize("<gray>Value</gray>"), colWith, Align.LEFT);
-        var head3 = FontUtils.padTo(MiniMessage.miniMessage().deserialize("<gray>Min</gray>"), colWith, Align.LEFT);
-        var head4 = FontUtils.padTo(MiniMessage.miniMessage().deserialize("<gray>Max</gray>"), colWith, Align.LEFT);
-        var head5 = FontUtils.padTo(MiniMessage.miniMessage().deserialize("<gray>Daily</gray>"), colWith, Align.LEFT);
+        var head1 = FontUtils.padTo(United.miniMessage().get().deserialize("<gray>Attribute</gray>"), firstColWith, Align.LEFT);
+        var head2 = FontUtils.padTo(United.miniMessage().get().deserialize("<gray>Value</gray>"), colWith, Align.LEFT);
+        var head3 = FontUtils.padTo(United.miniMessage().get().deserialize("<gray>Min</gray>"), colWith, Align.LEFT);
+        var head4 = FontUtils.padTo(United.miniMessage().get().deserialize("<gray>Max</gray>"), colWith, Align.LEFT);
+        var head5 = FontUtils.padTo(United.miniMessage().get().deserialize("<gray>Daily</gray>"), colWith, Align.LEFT);
 
         var header = head1.append(head2).append(head3).append(head4).append(head5);
         United.messenger().send(sender, header);
@@ -69,11 +67,11 @@ public class CmdSettlementAttributes extends SettlementCommandHandler {
 
             var attribute = settlement.getModifiedAttribute(key);
 
-            var paddedComponent = FontUtils.padTo(MiniMessage.miniMessage().deserialize("<gold><b>" + key + "</b>:</gold>"), firstColWith, Align.LEFT)
-                .append(FontUtils.padTo(MiniMessage.miniMessage().deserialize("<gray>" + String.format("%.2f", attribute.getCurrentValue()) + "</gray>"), colWith, Align.LEFT))
-                .append(FontUtils.padTo(MiniMessage.miniMessage().deserialize("<gray>" + String.format("%.2f", attribute.getMinValue()) + "</gray>"), colWith, Align.LEFT))
-                .append(FontUtils.padTo(MiniMessage.miniMessage().deserialize("<gray>" + String.format("%.2f", attribute.getMaxValue()) + "</gray>"), colWith, Align.LEFT))
-                .append(FontUtils.padTo(MiniMessage.miniMessage().deserialize("<gray>" + String.format("%.2f", attribute.getDailyChange()) + "</gray>"), colWith, Align.LEFT));
+            var paddedComponent = FontUtils.padTo(United.miniMessage().get().deserialize("<gold><b>" + key + "</b>:</gold>"), firstColWith, Align.LEFT)
+                .append(FontUtils.padTo(United.miniMessage().get().deserialize("<gray>" + String.format("%.2f", attribute.getCurrentValue()) + "</gray>"), colWith, Align.LEFT))
+                .append(FontUtils.padTo(United.miniMessage().get().deserialize("<gray>" + String.format("%.2f", attribute.getMinValue()) + "</gray>"), colWith, Align.LEFT))
+                .append(FontUtils.padTo(United.miniMessage().get().deserialize("<gray>" + String.format("%.2f", attribute.getMaxValue()) + "</gray>"), colWith, Align.LEFT))
+                .append(FontUtils.padTo(United.miniMessage().get().deserialize("<gray>" + String.format("%.2f", attribute.getDailyChange()) + "</gray>"), colWith, Align.LEFT));
 
 
             United.messenger().send(sender, paddedComponent);

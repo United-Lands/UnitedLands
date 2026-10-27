@@ -16,6 +16,7 @@ import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig.GeopolAttri
 import org.unitedlands.unitedlands.classes.db.Identifiable;
 import org.unitedlands.unitedlands.classes.interfaces.MetadataHolder;
 import org.unitedlands.unitedlands.classes.metadata.MetaDataField;
+import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.unitedlands.utils.JsonUtils;
 import com.google.gson.reflect.TypeToken;
 import org.unitedlands.libs.ormlite.field.DataType;
@@ -338,6 +339,14 @@ public class GeopolObject implements Identifiable, MetadataHolder {
             return;
         attributeModifiers.removeIf(m -> m.getModifierKey().equals(modifierKey));
         attributesModifiersSerialized = JsonUtils.serialize(attributeModifiers);
+    }
+
+    public double getBalance() {
+        return UnitedLandsEconomyManager.instance().getBalance(this.uuid).doubleValue();
+    }
+
+    public String getFormattedBalance() {
+        return UnitedLandsEconomyManager.instance().format(getBalance());
     }
 
     public void save() {

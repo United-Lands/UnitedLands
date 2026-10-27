@@ -14,8 +14,6 @@ import org.unitedlands.unitedlands.classes.metadata.StringMetaDataField;
 import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.utils.United;
 
-import net.kyori.adventure.text.minimessage.MiniMessage;
-
 public class CitizenInfoScreen extends InfoScreen {
 
     public CitizenInfoScreen(Citizen citizen) {
@@ -78,7 +76,7 @@ public class CitizenInfoScreen extends InfoScreen {
             if (!fields.isEmpty()) {
                 var finalMetaDataString = metaDataWrapper.replace("{metadata}",
                         String.join("<dark_gray> | </dark_gray>", fields));
-                var metadataComponent = MiniMessage.miniMessage().deserialize(finalMetaDataString);
+                var metadataComponent = United.miniMessage().get().deserialize(finalMetaDataString);
                 addComponent("metadata", metadataComponent);
             }
 

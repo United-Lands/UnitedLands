@@ -1,7 +1,5 @@
 package org.unitedlands.unitedlands.commands.handlers.admin;
 
-import java.util.List;
-
 import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.registrars.command.UnitedCommandExecutor;
@@ -32,7 +30,7 @@ public class CmdAdminReload implements UnitedCommandExecutor {
 
         UnitedMessagesRegistrar.reload(UnitedLands.instance());
         Pl3xMapRenderer.instance().loadMessages();
-        
+
         TitleManager.instance().loadSettings();
         PermissionManager.instance().loadSettings();
         
@@ -41,9 +39,5 @@ public class CmdAdminReload implements UnitedCommandExecutor {
         United.messenger().send(sender, "reload");
     }
 
-    @Override
-    public List<String> handleTab(CommandSender arg0, String[] arg1) {
-        return null;
-    }
 
 }

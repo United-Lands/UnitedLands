@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.unitedlands.unitedlands.integrations.floodgate.FloodgateAPIIntegration;
 import org.unitedlands.unitedlands.managers.ConfirmationManager;
 import org.unitedlands.unitedlands.managers.IntegrationManager;
+import org.unitedlands.utils.United;
 
 import io.papermc.paper.dialog.Dialog;
 import io.papermc.paper.registry.data.dialog.ActionButton;
@@ -17,8 +18,6 @@ import io.papermc.paper.registry.data.dialog.body.DialogBody;
 import io.papermc.paper.registry.data.dialog.type.DialogType;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickCallback;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-
 
 public class Confirmation {
 
@@ -119,7 +118,7 @@ public class Confirmation {
     public void sendJavaDialog(Player receiver) {
 
         List<DialogBody> dialogBody = new ArrayList<>();
-        var miniMessage = MiniMessage.miniMessage();
+        var miniMessage = United.miniMessage().get();
 
         dialogBody.add(DialogBody.plainMessage(miniMessage.deserialize(getFilledTitle())));
 

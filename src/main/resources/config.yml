@@ -179,6 +179,16 @@ geopol-attribute-defaults:
       min-value: 0
       daily-change: 0
 
+# MiniMessage color placeholders for messages
+color-placeholders:
+  body: "#CCCCCC"
+  label: "#FFFFFF"
+  warn: "#FFFF00"
+  error: "#FF0000"
+  success: "#00FF00"
+  primary: "#123456"
+  secondary: "#00FFFF"
+  tertiary: "#F0FFFF"
 
 protection:
   containers:

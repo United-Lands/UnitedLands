@@ -29,7 +29,6 @@ import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 public class ChatChannelManager {
@@ -395,11 +394,11 @@ public class ChatChannelManager {
 
     public void sendChannelNotification(String channelKey, String message) {
         var receivers = getPlayersInChannel(channelKey);
-        United.messenger().send(receivers, MiniMessage.miniMessage().deserialize(message));
+        United.messenger().send(receivers, United.miniMessage().get().deserialize(message));
     }
 
     private @NotNull TextComponent getFormattedMessage(String channelKey, String text, String color, Player source) {
-        var miniMessage = MiniMessage.miniMessage();
+        var miniMessage = United.miniMessage().get();
 
         var channel = channels.get(channelKey);
         if (channel == null) {

@@ -33,7 +33,10 @@ public interface UnitedLandsConfig extends UnitedConfigHandler {
 
     @UnitedSection(key = "geopol-attribute-defaults")
     DefaultGeopolAttributes geopolAttributeDefaults();
-        
+    
+    @UnitedSection(key = "color-placeholders")
+    ColorPlaceholders colorPlaceholders();
+
     @UnitedSection (key = "protection")
     ProtectionSettings protection();
 
@@ -133,6 +136,17 @@ public interface UnitedLandsConfig extends UnitedConfigHandler {
     record DefaultGeopolAttributes(
         @UnitedSection(key = "settlement") UnitedDynamicSection<GeopolAttributeDefaults> settlement,         
         @UnitedSection(key = "country") UnitedDynamicSection<GeopolAttributeDefaults> country 
+    ) { }
+
+    record ColorPlaceholders(
+        @UnitedSetting(key = "body",   def = "#FFFFFF")   String  body, 
+        @UnitedSetting(key = "label",   def = "#FFFFFF")   String  label, 
+        @UnitedSetting(key = "warn",   def = "#FFFFFF")   String  warn, 
+        @UnitedSetting(key = "error",   def = "#FFFFFF")   String  error, 
+        @UnitedSetting(key = "success",   def = "#FFFFFF")   String  success, 
+        @UnitedSetting(key = "primary",   def = "#FFFFFF")   String  primary, 
+        @UnitedSetting(key = "secondary",   def = "#FFFFFF")   String  secondary, 
+        @UnitedSetting(key = "tertiary",   def = "#FFFFFF")   String  tertiary
     ) { }
 
     record ProtectionSettings(
