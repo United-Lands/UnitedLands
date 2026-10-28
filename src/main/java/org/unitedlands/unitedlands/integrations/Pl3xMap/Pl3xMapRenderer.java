@@ -271,13 +271,29 @@ public class Pl3xMapRenderer {
     private void renderCountryAsync(Country country) {
 
         SimpleLayer layer = getOrCreateSimpleLayer(country.getWorldName(), "countries", "Countries", 1, 460);
+        SimpleLayer iconLayer = getOrCreateSimpleLayer(country.getWorldName(), "countryicons", "Country Icons", 1, 465);
 
         var key = "country-" + country.getUuid().toString();
         if (layer.hasMarker(key))
             layer.removeMarker(key);
+        var iconKey = "country-icon-" + country.getUuid().toString();
+        if (iconLayer.hasMarker(key))
+            iconLayer.removeMarker(key);
+
+        // Icon rendering
+
+        if (country.getIconPosition() != null) {
+
+            var pos = country.getIconPosition();
+            var iconPosition = new Point((int) pos.getX(), (int) pos.getZ());
+
+            var iconMarker = Marker.icon(iconKey, iconPosition, country.getUuid().toString()).setAnchor(Vector.of(16.0, 16.0));
+            iconLayer.addMarker(iconMarker);
+        }   
+
+        // Border rendering
 
         var popup = new Popup(getCountryInfoBox(country));
-
         int strokeWidth = UnitedLandsConfig.get().mapRendering().get("country-default").width();
 
         var countryPolygons = country.getRegions().stream().map(Region::getPolygon).collect(Collectors.toList());
@@ -332,6 +348,34 @@ public class Pl3xMapRenderer {
                     .findFirst().orElse(null);
             if (poly != null) {
                 countryMarkers.remove(poly);
+                return;
+            }
+        }
+
+        var iconLayer = mapworld.getLayerRegistry().get("countryicons");
+        if (iconLayer != null) {
+            var iconMarkers = iconLayer.getMarkers();
+            var poly = iconMarkers.stream()
+                    .filter(m -> m.getKey().equals("country-icon-" + country.getUuid().toString()))
+                    .findFirst().orElse(null);
+            if (poly != null) {
+                iconMarkers.remove(poly);
+                return;
+            }
+        }
+    }
+
+    public void removeCountryIcon(Country country) {
+
+        net.pl3x.map.core.world.World mapworld = Pl3xMap.api().getWorldRegistry().get(country.getWorldName());
+        var iconLayer = mapworld.getLayerRegistry().get("countryicons");
+        if (iconLayer != null) {
+            var iconMarkers = iconLayer.getMarkers();
+            var poly = iconMarkers.stream()
+                    .filter(m -> m.getKey().equals("country-icon-" + country.getUuid().toString()))
+                    .findFirst().orElse(null);
+            if (poly != null) {
+                iconMarkers.remove(poly);
                 return;
             }
         }
@@ -390,7 +434,8 @@ public class Pl3xMapRenderer {
 
         var unclaimedLayer = getOrCreateSimpleLayer(region.getWorldName(), "unclaimedregions", "Unclaimed Regions", 8,
                 450, false);
-        var claimedLayer = getOrCreateSimpleLayer(region.getWorldName(), "claimedregions", "Claimed Regions", 6, 450, false);
+        var claimedLayer = getOrCreateSimpleLayer(region.getWorldName(), "claimedregions", "Claimed Regions", 6, 450,
+                false);
 
         SimpleLayer regionLayer;
         if (!region.hasCountry()) {
@@ -425,8 +470,9 @@ public class Pl3xMapRenderer {
             regionInfoMarkerLayer.addMarker(claimMarker);
         }
 
-        // var popup = new Popup("<div><p><strong>" + region.getCleanName() + "</strong></p><p><strong>Owner: </strong>"
-        //         + (region.hasFounder() ? region.getFounderName() : "-") + "</p></div>");
+        // var popup = new Popup("<div><p><strong>" + region.getCleanName() +
+        // "</strong></p><p><strong>Owner: </strong>"
+        // + (region.hasFounder() ? region.getFounderName() : "-") + "</p></div>");
 
         String dash = UnitedLandsConfig.get().mapRendering().get("region-default").dash();
         int strokeWidth = UnitedLandsConfig.get().mapRendering().get("region-default").width();
@@ -473,7 +519,8 @@ public class Pl3xMapRenderer {
         if (unclaimedLayer.hasMarker(key))
             unclaimedLayer.removeMarker(key);
 
-        var claimedLayer = getOrCreateSimpleLayer(region.getWorldName(), "claimedregions", "Claimed Regions", 20, 460, false);
+        var claimedLayer = getOrCreateSimpleLayer(region.getWorldName(), "claimedregions", "Claimed Regions", 20, 460,
+                false);
         if (claimedLayer.hasMarker(key))
             claimedLayer.removeMarker(key);
     }
@@ -866,7 +913,8 @@ public class Pl3xMapRenderer {
         return getOrCreateSimpleLayer(world, key, name, priority, zindex, true);
     }
 
-    private SimpleLayer getOrCreateSimpleLayer(String world, String key, String name, int priority, int zindex, boolean setPane) {
+    private SimpleLayer getOrCreateSimpleLayer(String world, String key, String name, int priority, int zindex,
+            boolean setPane) {
 
         CompletableFuture<SimpleLayer> simpleLayerFuture = new CompletableFuture<>();
 

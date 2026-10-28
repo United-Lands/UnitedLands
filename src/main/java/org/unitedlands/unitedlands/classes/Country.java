@@ -33,6 +33,9 @@ public class Country extends GeopolObject {
     @DatabaseField(canBeNull = true, columnName = "spawn_serialized")
     private String spawnSerialized;
 
+    @DatabaseField(canBeNull = true, columnName = "icon_position_serialized")
+    private String iconPositionSerialized;
+
     @DatabaseField(canBeNull = false, width = 36, columnName = "capital_uuid")
     private UUID capitalUuid;
 
@@ -51,6 +54,7 @@ public class Country extends GeopolObject {
     private float tax = 0.0f;
 
     private transient Location spawn;
+    private transient Location iconPosition;
     private transient Settlement capital;
     private transient Country overlord;
     private transient Set<String> claimedTitles;
@@ -172,6 +176,30 @@ public class Country extends GeopolObject {
         if (spawn == null && spawnSerialized != null)
             this.spawn = SerializationUtils.deserializeLocation(spawnSerialized);
         return spawn;
+    }
+
+    public String getIconPositionSerialized() {
+        return iconPositionSerialized;
+    }
+
+    public void setIconPositionSerialized(String iconPositionSerialized) {
+        this.iconPositionSerialized = iconPositionSerialized;
+    }
+
+    public void setIconPosition(Location location) {
+        this.iconPosition = location;
+        this.iconPositionSerialized = SerializationUtils.serializeLocation(location);
+    }
+
+    public Location getIconPosition() {
+        if (iconPosition == null && iconPositionSerialized != null)
+            this.iconPosition = SerializationUtils.deserializeLocation(iconPositionSerialized);
+        return iconPosition;
+    }
+
+    public void clearIconPosition() {
+        this.iconPosition = null;
+        this.iconPositionSerialized = null;
     }
 
     public boolean hasCapital() {

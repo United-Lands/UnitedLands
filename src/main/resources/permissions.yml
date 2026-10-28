@@ -79,6 +79,8 @@ country:
     - region.setadministrator
     - region.manage.toggle
     - region.manage.perms
+    - politics.pay.tribute
+    - politics.pay.propaganda
   assistant:
     - foo.bar
   general:

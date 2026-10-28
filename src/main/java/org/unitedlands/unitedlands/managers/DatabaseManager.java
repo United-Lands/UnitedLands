@@ -225,6 +225,12 @@ public class DatabaseManager {
             version.setVersion(14);
             versionDao.update(version);
         }
+
+        if (version.getVersion() < 15) {
+            versionDao.executeRaw("ALTER TABLE country ADD COLUMN icon_position_serialized VARCHAR(255) NULL;");
+            version.setVersion(15);
+            versionDao.update(version);
+        }
     }
 
     public <T, ID> Dao<T, ID> getDao(Class<T> clazz) throws SQLException {

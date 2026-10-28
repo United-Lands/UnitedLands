@@ -260,6 +260,27 @@ player:
       above-max: <error>You can't set taxes higher than {1}, using maximum allowed value.</error>
       below-min: <error>You can't set taxes lower than {1}, using minimum allowed value.</error>
       success: <success>Taxes for {1} set to {2}</success>
+    seticon:
+      invalid-url: <error>Invalid URL.</error>
+      download-error: <error>Failed to download the icon.</error>
+      no-location-header: <error>Redirect without Location header.</error>
+      wrong-status: <error>Server responded with HTTP {1}</error>
+      file-too-large: <error>File is too large.</error>
+      too-many-redirects: <error>Too many redirects.</error>
+      only-http: <error>Only http:// and https:// URLs are allowed.</error>
+      local-not-allowed: <error>URLs pointing to local or private addresses are not allowed.</error>
+      unresolvable-host: <error>Could not resolve host {1}</error>
+      invalid-png: <error>The file is not a PNG image.</error>
+      wrong-size: <error>Image must be {1}x{2} pixels in size.</error>
+      no-host: <error>URL has no host.</error>
+      png-read-error: <error>The PNG image could not be read.</error>
+      invalid-filename: <error>Invalid file name.</error>
+      write-error: <error>File write error.</error>
+      success: <success>Successfully set your country icon. Use ""/c set icon none"" to remove it from the map, or  ""/c set iconlocation"" to move it to your current position.</success>
+    seticonlocation:
+      no-icon: <error>You have no icon set. User ""/c set icon <url>"" first.</error>
+      not-in-region: <error>The icon location must be inside of a region you own.</error>
+      success: <success>Successfully moved your country icon to this location. Use ""/c set icon none"" to remove it from the map.</success>
     titles:
       unknown-title: "<error>Unknown title: {1}</error>"
       already-claimed: <error>This title is alreay claimed by {1}</error>

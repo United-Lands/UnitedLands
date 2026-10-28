@@ -166,6 +166,10 @@ public class UnitedLandsDataManager {
     public void buildCountries(List<Country> loadedCountries) {
         for (var country : loadedCountries) {
             countries.put(country.getUuid(), country);
+
+            if (country.getIconPosition() != null)
+                Pl3xMapRenderer.instance().registerIcon(country.getUuid().toString(),
+                        country.getUuid().toString() + ".png");
         }
         United.logger().info("Loaded " + countries.size() + " countries to memory.", "UnitedLands");
     }
@@ -214,7 +218,7 @@ public class UnitedLandsDataManager {
         countries = new HashMap<>();
     }
 
-    //#region Citizens
+    // #region Citizens
 
     // **************************************************
     // Citizens
@@ -268,9 +272,9 @@ public class UnitedLandsDataManager {
         citizens.remove(citizen.getUuid(), citizen);
     }
 
-    //#endregion
+    // #endregion
 
-    //#region Settlements
+    // #region Settlements
 
     // **************************************************
     // Settlements
@@ -342,7 +346,7 @@ public class UnitedLandsDataManager {
 
         if (prevailing.equals(merging))
             return;
-        
+
         for (var chunk : merging.getChunks()) {
             prevailing.addChunk(chunk);
             chunk.setSettlement(prevailing);
@@ -366,7 +370,7 @@ public class UnitedLandsDataManager {
         UnitedLandsEconomyManager.instance().deposit(prevailing.getUuid(),
                 UnitedLandsEconomyManager.instance().getBalance(merging.getUuid()),
                 "Merging of settlement bank of " + merging.getName());
-                
+
         removeSettlement(merging);
     }
 
@@ -473,7 +477,6 @@ public class UnitedLandsDataManager {
         return null;
     }
 
-
     public List<String> getSettlementNames() {
         CompletableFuture<List<String>> future = CompletableFuture.supplyAsync(() -> {
             return settlements.values().stream().map(Settlement::getName).collect(Collectors.toList());
@@ -481,9 +484,9 @@ public class UnitedLandsDataManager {
         return future.join();
     }
 
-    //#endregion
+    // #endregion
 
-    //#region Settlement Chunks
+    // #region Settlement Chunks
 
     // **************************************************
     // Settlement Chunks
@@ -527,9 +530,9 @@ public class UnitedLandsDataManager {
         return settlementChunks.get(CoordinateUtils.locationToChunkCoordinates(location));
     }
 
-    //#endregion
+    // #endregion
 
-    //#region Regions
+    // #region Regions
 
     // **************************************************
     // Regions
@@ -576,6 +579,10 @@ public class UnitedLandsDataManager {
         return regions.values();
     }
 
+    public Region getRegion(Location location) {
+        return getRegion(CoordinateUtils.locationToChunkCenterCoordinates(location));
+    }
+
     public Region getRegion(Coordinates coordinates) {
         if (coordinateRegionCache.containsKey(coordinates)) {
             return coordinateRegionCache.get(coordinates);
@@ -609,9 +616,9 @@ public class UnitedLandsDataManager {
                 .collect(Collectors.toSet());
     }
 
-    //#endregion
+    // #endregion
 
-    //#region Countries
+    // #region Countries
 
     // **************************************************
     // Countries
@@ -769,9 +776,9 @@ public class UnitedLandsDataManager {
         return future.join();
     }
 
-    //#endregion
+    // #endregion
 
-    //#region Records
+    // #region Records
 
     // **************************************************
     // Bank Records
@@ -807,9 +814,9 @@ public class UnitedLandsDataManager {
         }
     }
 
-    //#endregion
+    // #endregion
 
-    //#region Helpers
+    // #region Helpers
 
     // **************************************************
     // Helper classes
@@ -829,6 +836,6 @@ public class UnitedLandsDataManager {
         }
     }
 
-    //#endregion
+    // #endregion
 
 }
