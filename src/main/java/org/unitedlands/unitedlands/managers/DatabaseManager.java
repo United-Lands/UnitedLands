@@ -161,7 +161,8 @@ public class DatabaseManager {
     }
 
     public void close() {
-        BaseDbService.shutdownExecutors(30);
+        if (connectionSource != null)
+            BaseDbService.awaitPendingWrites(connectionSource, 30);
         try {
             if (connectionSource != null) {
                 connectionSource.close();
