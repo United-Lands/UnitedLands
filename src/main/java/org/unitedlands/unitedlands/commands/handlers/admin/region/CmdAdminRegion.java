@@ -1,4 +1,4 @@
-package org.unitedlands.unitedlands.commands.handlers.admin.cmi;
+package org.unitedlands.unitedlands.commands.handlers.admin.region;
 
 import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
@@ -7,11 +7,12 @@ import org.unitedlands.unitedlands.commands.handlers.admin.CmdAdmin;
 
 @UnitedSubCommand(
         parent = CmdAdmin.class,
-        name = "cmi",
-        description = "Admin CMI commands",
-        usage = "/ula cmi <command>"
+        name = "region",
+        aliases = { "r" },
+        description = "Admin region commands",
+        usage = "/ula region <command>"
 )
-public class CmdAdminCmi implements UnitedCommandExecutor {
+public class CmdAdminRegion implements UnitedCommandExecutor {
 
     @Override
     public void handleCommand(CommandSender sender, String[] args) {

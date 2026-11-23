@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.unitedlands.classes.Settlement;
-import org.unitedlands.unitedlands.classes.commandhandlers.CountryAdminCommandHandler;
+import org.unitedlands.unitedlands.classes.commandhandlers.AdminCommandHandler;
 
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.utils.United;
@@ -18,7 +18,7 @@ import org.unitedlands.utils.United;
         usage = "/ula country set capital <country> <settlement_name>",
         catchAll = true
 )
-public class CmdAdminCountrySetCapital extends CountryAdminCommandHandler {
+public class CmdAdminCountrySetCapital extends AdminCommandHandler {
 
     @Override
     public List<String> handleTab(CommandSender arg0, String[] args) {

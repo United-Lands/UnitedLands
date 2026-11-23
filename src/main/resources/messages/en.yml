@@ -38,6 +38,9 @@ admin:
     unknown-rank: <label>/ula country setname <country_name> <new_name></label>
     withdraw:
       success: <success>Withdrew {1} from the country bank of {2}.</success>
+  region:
+    set:
+      success: <success>Set owner of region {1} to {2}.</success>
   settlement:
     addbanish:
       success: <success>Banished {1} from {2}].</success>
@@ -93,8 +96,8 @@ admin:
     import:
       error: <red>Error while importing Towny data. Please review the console.</red>
       finished: <success>Import finished.</success>
-      success-country: <success>Country import finished.</success>
-      success-settlement: <success>Settlement import finished.</success>
+      success-settlement: <success>Successfully imported settlement {1}.</success>
+      success-country: <success>Successfully imported country {1}.</success>
 
 chat:
   create:
@@ -230,7 +233,7 @@ player:
       no-region: <error>There is no region in this location.</error>
       start-broadcast: <success><success>{1}</success> has started claiming the region of <red>{2}</red>. They will take control of it in {3}.</success>
       too-many-claiming: <error>You cannot claim more than {1} region(s) at the same time.</error>
-      disconnected: "<error>You cannot claim this region because it doesn't share a border with your country.</error>"
+      disconnected: "<error>You cannot claim this region because it is not connected by a border or by a coast.</error>"
       confirm: <label>Claiming <red>{1}</red> for <blue>{2}</blue> will cost <gold>{3}</gold> and will take {4} to complete. Continue?</label>
     create:
       confirm: <label>You will create the country of <success>{1}</success> with capital <blue>{2}</blue>. This will cost you {3}. Continue?</label>
@@ -472,56 +475,3 @@ player:
       success: <success>Toggled plot {1} to {2}</success>
 prefix: <bold><red>U</red><label>L</label> <dark_gray>» </dark_gray></bold>
 reload: <success>Plugin reloaded.</success>
-
-
-# ---------------------------------------------------------
-# Map Info Boxes
-# ---------------------------------------------------------
-
-map-info-boxes:
-  settlement: |
-    <div class="infowindow">
-    <center>
-        <span style="font-size: 140%; font-weight: bold;"> <a class="town" href="https://wiki.unitedlands.net/wiki/%town%">%settlement%</a></span>
-        <br>
-        <span style="font-size: 140%; font-weight: bold;"><a class="nation" href="https://wiki.unitedlands.net/wiki/%country%">%country%</a></span>
-        <hr>
-        <br>
-        <span style="font-weight: bold; font-size: 130%;">Mayor</span>
-        <br>
-        <img src="https://minotar.net/armor/bust/%mayor%/64.png">
-        <br>
-        <br><span style="font-size: 130%;">%mayor%</span>
-        <br>
-        <hr>
-        <span style="font-weight: bold; font-size: 90%;">Population: %citizencount%</span>
-        <br>
-        <span style="font-weight: bold; font-size: 90%;">Founding Date: %founded%</span>
-        <br>
-        <span style="font-weight: bold; font-size: 90%;">Town Bank: %balance%</span>
-        <br>
-        <span style="font-weight: bold; font-size: 90%;">Upkeep: %upkeep%</span>
-        <br>
-        <span style="font-weight: bold; font-size: 90%;">%board%</span>
-    </center>
-    </div>
-  country: |
-    <div class="infowindow">
-    <center>
-        <span style="font-size: 140%; font-weight: bold;"><a class="nation" href="https://wiki.unitedlands.net/wiki/%country%">%country%</a></span>
-        <hr>
-        <br>
-        <span style="font-weight: bold; font-size: 130%;">Leader</span>
-        <br>
-        <img src="https://minotar.net/armor/bust/%leader%/64.png">
-        <br>
-        <br><span style="font-size: 130%;">%leader%</span>
-        <br>
-        <hr>
-        <span style="font-weight: bold; font-size: 90%;">Founding Date: %founded%</span>
-        <br>
-        <span style="font-weight: bold; font-size: 90%;">Country Bank: %balance%</span>
-        <br>
-        <span style="font-weight: bold; font-size: 90%;">Upkeep: %upkeep%</span>
-    </center>
-    </div> 

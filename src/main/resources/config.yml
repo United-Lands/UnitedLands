@@ -29,6 +29,18 @@ general:
     # When use-new-day-interval is false, this will be the server time at which a new day 
     # starts. Must be hh:mm in 24-hour-format (e.g. 17:35)
     new-day-time: "12:00"
+    
+    # United Lands Composite Index of National Capability
+    ulcinc:
+      smoothing-days: 14
+      total-formula: "((activity + economy + military + geography) / 4) * 100"
+      economy-weights:
+        income: 0.5
+        wealth: 0.5
+      geography-weights:
+        settlement: 0.75
+        region: 0.25
+
 
   # How long does a player need to be online in order add to their playtime (in seconds). If the time between logon and logoff is
   # less than this, their activity will not be logged and their playtime will not be increased.
@@ -428,3 +440,57 @@ settlement-chunks:
     map-icon: "F"
     map-icon-color: "§f"
     max-per-settlement: 1
+
+
+
+# ---------------------------------------------------------
+# Map Info Boxes
+# ---------------------------------------------------------
+
+map-info-boxes:
+  settlement: |
+    <div class="infowindow">
+    <center>
+        <span style="font-size: 140%; font-weight: bold;"> <a class="town" href="https://wiki.unitedlands.net/wiki/%town%">%settlement%</a></span>
+        <br>
+        <span style="font-size: 140%; font-weight: bold;"><a class="nation" href="https://wiki.unitedlands.net/wiki/%country%">%country%</a></span>
+        <hr>
+        <br>
+        <span style="font-weight: bold; font-size: 130%;">Mayor</span>
+        <br>
+        <img src="https://minotar.net/armor/bust/%mayor%/64.png">
+        <br>
+        <br><span style="font-size: 130%;">%mayor%</span>
+        <br>
+        <hr>
+        <span style="font-weight: bold; font-size: 90%;">Population: %citizencount%</span>
+        <br>
+        <span style="font-weight: bold; font-size: 90%;">Founding Date: %founded%</span>
+        <br>
+        <span style="font-weight: bold; font-size: 90%;">Town Bank: %balance%</span>
+        <br>
+        <span style="font-weight: bold; font-size: 90%;">Upkeep: %upkeep%</span>
+        <br>
+        <span style="font-weight: bold; font-size: 90%;">%board%</span>
+    </center>
+    </div>
+  country: |
+    <div class="infowindow">
+    <center>
+        <span style="font-size: 140%; font-weight: bold;"><a class="nation" href="https://wiki.unitedlands.net/wiki/%country%">%country%</a></span>
+        <hr>
+        <br>
+        <span style="font-weight: bold; font-size: 130%;">Leader</span>
+        <br>
+        <img src="https://minotar.net/armor/bust/%leader%/64.png">
+        <br>
+        <br><span style="font-size: 130%;">%leader%</span>
+        <br>
+        <hr>
+        <span style="font-weight: bold; font-size: 90%;">Founding Date: %founded%</span>
+        <br>
+        <span style="font-weight: bold; font-size: 90%;">Country Bank: %balance%</span>
+        <br>
+        <span style="font-weight: bold; font-size: 90%;">Upkeep: %upkeep%</span>
+    </center>
+    </div> 

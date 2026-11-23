@@ -7,9 +7,7 @@ import org.bukkit.entity.Player;
 import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.registrars.command.UnitedCommandExecutor;
 import org.unitedlands.unitedlands.classes.Citizen;
-import org.unitedlands.unitedlands.classes.PlaytimeRecord;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
-import org.unitedlands.unitedlands.utils.ActivityScoreCalculator;
 import org.unitedlands.utils.United;
 
 @UnitedSubCommand(
@@ -45,17 +43,17 @@ public class CmdCitizenPlaytime implements UnitedCommandExecutor {
 
         var sessionPlaytime =  System.currentTimeMillis() - citizen.getLastLogon();
 
-        var playtimeRecords = UnitedLandsDataManager.instance().getRecentPlaytimeRecords(citizen.getUuid(), 60);
-        // Add a virtual playtime record for the current session
-        playtimeRecords.add(
-            new PlaytimeRecord(citizen.getLastLogon(), System.currentTimeMillis(), sessionPlaytime)
-        );
+        // var playtimeRecords = UnitedLandsDataManager.instance().getRecentPlaytimeRecords(citizen.getUuid(), 60);
+        // // Add a virtual playtime record for the current session
+        // playtimeRecords.add(
+        //     new PlaytimeRecord(citizen.getLastLogon(), System.currentTimeMillis(), sessionPlaytime)
+        // );
 
-        var activityScore = ActivityScoreCalculator.calculateActivityScore(playtimeRecords);
+        // var activityScore = ActivityScoreCalculator.calculateActivityScore(playtimeRecords);
 
         United.messenger().sendRaw(sender, "<white><b>" + citizen.getName() + "'s Playtime</b>: " +
                                 United.formatter().formatDuration(citizen.getTotalPlaytime() + sessionPlaytime) + 
-                                " (Activity Score: " + String.format("%.2f", activityScore) + ")"
+                                " (Activity Score: " + String.format("%.2f", citizen.getActivityScore()) + ")"
         );
 
     }

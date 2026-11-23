@@ -43,6 +43,9 @@ public interface UnitedLandsConfig extends UnitedConfigHandler {
     @UnitedSection (key = "settlement-chunks")
     UnitedDynamicSection<SettlementChunkSettings> settlementChunks();
 
+    @UnitedSection (key = "map-info-boxes")
+    MapInfoBoxes mapInfoBoxes();
+   
     record MapRenderSettings(
         @UnitedSetting(key = "fill",    def = "0")  int     fill,
         @UnitedSetting(key = "stroke",  def = "0")  int     stroke,
@@ -67,13 +70,13 @@ public interface UnitedLandsConfig extends UnitedConfigHandler {
         @UnitedSetting(key = "allow-settlement-claims-outside-home-region", def = "true")   boolean allowSettlementClaimsOutsideHomeRegion,
         @UnitedSetting(key = "prevent-hunger-in-settlement", def = "true")                  boolean preventHungerInSettlement,
         @UnitedSection(key = "flight")                                 FlightSettings flight
-
     ) {}
 
     record NewDaySettings(
             @UnitedSetting(key = "use-interval",     def = "false")  boolean useInterval,
             @UnitedSetting(key = "interval-seconds", def = "3600")   int     intervalSeconds,
-            @UnitedSetting(key = "new-day-time",     def = "12:00")  String  newDayTime
+            @UnitedSetting(key = "new-day-time",     def = "12:00")  String  newDayTime,
+            @UnitedSection(key = "ulcinc")                           ULCINC  ulcinc
     ) {}
 
     record FlightSettings(
@@ -167,6 +170,25 @@ public interface UnitedLandsConfig extends UnitedConfigHandler {
     ) {}
 
 
+    public record ULCINC(
+        @UnitedSetting(key = "smoothing-days", def = "14") int smoothingDays,
+        @UnitedSetting(key = "total-formula", def = "((activity + economy + military + geography) / 4) * 100")  String  totalFormula, 
+        @UnitedSection(key = "economy-weights") ULCINCEconomyWeights economyWeights,       
+        @UnitedSection(key = "geography-weights") ULCINCGeographyWeights geographyWeights
+    ) {}
 
+    public record ULCINCEconomyWeights(
+        @UnitedSetting(key = "income", def = "0.5") double income, 
+        @UnitedSetting(key = "wealth", def = "0.5") double wealth
+    ) {}
 
+    public record ULCINCGeographyWeights(
+        @UnitedSetting(key = "settlement", def = "0.75") double settlement, 
+        @UnitedSetting(key = "region",     def = "0.75") double region
+    ) {}
+
+    public record MapInfoBoxes(
+        @UnitedSetting(key = "settlement", def = "<div></div>") String settlement, 
+        @UnitedSetting(key = "country",     def = "<div></div>") String country
+    ) {}
 }

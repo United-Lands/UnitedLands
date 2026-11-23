@@ -9,6 +9,7 @@ import org.apache.logging.log4j.util.InternalException;
 import org.bukkit.Bukkit;
 import org.unitedlands.unitedlands.UnitedLands;
 import org.unitedlands.unitedlands.classes.BankRecord;
+import org.unitedlands.unitedlands.classes.BankRecordTransactionType;
 import org.unitedlands.unitedlands.classes.Citizen;
 import org.unitedlands.unitedlands.classes.Settlement;
 import org.unitedlands.unitedlands.integrations.economy.IEconomyProvider;
@@ -43,6 +44,12 @@ public class UnitedLandsEconomyManager {
                 United.logger().error("Error creating Vault economy provider.", "UnitedLands");
             }
         }
+    }
+
+    public boolean hasAccount(UUID uuid) {
+        if (economyProvider == null)
+            return false;
+        return economyProvider.hasEconomyAccount(uuid);
     }
 
     public String format(int amount) {
@@ -91,37 +98,37 @@ public class UnitedLandsEconomyManager {
         return economyProvider.has(uuid, amount);
     }
 
-    public boolean deposit(UUID uuid, int amount, String reason) {
-        return deposit(uuid, new BigDecimal(amount), reason);
+    public boolean deposit(UUID uuid, int amount, BankRecordTransactionType type, String reason) {
+        return deposit(uuid, new BigDecimal(amount), type, reason);
     }
 
-    public boolean deposit(UUID uuid, double amount, String reason) {
-        return deposit(uuid, new BigDecimal(amount), reason);
+    public boolean deposit(UUID uuid, double amount, BankRecordTransactionType type, String reason) {
+        return deposit(uuid, new BigDecimal(amount), type, reason);
     }
 
-    public boolean deposit(UUID uuid, BigDecimal amount, String reason) {
+    public boolean deposit(UUID uuid, BigDecimal amount, BankRecordTransactionType type, String reason) {
         if (economyProvider == null)
             return true;
         if (economyProvider.deposit(uuid, amount)) {
-            saveBankRecord(uuid, amount, reason);
+            saveBankRecord(uuid, amount, type, reason);
             return true;
         }
         return false;
     }
 
-    public boolean withdraw(UUID uuid, int amount, String reason) {
-        return withdraw(uuid, new BigDecimal(amount), reason);
+    public boolean withdraw(UUID uuid, int amount, BankRecordTransactionType type, String reason) {
+        return withdraw(uuid, new BigDecimal(amount), type, reason);
     }
 
-    public boolean withdraw(UUID uuid, double amount, String reason) {
-        return withdraw(uuid, new BigDecimal(amount), reason);
+    public boolean withdraw(UUID uuid, double amount, BankRecordTransactionType type, String reason) {
+        return withdraw(uuid, new BigDecimal(amount), type, reason);
     }
 
-    public boolean withdraw(UUID uuid, BigDecimal amount, String reason) {
+    public boolean withdraw(UUID uuid, BigDecimal amount, BankRecordTransactionType type, String reason) {
         if (economyProvider == null)
             return true;
         if (economyProvider.withdraw(uuid, amount)) {
-            saveBankRecord(uuid, amount.multiply(BigDecimal.valueOf(-1)), reason);
+            saveBankRecord(uuid, amount.multiply(BigDecimal.valueOf(-1)), type, reason);
             return true;
         }
         return false;
@@ -129,46 +136,46 @@ public class UnitedLandsEconomyManager {
 
     // Helper methods for tax modes
 
-    public boolean depositAndTax(Citizen citizen, double amount, String reason) {
+    public boolean depositAndTax(Citizen citizen, double amount, BankRecordTransactionType type, String reason) {
         if (!citizen.hasSettlement()) {
-            return deposit(citizen.getUuid(), amount, reason);
+            return deposit(citizen.getUuid(), amount, type, reason);
         } else {
             var percent = citizen.getSettlement().getTax();
 
             if (percent == 0)
-                return deposit(citizen.getUuid(), amount, reason);
+                return deposit(citizen.getUuid(), amount, type, reason);
 
             var settlementShare = amount * percent;
 
             // Do two separate transactions so that the bankhistory properly shows taxes
-            deposit(citizen.getUuid(), amount, reason);
-            withdraw(citizen.getUuid(), settlementShare, "Tax");
+            deposit(citizen.getUuid(), amount, type, reason);
+            withdraw(citizen.getUuid(), settlementShare, BankRecordTransactionType.TAX, "Tax");
 
             // Run a tick later to show message after other payment messages in this tick
             Bukkit.getScheduler().runTaskLater(UnitedLands.instance(), () -> {
                 United.messenger().send(citizen.getPlayer(), "player.money.paid-taxes", UnitedLandsEconomyManager.instance().format(settlementShare));
             }, 1);
 
-            depositAndTax(citizen.getSettlement(), settlementShare, "Tax");
+            depositAndTax(citizen.getSettlement(), settlementShare, BankRecordTransactionType.TAX, "Tax");
             return true;
         }
     }
 
-    public boolean depositAndTax(Settlement settlement, double amount, String reason) {
+    public boolean depositAndTax(Settlement settlement, double amount, BankRecordTransactionType type, String reason) {
         if (!settlement.hasCountry()) {
-            return deposit(settlement.getUuid(), amount, reason);
+            return deposit(settlement.getUuid(), amount, type, reason);
         } else {
             var percent = settlement.getCountry().getTax();
 
             if (percent == 0)
-                return deposit(settlement.getUuid(), amount, reason);
+                return deposit(settlement.getUuid(), amount, type, reason);
 
             var countryShare = amount * percent;
 
-            deposit(settlement.getUuid(), amount, reason);
-            withdraw(settlement.getUuid(), countryShare, "Tax");
+            deposit(settlement.getUuid(), amount, type, reason);
+            withdraw(settlement.getUuid(), countryShare, BankRecordTransactionType.TAX, "Tax");
 
-            deposit(settlement.getCountry().getUuid(), countryShare, "Tax");
+            deposit(settlement.getCountry().getUuid(), countryShare, BankRecordTransactionType.TAX, "Tax");
             return true;
         }
     }
@@ -177,12 +184,12 @@ public class UnitedLandsEconomyManager {
 
     // Method for writing records from external plugins that would otherwise not
     // show up in UnitedLands bank history
-    public void addVirtualBankRecord(UUID objectId, BigDecimal amount, String message) {
-        saveBankRecord(objectId, amount, message);
+    public void addVirtualBankRecord(UUID objectId, BigDecimal amount, BankRecordTransactionType type, String message) {
+        saveBankRecord(objectId, amount, type, message);
     }
 
-    private void saveBankRecord(UUID objectId, BigDecimal amount, String message) {
-        var record = new BankRecord(objectId, amount.doubleValue(), message);
+    private void saveBankRecord(UUID objectId, BigDecimal amount, BankRecordTransactionType type, String message) {
+        var record = new BankRecord(objectId, amount.doubleValue(), type, message);
         try {
             UnitedLandsDataManager.instance().createBankRecordDbData(record);
         } catch (Exception ex) {

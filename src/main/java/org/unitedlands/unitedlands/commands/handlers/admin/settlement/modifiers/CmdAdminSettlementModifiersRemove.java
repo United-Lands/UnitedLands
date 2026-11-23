@@ -5,7 +5,7 @@ import java.util.List;
 import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.unitedlands.classes.GeopolAttributeModifier;
-import org.unitedlands.unitedlands.classes.commandhandlers.SettlementAdminCommandHandler;
+import org.unitedlands.unitedlands.classes.commandhandlers.AdminCommandHandler;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.utils.United;
 
@@ -17,7 +17,7 @@ import org.unitedlands.utils.United;
         catchAll = true
 )
 
-public class CmdAdminSettlementModifiersRemove extends SettlementAdminCommandHandler {
+public class CmdAdminSettlementModifiersRemove extends AdminCommandHandler {
 
     @Override
     public List<String> handleTab(CommandSender sender, String[] args) {

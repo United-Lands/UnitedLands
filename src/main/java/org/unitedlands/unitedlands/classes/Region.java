@@ -24,6 +24,9 @@ public class Region extends GeopolObject implements PermissionHolder {
     @DatabaseField(columnName = "default_name")
     private String defaultName;
 
+    @DatabaseField(columnName = "island")
+    protected boolean island;
+
     @DatabaseField(canBeNull = true, columnName = "home_chunk_x")
     private int homeChunkCoordinatesX;
     @DatabaseField(canBeNull = true, columnName = "home_chunk_z")
@@ -104,6 +107,14 @@ public class Region extends GeopolObject implements PermissionHolder {
 
     public void setDefaultName(String defaultName) {
         this.defaultName = defaultName;
+    }
+
+    public boolean isIsland() {
+        return island;
+    }
+
+    public void setIsland(boolean island) {
+        this.island = island;
     }
 
     public int getHomeChunkCoordinatesX() {

@@ -3,7 +3,7 @@ package org.unitedlands.unitedlands.commands.handlers.admin.country.set;
 import java.util.List;
 import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
-import org.unitedlands.unitedlands.classes.commandhandlers.CountryAdminCommandHandler;
+import org.unitedlands.unitedlands.classes.commandhandlers.AdminCommandHandler;
 
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.utils.United;
@@ -15,7 +15,7 @@ import org.unitedlands.utils.United;
         usage = "/ula country set name <new_name>",
         catchAll = true
 )
-public class CmdAdminCountrySetName extends CountryAdminCommandHandler {
+public class CmdAdminCountrySetName extends AdminCommandHandler {
 
     @Override
     public void handleCommand(CommandSender sender, String[] args) {

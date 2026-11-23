@@ -7,6 +7,8 @@ public interface IEconomyProvider {
 
     String format(BigDecimal amount);
 
+    boolean hasEconomyAccount(UUID uuid);
+
     void createEconomyAccount(UUID uuid, String name);
 
     void deleteEconomyAccount(UUID uuid);

@@ -5,6 +5,7 @@ import java.util.List;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.unitedlands.annotations.UnitedSubCommand;
+import org.unitedlands.unitedlands.classes.BankRecordTransactionType;
 import org.unitedlands.unitedlands.classes.commandhandlers.CountryCommandHandler;
 import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
@@ -57,8 +58,8 @@ public class CmdCountryDeposit extends CountryCommandHandler {
             return;
         }
 
-        UnitedLandsEconomyManager.instance().withdraw(player.getUniqueId(), amount, "Deposit to " + country.getName());
-        UnitedLandsEconomyManager.instance().deposit(country.getUuid(), amount, "Deposit by " + player.getName());
+        UnitedLandsEconomyManager.instance().withdraw(player.getUniqueId(), amount, BankRecordTransactionType.DEPOSIT, "Deposit to " + country.getName());
+        UnitedLandsEconomyManager.instance().deposit(country.getUuid(), amount, BankRecordTransactionType.DEPOSIT, "Deposit by " + player.getName());
         
         United.messenger().send(player, "player.country.deposit.success", UnitedLandsEconomyManager.instance().format(amount));
 

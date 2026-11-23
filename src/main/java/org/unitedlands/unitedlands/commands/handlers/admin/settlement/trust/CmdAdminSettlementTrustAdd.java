@@ -7,7 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.unitedlands.annotations.UnitedSubCommand;
-import org.unitedlands.unitedlands.classes.commandhandlers.SettlementAdminCommandHandler;
+import org.unitedlands.unitedlands.classes.commandhandlers.AdminCommandHandler;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.utils.United;
 
@@ -17,7 +17,7 @@ import org.unitedlands.utils.United;
         description = "Adds settlement trust to a player",
         usage = "/ula settlement trust add <settlement> <player>"
 )
-public class CmdAdminSettlementTrustAdd extends SettlementAdminCommandHandler {
+public class CmdAdminSettlementTrustAdd extends AdminCommandHandler {
 
     @Override
     public List<String> handleTab(CommandSender sender, String[] args) {

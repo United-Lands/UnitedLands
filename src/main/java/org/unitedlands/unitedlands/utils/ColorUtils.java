@@ -12,18 +12,22 @@ public class ColorUtils {
         if (hex.startsWith("#")) {
             hex = hex.substring(1);
         }
-        return switch (hex.length()) {
-            case 6 -> new Color(
+        switch (hex.length()) {
+            case 6:
+                return new Color(
                     Integer.valueOf(hex.substring(0, 2), 16),
                     Integer.valueOf(hex.substring(2, 4), 16),
                     Integer.valueOf(hex.substring(4, 6), 16));
-            case 8 -> new Color(
+            case 8: 
+                return new Color(
                     Integer.valueOf(hex.substring(0, 2), 16),
                     Integer.valueOf(hex.substring(2, 4), 16),
                     Integer.valueOf(hex.substring(4, 6), 16),
                     Integer.valueOf(hex.substring(6, 8), 16));
-            default -> throw new IllegalArgumentException("Invalid hex color: " + hex);
-        };
+            default:
+                United.logger().warning("Invalid hex color, returning default."); 
+                return Color.WHITE; 
+        }
     }
 
     public static String argbToHex(int argb) {

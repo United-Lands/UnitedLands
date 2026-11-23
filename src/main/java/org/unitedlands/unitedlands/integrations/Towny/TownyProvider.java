@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.palmergames.bukkit.towny.TownyAPI;
+import com.palmergames.bukkit.towny.object.Nation;
 import com.palmergames.bukkit.towny.object.Town;
 
 public class TownyProvider {
@@ -24,6 +25,10 @@ public class TownyProvider {
 
     public Town getTown(String name) {
         return townyAPI.getTown(name);
+    }
+
+    public List<Nation> getNations() {
+        return townyAPI.getNations();
     }
 
 }

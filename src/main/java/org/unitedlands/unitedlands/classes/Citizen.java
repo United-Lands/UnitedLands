@@ -37,6 +37,9 @@ public class Citizen implements Identifiable, MetadataHolder {
     @DatabaseField(canBeNull = false, columnName = "total_playtime")
     private long totalPlaytime;
 
+    @DatabaseField(canBeNull = false, columnName = "activity_score")
+    private double activityScore;
+
     @DatabaseField(width = 36, columnName = "settlement_uuid")
     private UUID settlementUuid;
 
@@ -48,9 +51,10 @@ public class Citizen implements Identifiable, MetadataHolder {
     @DatabaseField(canBeNull = true, dataType = DataType.LONG_STRING, columnName = "metadata_serialized", columnDefinition = "MEDIUMTEXT")
     private String metadataSerialized;
 
-    private OfflinePlayer offlinePlayer;
-    private Player player;
-    private Settlement settlement;
+    private transient double lastDayIncome;
+    private transient OfflinePlayer offlinePlayer;
+    private transient Player player;
+    private transient Settlement settlement;
     private transient Set<String> settlementRanks;
     private transient Set<String> countryRanks;
 
@@ -104,6 +108,22 @@ public class Citizen implements Identifiable, MetadataHolder {
 
     public void setTotalPlaytime(long totalPlaytime) {
         this.totalPlaytime = totalPlaytime;
+    }
+
+    public double getActivityScore() {
+        return activityScore;
+    }
+
+    public void setActivityScore(double activityScore) {
+        this.activityScore = activityScore;
+    }
+    
+    public double getLastDayIncome() {
+        return lastDayIncome;
+    }
+
+    public void setLastDayIncome(double lastDayIncome) {
+        this.lastDayIncome = lastDayIncome;
     }
 
     public OfflinePlayer getOfflinePlayer() {
@@ -222,7 +242,7 @@ public class Citizen implements Identifiable, MetadataHolder {
 
     public Set<String> getCountryRanks() {
         if (countryRanks == null) {
-           countryRanks = SerializationUtils.deserializeStringSet(countryRanksSerialized);
+            countryRanks = SerializationUtils.deserializeStringSet(countryRanksSerialized);
         }
         return countryRanks;
     }

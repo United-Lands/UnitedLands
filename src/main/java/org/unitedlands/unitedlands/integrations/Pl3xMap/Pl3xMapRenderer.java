@@ -35,6 +35,7 @@ import org.unitedlands.unitedlands.classes.interfaces.CoordinateHolder;
 import org.unitedlands.unitedlands.classes.map.LayerOptions;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
+import org.unitedlands.unitedlands.utils.ColorUtils;
 import org.unitedlands.unitedlands.utils.CoordinateUtils;
 import org.unitedlands.unitedlands.utils.PolygonUtils;
 import org.unitedlands.utils.United;
@@ -60,7 +61,7 @@ public class Pl3xMapRenderer {
         return instance;
     }
 
-    private final int BATCH_SIZE = 50;
+    private final int BATCH_SIZE = 150;
     private final long FREQUENCY = 20l;
 
     private Deque<Settlement> settlementQueue = new LinkedList<Settlement>();
@@ -99,8 +100,8 @@ public class Pl3xMapRenderer {
     }
 
     public void loadMessages() {
-        settlementMapInfoBox = United.messenger().get("map-info-boxes.settlement");
-        countryMapInfoBox = United.messenger().get("map-info-boxes.country");
+        settlementMapInfoBox = UnitedLandsConfig.get().mapInfoBoxes().settlement();
+        countryMapInfoBox = UnitedLandsConfig.get().mapInfoBoxes().country();
     }
 
     public void shutdown() {
@@ -383,19 +384,24 @@ public class Pl3xMapRenderer {
 
     private String getCountryInfoBox(Country country) {
         var infoBox = countryMapInfoBox;
+
+        if (Pl3xMap.api().getIconRegistry().has(country.getUuid().toString())) {
+            infoBox = infoBox.replace("%icon%", "images/icon/registered/" + country.getUuid().toString() + ".png");
+        } else {
+            infoBox = infoBox.replace("%icon%", "images/clear.png");
+        }
         infoBox = infoBox.replace("%country%", country.getCleanName());
         infoBox = infoBox.replace("%leader%", country.getLeader() != null ? country.getLeader().getName() : "NPC");
         infoBox = infoBox.replace("%capital%", country.hasCapital() ? country.getCapital().getCleanName() : "");
-        infoBox = infoBox.replace("%capital-coords%",
-                country.hasCapital()
-                        ? "x=" + country.getCapital().getSpawn().blockX() + "&z="
-                                + country.getCapital().getSpawn().blockZ()
-                        : "");
         infoBox = infoBox.replace("%founded%",
-                new SimpleDateFormat("dd-MM-yyyy HH:mm").format(country.getFoundingTimestamp()));
+                new SimpleDateFormat("dd MMM yyyy").format(country.getFoundingTimestamp()));
         infoBox = infoBox.replace("%balance%", UnitedLandsEconomyManager.instance()
                 .format(UnitedLandsEconomyManager.instance().getBalance(country.getUuid())));
+        infoBox = infoBox.replace("%settlements%", String.valueOf(country.getSettlementCount()));
+        infoBox = infoBox.replace("%regions%", String.valueOf(country.getRegionCount()));
+        infoBox = infoBox.replace("%citizens%", String.valueOf(country.getCitizenCount()));
         infoBox = infoBox.replace("%upkeep%", UnitedLandsEconomyManager.instance().format(country.getUpkeep()));
+        infoBox = infoBox.replace("%size%", String.format("%,.0f", country.getArea()));
         return infoBox;
     }
 
@@ -452,9 +458,9 @@ public class Pl3xMapRenderer {
         if (claimedLayer.hasMarker(key))
             claimedLayer.removeMarker(key);
 
-        var centerMarkerKey = "center-" + region.getUuid();
-        if (regionInfoMarkerLayer.hasMarker(centerMarkerKey))
-            regionInfoMarkerLayer.removeMarker(centerMarkerKey);
+        // var centerMarkerKey = "center-" + region.getUuid();
+        // if (regionInfoMarkerLayer.hasMarker(centerMarkerKey))
+        //     regionInfoMarkerLayer.removeMarker(centerMarkerKey);
         var claimMarkerKey = "claim-" + region.getUuid();
         if (regionInfoMarkerLayer.hasMarker(claimMarkerKey))
             regionInfoMarkerLayer.removeMarker(claimMarkerKey);
@@ -462,8 +468,8 @@ public class Pl3xMapRenderer {
         var centerWordLocation = CoordinateUtils.chunkToWorldCoordinates(region.getHomeChunkCoordinates());
         var centerMarkerPosition = new Point(centerWordLocation.getX() + 8, centerWordLocation.getZ() + 8);
 
-        var centerMarker = Marker.icon(centerMarkerKey, centerMarkerPosition, "region-center");
-        regionInfoMarkerLayer.addMarker(centerMarker);
+        // var centerMarker = Marker.icon(centerMarkerKey, centerMarkerPosition, "region-center");
+        // regionInfoMarkerLayer.addMarker(centerMarker);
 
         if (region.getClaimEndTime() != null) {
             var claimMarker = Marker.icon(claimMarkerKey, centerMarkerPosition, "claiming");
@@ -495,7 +501,10 @@ public class Pl3xMapRenderer {
         }
 
         var tooltip = region.getCleanName()
-                + (region.hasCountry() ? " (" + region.getCountry().getCleanName() + ")" : "");
+                + (region.hasCountry() ? " (" + region.getCountry().getCleanName() + ")" : "")
+                + (region.isCoastal() ? " &#127754;" : "")
+                + (region.isIsland() ? " &#9875;" : "");
+
         var markerOptions = Options.builder().fill(true).fillType(Fill.Type.NONZERO).fillColor(fillColor).stroke(true)
                 .strokeColor(strokeColor)
                 .strokeDashPattern(dash).strokeWeight(strokeWidth).tooltipContent(tooltip).build();
@@ -629,14 +638,15 @@ public class Pl3xMapRenderer {
 
         infoBox = infoBox.replace("%settlement%", settlement.getCleanName());
         infoBox = infoBox.replace("%mayor%", settlement.getMayor() != null ? settlement.getMayor().getName() : "NPC");
-        infoBox = infoBox.replace("%country%",
-                settlement.hasCountry() ? settlement.getCountry().getCleanName() : "Independent");
-        infoBox = infoBox.replace("%citizencount%", String.valueOf(settlement.getCitizenCount()));
+        infoBox = infoBox.replace("%status%", settlement.hasCountry() ? (settlement.isCapital() ? "Capital of" : "Member of") : "");
+        infoBox = infoBox.replace("%country%", settlement.hasCountry() ? settlement.getCountry().getCleanName() : "Independent");
+        infoBox = infoBox.replace("%citizens%", String.valueOf(settlement.getCitizenCount()));
         infoBox = infoBox.replace("%founded%",
-                new SimpleDateFormat("dd-MM-yyyy HH:mm").format(settlement.getFoundingTimestamp()));
+                new SimpleDateFormat("dd MMM yyyy").format(settlement.getFoundingTimestamp()));
         infoBox = infoBox.replace("%balance%", UnitedLandsEconomyManager.instance()
                 .format(UnitedLandsEconomyManager.instance().getBalance(settlement.getUuid())));
         infoBox = infoBox.replace("%upkeep%", UnitedLandsEconomyManager.instance().format(settlement.getUpkeep()));
+        infoBox = infoBox.replace("%size%", String.format("%,d", settlement.getChunks().size()));
         infoBox = infoBox.replace("%board%", settlement.getTownBoard() != null ? settlement.getTownBoard() : "");
 
         return infoBox;

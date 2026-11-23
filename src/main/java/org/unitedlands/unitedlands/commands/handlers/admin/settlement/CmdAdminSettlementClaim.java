@@ -7,7 +7,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.unitedlands.classes.SettlementChunk;
-import org.unitedlands.unitedlands.classes.commandhandlers.SettlementAdminCommandHandler;
+import org.unitedlands.unitedlands.classes.commandhandlers.AdminCommandHandler;
 
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.utils.CoordinateUtils;
@@ -20,7 +20,7 @@ import org.unitedlands.utils.United;
         usage = "/ula settlement claim <settlement_name>",
         playerOnly = true
 )
-public class CmdAdminSettlementClaim extends SettlementAdminCommandHandler {
+public class CmdAdminSettlementClaim extends AdminCommandHandler {
 
     @Override
     public List<String> handleTab(CommandSender sender, String[] args) {

@@ -111,6 +111,13 @@ public class Settlement extends GeopolObject implements PermissionHolder {
 
     }
 
+    @Override
+    public boolean isCoastal() {
+        if (hasRegion())
+            return region.isCoastal();
+        return false;
+    }
+
     public Integer getStrokeColor() {
         if (hasCountry())
             return getCountry().getStrokeColor();
@@ -283,6 +290,8 @@ public class Settlement extends GeopolObject implements PermissionHolder {
 
     public boolean isCapital() {
         if (getCountry() == null)
+            return false;
+        if (!getCountry().hasCapital())
             return false;
         return getCountry().getCapital().equals(this);
     }
@@ -654,7 +663,7 @@ public class Settlement extends GeopolObject implements PermissionHolder {
 
         UnitedLandsDataManager.instance().createSettlementChunkDbData(chunk);
 
-        UnitedLandsEconomyManager.instance().withdraw(this.getUuid(), claimCosts, "Chunk claiming");
+        UnitedLandsEconomyManager.instance().withdraw(this.getUuid(), claimCosts, BankRecordTransactionType.CLAIM, "Chunk claiming");
 
         var coordNorth = new Coordinates(chunkCoords.getX(), chunkCoords.getZ() - 1, chunkCoords.getWorldName());
         var coordEast = new Coordinates(chunkCoords.getX() + 1, chunkCoords.getZ(), chunkCoords.getWorldName());

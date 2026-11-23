@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
+import org.unitedlands.unitedlands.classes.BankRecordTransactionType;
 import org.unitedlands.unitedlands.classes.commandhandlers.SettlementChunkCommandHandler;
 import org.unitedlands.unitedlands.classes.events.settlementChunk.SettlementChunkPrePurchaseEvent;
 import org.unitedlands.unitedlands.classes.events.settlementChunk.SettlementChunkPurchaseEvent;
@@ -52,9 +53,11 @@ public class CmdSettlementChunkBuy extends SettlementChunkCommandHandler {
 
         UnitedLandsEconomyManager.instance().withdraw(context.citizen().getUuid(),
                 context.settlementChunk().getSalePrice(),
+                BankRecordTransactionType.PURCHASE,
                 "Purchased plot in " + context.settlementChunk().getSettlement().getName());
         UnitedLandsEconomyManager.instance().deposit(context.settlementChunk().getSettlement().getUuid(),
                 context.settlementChunk().getSalePrice(),
+                BankRecordTransactionType.PURCHASE,
                 "Plot bought by " + context.player().getName());
 
         United.messenger().send(context.player(), "player.settlementchunk.buy.success", UnitedLandsEconomyManager.instance().format(context.settlementChunk().getSalePrice()));

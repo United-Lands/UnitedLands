@@ -41,6 +41,9 @@ public class GeopolObject implements Identifiable, MetadataHolder {
     @DatabaseField(columnName = "founding_timestamp")
     protected long foundingTimestamp;
 
+    @DatabaseField(columnName = "coastal")
+    protected boolean coastal;
+
     @DatabaseField(columnName = "bankrupt")
     protected boolean bankrupt;
 
@@ -133,6 +136,14 @@ public class GeopolObject implements Identifiable, MetadataHolder {
 
     public void setFoundingTimestamp(long foundingTimestamp) {
         this.foundingTimestamp = foundingTimestamp;
+    }
+
+    public boolean isCoastal() {
+        return coastal;
+    }
+
+    public void setCoastal(boolean coastal) {
+        this.coastal = coastal;
     }
 
     public boolean isBankrupt() {
@@ -236,6 +247,7 @@ public class GeopolObject implements Identifiable, MetadataHolder {
                     defaults.maxValue(),
                     defaults.dailyChange());
             addAttribute(key, attribute);
+            save();
         }
 
         return attribute;

@@ -5,7 +5,7 @@ import java.util.List;
 import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.unitedlands.classes.GeopolAttribute;
-import org.unitedlands.unitedlands.classes.commandhandlers.CountryAdminCommandHandler;
+import org.unitedlands.unitedlands.classes.commandhandlers.AdminCommandHandler;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.utils.United;
 
@@ -16,7 +16,7 @@ import org.unitedlands.utils.United;
         usage = "/ula country attributes list <country_name> [--base]"
 )
 
-public class CmdAdminCountryAttributesList extends CountryAdminCommandHandler {
+public class CmdAdminCountryAttributesList extends AdminCommandHandler {
 
     @Override
     public List<String> handleTab(CommandSender semder, String[] args) {

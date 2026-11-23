@@ -7,7 +7,7 @@ import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.unitedlands.classes.GeopolAttributeModifier;
 import org.unitedlands.unitedlands.classes.GeopolAttributeModifier.Mode;
-import org.unitedlands.unitedlands.classes.commandhandlers.CountryAdminCommandHandler;
+import org.unitedlands.unitedlands.classes.commandhandlers.AdminCommandHandler;
 import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.utils.United;
@@ -20,7 +20,7 @@ import org.unitedlands.utils.United;
         catchAll = true
 )
 
-public class CmdAdminCountryModifiersAdd extends CountryAdminCommandHandler {
+public class CmdAdminCountryModifiersAdd extends AdminCommandHandler {
 
     @Override
     public List<String> handleTab(CommandSender semder, String[] args) {

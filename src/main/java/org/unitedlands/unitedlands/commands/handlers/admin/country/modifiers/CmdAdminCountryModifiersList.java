@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
-import org.unitedlands.unitedlands.classes.commandhandlers.CountryAdminCommandHandler;
+import org.unitedlands.unitedlands.classes.commandhandlers.AdminCommandHandler;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.utils.United;
 
@@ -15,7 +15,7 @@ import org.unitedlands.utils.United;
         usage = "/ula country modifiers list <country_name>"
 )
 
-public class CmdAdminCountryModifiersList extends CountryAdminCommandHandler {
+public class CmdAdminCountryModifiersList extends AdminCommandHandler {
 
     @Override
     public List<String> handleTab(CommandSender semder, String[] args) {

@@ -45,6 +45,12 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>org.unitedlands.economy</groupId>
+            <artifactId>UnitedEconomy</artifactId>
+            <version>0.0.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>com.palmergames.bukkit.towny</groupId>
             <artifactId>towny</artifactId>
             <scope>provided</scope>

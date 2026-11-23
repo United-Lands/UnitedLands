@@ -4,7 +4,7 @@ import java.util.List;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.unitedlands.annotations.UnitedSubCommand;
-import org.unitedlands.unitedlands.classes.commandhandlers.SettlementAdminCommandHandler;
+import org.unitedlands.unitedlands.classes.commandhandlers.AdminCommandHandler;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.utils.United;
 
@@ -16,7 +16,7 @@ import org.unitedlands.utils.United;
         catchAll = true,
         playerOnly = true
 )
-public class CmdAdminSettlementToggle extends SettlementAdminCommandHandler {
+public class CmdAdminSettlementToggle extends AdminCommandHandler {
 
     List<String> fields = List.of("pvp", "monsters", "animals", "fire", "explosions", "public");
     List<String> switches = List.of("on", "off", "unset");

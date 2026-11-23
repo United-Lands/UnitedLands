@@ -3,7 +3,7 @@ package org.unitedlands.unitedlands.commands.handlers.admin.country.set;
 import java.util.List;
 import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
-import org.unitedlands.unitedlands.classes.commandhandlers.CountryAdminCommandHandler;
+import org.unitedlands.unitedlands.classes.commandhandlers.AdminCommandHandler;
 
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.utils.ColorUtils;
@@ -16,7 +16,7 @@ import org.unitedlands.utils.United;
         usage = "/ula country set color <country> <#hexcolor>",
         catchAll = true
 )
-public class CmdAdminCountrySetColor extends CountryAdminCommandHandler {
+public class CmdAdminCountrySetColor extends AdminCommandHandler {
 
     @Override
     public void handleCommand(CommandSender sender, String[] args) {

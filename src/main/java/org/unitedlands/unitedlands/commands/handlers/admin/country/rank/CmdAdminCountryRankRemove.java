@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.unitedlands.classes.Citizen;
-import org.unitedlands.unitedlands.classes.commandhandlers.CountryAdminCommandHandler;
+import org.unitedlands.unitedlands.classes.commandhandlers.AdminCommandHandler;
 
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.managers.PermissionManager;
@@ -19,7 +19,7 @@ import org.unitedlands.utils.United;
         usage = "/ula country rank remove <player> <rank>",
         catchAll = true
 )
-public class CmdAdminCountryRankRemove extends CountryAdminCommandHandler {
+public class CmdAdminCountryRankRemove extends AdminCommandHandler {
 
     @Override
     public List<String> handleTab(CommandSender sender, String[] args) {

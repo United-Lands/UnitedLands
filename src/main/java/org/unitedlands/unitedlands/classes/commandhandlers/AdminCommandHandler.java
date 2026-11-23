@@ -6,13 +6,14 @@ import org.bukkit.entity.Player;
 import org.unitedlands.registrars.command.UnitedCommandExecutor;
 import org.unitedlands.unitedlands.classes.Citizen;
 import org.unitedlands.unitedlands.classes.Country;
+import org.unitedlands.unitedlands.classes.Region;
 import org.unitedlands.unitedlands.classes.Settlement;
 
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.managers.PermissionManager;
 import org.unitedlands.utils.United;
 
-public class CountryAdminCommandHandler implements UnitedCommandExecutor {
+public class AdminCommandHandler implements UnitedCommandExecutor {
 
     @Override
     public void handleCommand(CommandSender arg0, String[] arg1) {
@@ -33,10 +34,19 @@ public class CountryAdminCommandHandler implements UnitedCommandExecutor {
         return country;
     }
 
-    protected Settlement getSettlement(CommandSender player, String name) {
+    protected Region getRegion(CommandSender sender, String name) {
+        var region = UnitedLandsDataManager.instance().getRegion(name);
+        if (region == null) {
+            United.messenger().send(sender, "general-errors.region-not-found", name);
+            return null;
+        }
+        return region;
+    }
+
+    protected Settlement getSettlement(CommandSender sender, String name) {
         var settlement = UnitedLandsDataManager.instance().getSettlement(name);
         if (settlement == null) {
-            United.messenger().send(player, "general-errors.settlement-not-found", name);
+            United.messenger().send(sender, "general-errors.settlement-not-found", name);
             return null;
         }
         return settlement;

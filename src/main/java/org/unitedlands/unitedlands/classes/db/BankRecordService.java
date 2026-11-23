@@ -1,11 +1,14 @@
 package org.unitedlands.unitedlands.classes.db;
 
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import org.unitedlands.unitedlands.classes.BankRecord;
+import org.unitedlands.unitedlands.classes.BankRecordTransactionType;
 import org.unitedlands.libs.ormlite.dao.Dao;
 import org.unitedlands.libs.ormlite.stmt.QueryBuilder;
 
@@ -32,5 +35,28 @@ public class BankRecordService extends BaseDbService<BankRecord> {
             }
         });
     }
+
+    public CompletableFuture<List<BankRecord>> getRecordsByTypeAsync(BankRecordTransactionType type, int days) {
+
+        
+        var cutoff = LocalDate.now().minusDays(days).atStartOfDay(ZoneId.systemDefault())
+                                           .toInstant()
+                                           .toEpochMilli();
+
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                QueryBuilder<BankRecord, UUID> queryBuilder = dao.queryBuilder();
+                queryBuilder.where()
+                .eq("transaction_type", type)
+                .and()
+                .ge("timestamp", cutoff);
+                return dao.query(queryBuilder.prepare());
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return List.of();
+            }
+        });
+    }
+
 
 }

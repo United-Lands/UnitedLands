@@ -30,6 +30,13 @@ public class VaultEconomyProvider implements IEconomyProvider {
         economy = rsp.getProvider();
     }
 
+    
+
+    @Override
+    public boolean hasEconomyAccount(UUID uuid) {
+        return economy.hasAccount(uuid);
+    }
+
     @Override
     public String format(BigDecimal amount) {
         return economy.format("UnitedLands", amount);

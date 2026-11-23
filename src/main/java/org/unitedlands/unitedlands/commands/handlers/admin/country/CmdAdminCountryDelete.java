@@ -3,7 +3,7 @@ package org.unitedlands.unitedlands.commands.handlers.admin.country;
 import java.util.List;
 import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
-import org.unitedlands.unitedlands.classes.commandhandlers.CountryAdminCommandHandler;
+import org.unitedlands.unitedlands.classes.commandhandlers.AdminCommandHandler;
 
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.utils.United;
@@ -14,7 +14,7 @@ import org.unitedlands.utils.United;
         description = "Deletes a country",
         usage = "/ula country delete <country_name>"
 )
-public class CmdAdminCountryDelete extends CountryAdminCommandHandler {
+public class CmdAdminCountryDelete extends AdminCommandHandler {
 
     @Override
     public void handleCommand(CommandSender sender, String[] args) {

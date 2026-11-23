@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
+import org.unitedlands.unitedlands.classes.BankRecordTransactionType;
 import org.unitedlands.unitedlands.classes.commandhandlers.CountryCommandHandler;
 
 import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
@@ -48,8 +49,8 @@ public class CmdCountryWithdraw extends CountryCommandHandler {
             return;
         }
 
-        UnitedLandsEconomyManager.instance().withdraw(context.country().getUuid(), amount, "Withdrawn by " + context.player().getName());
-        UnitedLandsEconomyManager.instance().deposit(context.player().getUniqueId(), amount, "Withdrawn from " + context.country().getName());
+        UnitedLandsEconomyManager.instance().withdraw(context.country().getUuid(), amount, BankRecordTransactionType.WITHDRAWAL, "Withdrawn by " + context.player().getName());
+        UnitedLandsEconomyManager.instance().deposit(context.player().getUniqueId(), amount, BankRecordTransactionType.WITHDRAWAL, "Withdrawn from " + context.country().getName());
 
         United.messenger().send(context.player(), "player.country.withdraw.success", UnitedLandsEconomyManager.instance().format(amount));
     }

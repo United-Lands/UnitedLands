@@ -17,6 +17,27 @@ public class PlaytimeRecordService extends BaseDbService<PlaytimeRecord> {
         super(dao);
     }
 
+    public CompletableFuture<List<PlaytimeRecord>> getForLastDaysAsync(int days) {
+
+        var cutoff = LocalDate.now().minusDays(days).atStartOfDay(ZoneId.systemDefault())
+                                           .toInstant()
+                                           .toEpochMilli();
+
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return dao.query(
+                    dao.queryBuilder().where()
+                        .ge("logon", cutoff)
+                        .prepare()
+                );
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return Collections.emptyList();
+            }
+        });          
+        
+    }
+
     public CompletableFuture<List<PlaytimeRecord>> getForLastDaysAsync(UUID playerId, int days) {
 
         var cutoff = LocalDate.now().minusDays(days).atStartOfDay(ZoneId.systemDefault())

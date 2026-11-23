@@ -6,6 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.unitedlands.annotations.UnitedSubCommand;
+import org.unitedlands.unitedlands.classes.BankRecordTransactionType;
 import org.unitedlands.unitedlands.classes.Confirmation;
 import org.unitedlands.unitedlands.classes.commandhandlers.SettlementCommandHandler;
 
@@ -92,6 +93,7 @@ public class CmdSettlementMerge extends SettlementCommandHandler {
 
             UnitedLandsEconomyManager.instance().deposit(context.settlement().getUuid(),
                     UnitedLandsEconomyManager.instance().getBalance(targetSettlement.getUuid()),
+                    BankRecordTransactionType.SYSTEM,
                     "Merging of settlement bank of " + targetSettlement.getName());
             UnitedLandsEconomyManager.instance().deleteAccount(targetSettlement.getUuid());
 

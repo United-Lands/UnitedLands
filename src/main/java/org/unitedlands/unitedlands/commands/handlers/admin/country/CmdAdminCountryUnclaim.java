@@ -4,7 +4,7 @@ import java.util.List;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.unitedlands.annotations.UnitedSubCommand;
-import org.unitedlands.unitedlands.classes.commandhandlers.CountryAdminCommandHandler;
+import org.unitedlands.unitedlands.classes.commandhandlers.AdminCommandHandler;
 
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.utils.United;
@@ -16,7 +16,7 @@ import org.unitedlands.utils.United;
         usage = "/ula country unclaim <region_name>",
         catchAll = true
 )
-public class CmdAdminCountryUnclaim extends CountryAdminCommandHandler {
+public class CmdAdminCountryUnclaim extends AdminCommandHandler {
 
     @Override
     public void handleCommand(CommandSender sender, String[] args) {

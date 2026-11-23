@@ -9,6 +9,7 @@ import org.unitedlands.unitedlands.classes.PlaytimeRecord;
 import org.unitedlands.unitedlands.classes.Region;
 import org.unitedlands.unitedlands.classes.Settlement;
 import org.unitedlands.unitedlands.classes.SettlementChunk;
+import org.unitedlands.unitedlands.classes.ULCINCRecord;
 import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.classes.db.BankRecordService;
 import org.unitedlands.unitedlands.classes.db.CitizenService;
@@ -19,6 +20,7 @@ import org.unitedlands.unitedlands.classes.db.RegionService;
 import org.unitedlands.unitedlands.classes.db.SchemaVersion;
 import org.unitedlands.unitedlands.classes.db.SettlementChunkService;
 import org.unitedlands.unitedlands.classes.db.SettlementService;
+import org.unitedlands.unitedlands.classes.db.ULCINCService;
 import org.unitedlands.unitedlands.classes.webservices.LoginChallenge;
 import org.unitedlands.utils.United;
 
@@ -43,6 +45,7 @@ public class DatabaseManager {
     private LoginChallengeService loginChallengeService;
     private BankRecordService bankRecordService;
     private PlaytimeRecordService playtimeRecordService;
+    private ULCINCService ulcincService;
 
     public void initialize() {
 
@@ -103,6 +106,7 @@ public class DatabaseManager {
         this.loginChallengeService = new LoginChallengeService(getDao(LoginChallenge.class));
         this.bankRecordService = new BankRecordService(getDao(BankRecord.class));
         this.playtimeRecordService = new PlaytimeRecordService(getDao(PlaytimeRecord.class));
+        this.ulcincService = new ULCINCService(getDao(ULCINCRecord.class));
     }
 
     private void verifySchemaVersion() throws SQLException {
@@ -127,110 +131,16 @@ public class DatabaseManager {
         if (UnitedLandsConfig.get().developerMode())
             return;
 
-        if (version.getVersion() < 2) {
-            versionDao.executeRaw("ALTER TABLE settlement ADD COLUMN ruined TINYINT(1) NOT NULL;");
-            versionDao.executeRaw("ALTER TABLE settlement ADD COLUMN ruin_time BIGINT NULL;");
-            versionDao.executeRaw("ALTER TABLE region ADD COLUMN administrator_uuid VARCHAR(36) NULL;");
-            versionDao.executeRaw("ALTER TABLE region ADD COLUMN claimed_time BIGINT NULL;");
-            versionDao.executeRaw("ALTER TABLE region ADD COLUMN default_name VARCHAR(255) NULL;");
-            version.setVersion(2);
-            versionDao.update(version);
-        }
+        // if (version.getVersion() < 2) {
+        //     versionDao.executeRaw("ALTER TABLE settlement ADD COLUMN ruined TINYINT(1) NOT NULL;");
+        //     versionDao.executeRaw("ALTER TABLE settlement ADD COLUMN ruin_time BIGINT NULL;");
+        //     versionDao.executeRaw("ALTER TABLE region ADD COLUMN administrator_uuid VARCHAR(36) NULL;");
+        //     versionDao.executeRaw("ALTER TABLE region ADD COLUMN claimed_time BIGINT NULL;");
+        //     versionDao.executeRaw("ALTER TABLE region ADD COLUMN default_name VARCHAR(255) NULL;");
+        //     version.setVersion(2);
+        //     versionDao.update(version);
+        // }
 
-        if (version.getVersion() < 3) {
-            versionDao.executeRaw("ALTER TABLE region ADD COLUMN area DOUBLE NOT NULL;");
-            version.setVersion(3);
-            versionDao.update(version);
-        }
-
-        if (version.getVersion() < 4) {
-            versionDao.executeRaw("ALTER TABLE settlement ADD COLUMN attributes_serialized MEDIUMTEXT NULL;");
-            versionDao.executeRaw("ALTER TABLE region ADD COLUMN attributes_serialized MEDIUMTEXT NULL;");
-            versionDao.executeRaw("ALTER TABLE country ADD COLUMN attributes_serialized MEDIUMTEXT NULL;");
-            versionDao.executeRaw("ALTER TABLE settlement ADD COLUMN attribute_modifiers_serialized MEDIUMTEXT NULL;");
-            versionDao.executeRaw("ALTER TABLE region ADD COLUMN attribute_modifiers_serialized MEDIUMTEXT NULL;");
-            versionDao.executeRaw("ALTER TABLE country ADD COLUMN attribute_modifiers_serialized MEDIUMTEXT NULL;");
-            version.setVersion(4);
-            versionDao.update(version);
-        }
-
-        if (version.getVersion() < 5) {
-            TableUtils.createTableIfNotExists(connectionSource, BankRecord.class);
-            version.setVersion(5);
-            versionDao.update(version);
-        }
-
-        if (version.getVersion() < 6) {
-            TableUtils.createTableIfNotExists(connectionSource, PlaytimeRecord.class);
-            versionDao.executeRaw("ALTER TABLE citizen ADD COLUMN total_playtime BIGINT NOT NULL;");
-            version.setVersion(6);
-            versionDao.update(version);
-        }
-
-        if (version.getVersion() < 7) {
-            versionDao.executeRaw("ALTER TABLE settlement ADD COLUMN visitor_spawn_serialized VARCHAR(255) NULL;");
-            version.setVersion(7);
-            versionDao.update(version);
-        }
-
-        if (version.getVersion() < 8) {
-            versionDao.executeRaw("ALTER TABLE country DROP COLUMN allies_serialized;");
-            version.setVersion(8);
-            versionDao.update(version);
-        }
-
-        if (version.getVersion() < 9) {
-            versionDao.executeRaw("ALTER TABLE settlement DROP COLUMN ruined;");
-            versionDao.executeRaw("ALTER TABLE settlement DROP COLUMN ruin_time;");
-            versionDao.executeRaw("ALTER TABLE settlement ADD COLUMN bankrupt TINYINT(1) NOT NULL;");
-            versionDao.executeRaw("ALTER TABLE settlement ADD COLUMN bankruptcy_timestamp BIGINT NULL;");
-            versionDao.executeRaw("ALTER TABLE region ADD COLUMN bankrupt TINYINT(1) NOT NULL;");
-            versionDao.executeRaw("ALTER TABLE region ADD COLUMN bankruptcy_timestamp BIGINT NULL;");
-            versionDao.executeRaw("ALTER TABLE country ADD COLUMN bankrupt TINYINT(1) NOT NULL;");
-            versionDao.executeRaw("ALTER TABLE country ADD COLUMN bankruptcy_timestamp BIGINT NULL;");
-            version.setVersion(9);
-            versionDao.update(version);
-        }
-
-        if (version.getVersion() < 10) {
-            versionDao.executeRaw("ALTER TABLE settlement DROP COLUMN use_tax_percent;");
-            versionDao.executeRaw("ALTER TABLE country ADD COLUMN tax FLOAT NOT NULL;");
-            version.setVersion(10);
-            versionDao.update(version);
-        }
-
-        if (version.getVersion() < 11) {
-            versionDao.executeRaw("ALTER TABLE settlement ADD COLUMN banish_list_serialized MEDIUMTEXT NULL;");
-            version.setVersion(11);
-            versionDao.update(version);
-        }
-
-        if (version.getVersion() < 12) {
-            versionDao.executeRaw("ALTER TABLE region ADD COLUMN administrator_title VARCHAR(128) NULL;");
-            version.setVersion(12);
-            versionDao.update(version);
-        }
-
-        if (version.getVersion() < 13) {
-            versionDao.executeRaw("ALTER TABLE settlement ADD COLUMN display_name VARCHAR(255) NULL;");
-            versionDao.executeRaw("ALTER TABLE region ADD COLUMN display_name VARCHAR(255) NULL;");
-            versionDao.executeRaw("ALTER TABLE country ADD COLUMN display_name VARCHAR(255) NULL;");
-            versionDao.executeRaw("ALTER TABLE country ADD COLUMN claimed_titles_serialized MEDIUMTEXT NULL;");
-            version.setVersion(13);
-            versionDao.update(version);
-        }
-
-        if (version.getVersion() < 14) {
-            versionDao.executeRaw("ALTER TABLE country ADD COLUMN equipped_title VARCHAR(255) NULL;");
-            version.setVersion(14);
-            versionDao.update(version);
-        }
-
-        if (version.getVersion() < 15) {
-            versionDao.executeRaw("ALTER TABLE country ADD COLUMN icon_position_serialized VARCHAR(255) NULL;");
-            version.setVersion(15);
-            versionDao.update(version);
-        }
     }
 
     public <T, ID> Dao<T, ID> getDao(Class<T> clazz) throws SQLException {
@@ -288,6 +198,10 @@ public class DatabaseManager {
 
     public PlaytimeRecordService getPlaytimeRecordService() {
         return playtimeRecordService;
+    }
+
+    public ULCINCService getUlcincService() {
+        return ulcincService;
     }
 
     public ConnectionSource getConnectionSource() {

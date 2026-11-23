@@ -14,6 +14,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.unitedlands.annotations.UnitedListener;
+import org.unitedlands.unitedlands.classes.BankRecordTransactionType;
 import org.unitedlands.unitedlands.classes.Citizen;
 import org.unitedlands.unitedlands.classes.PlaytimeRecord;
 import org.unitedlands.unitedlands.classes.Region;
@@ -27,6 +28,7 @@ import org.unitedlands.unitedlands.classes.events.player.PlayerEnterSettlementEv
 import org.unitedlands.unitedlands.classes.events.player.PlayerExitRegionEvent;
 import org.unitedlands.unitedlands.classes.events.player.PlayerExitSettlementEvent;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
+import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.unitedlands.managers.ChatChannelManager;
 import org.unitedlands.unitedlands.managers.FlightManager;
 import org.unitedlands.unitedlands.managers.PlayerCacheManager;
@@ -115,6 +117,10 @@ public class BukkitPlayerMovementListener implements Listener {
             (new CitizenCreatedEvent(citizen)).callEvent();
 
             UnitedLandsDataManager.instance().createCitizenDbData(citizen);
+            UnitedLandsEconomyManager.instance().createAccount(player.getUniqueId(), player.getName());
+
+            // TODO: move initial funds to config
+            UnitedLandsEconomyManager.instance().deposit(player.getUniqueId(), 5000, BankRecordTransactionType.SYSTEM, "New player funds");
         } else {
             citizen.setName(player.getName());
             citizen.setPlayer(player);

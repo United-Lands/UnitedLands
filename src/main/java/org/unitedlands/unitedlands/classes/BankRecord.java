@@ -3,7 +3,7 @@ package org.unitedlands.unitedlands.classes;
 import java.util.UUID;
 
 import org.unitedlands.unitedlands.classes.db.Identifiable;
-
+import org.unitedlands.libs.ormlite.field.DataType;
 import org.unitedlands.libs.ormlite.field.DatabaseField;
 
 public class BankRecord implements Identifiable {
@@ -20,16 +20,20 @@ public class BankRecord implements Identifiable {
     @DatabaseField(canBeNull = false)
     protected double amount;
 
+    @DatabaseField(canBeNull = false, columnName = "transaction_type", dataType = DataType.ENUM_STRING)
+    protected BankRecordTransactionType transactionType;
+
     @DatabaseField(width = 255)
     protected String details;
 
     public BankRecord() { }
 
-    public BankRecord(UUID subject, double amount, String details) {
+    public BankRecord(UUID subject, double amount, BankRecordTransactionType type, String details) {
         this.uuid = UUID.randomUUID();
         this.timestamp = System.currentTimeMillis();
         this.subject = subject;
         this.amount = amount;
+        this.transactionType = type;
         this.details = details;
     }
 
@@ -65,6 +69,14 @@ public class BankRecord implements Identifiable {
 
     public void setAmount(double amount) {
         this.amount = amount;
+    }
+
+    public BankRecordTransactionType getTransactionType() {
+        return transactionType;
+    }
+
+    public void setTransactionType(BankRecordTransactionType transactionType) {
+        this.transactionType = transactionType;
     }
 
     public String getDetails() {

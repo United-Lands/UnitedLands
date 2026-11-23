@@ -36,7 +36,7 @@ public class Country extends GeopolObject {
     @DatabaseField(canBeNull = true, columnName = "icon_position_serialized")
     private String iconPositionSerialized;
 
-    @DatabaseField(canBeNull = false, width = 36, columnName = "capital_uuid")
+    @DatabaseField(canBeNull = true, width = 36, columnName = "capital_uuid")
     private UUID capitalUuid;
 
     @DatabaseField(canBeNull = true, width = 36, columnName = "overlord_uuid")
@@ -53,6 +53,9 @@ public class Country extends GeopolObject {
     @DatabaseField(canBeNull = false, columnName = "tax")
     private float tax = 0.0f;
 
+    @DatabaseField(canBeNull = false, columnName = "ulcinc")
+    private double ulcinc = 0d;
+
     private transient Location spawn;
     private transient Location iconPosition;
     private transient Settlement capital;
@@ -61,6 +64,11 @@ public class Country extends GeopolObject {
     private transient Set<Region> regions = new HashSet<>();
     private transient Set<Settlement> settlements = new HashSet<>();
     private transient Set<Settlement> settlementClaimWhitelist = new HashSet<>();
+
+    @Override
+    public boolean isCoastal() {
+        return getRegions().stream().anyMatch(r -> r.isCoastal());
+    }
 
     public Integer getStrokeColor() {
         return strokeColor;
@@ -240,6 +248,14 @@ public class Country extends GeopolObject {
     public void removeOverlord() {
         this.overlord = null;
         this.overlordUuid = null;
+    }
+
+    public double getUlcinc() {
+        return ulcinc;
+    }
+
+    public void setUlcinc(double ulcinc) {
+        this.ulcinc = ulcinc;
     }
 
     public Set<Region> getRegions() {

@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.unitedlands.classes.Citizen;
-import org.unitedlands.unitedlands.classes.commandhandlers.SettlementAdminCommandHandler;
+import org.unitedlands.unitedlands.classes.commandhandlers.AdminCommandHandler;
 
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.managers.PermissionManager;
@@ -19,7 +19,7 @@ import org.unitedlands.utils.United;
         usage = "/ula settlement rank remove <settlement_name> <player> <rank>",
         catchAll = true
 )
-public class CmdAdminSettlementRankRemove extends SettlementAdminCommandHandler {
+public class CmdAdminSettlementRankRemove extends AdminCommandHandler {
 
     @Override
     public List<String> handleTab(CommandSender sender, String[] args) {

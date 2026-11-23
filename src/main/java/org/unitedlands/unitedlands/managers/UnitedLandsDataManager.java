@@ -14,15 +14,18 @@ import java.util.stream.Collectors;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.unitedlands.unitedlands.classes.BankRecord;
+import org.unitedlands.unitedlands.classes.BankRecordTransactionType;
 import org.unitedlands.unitedlands.classes.Citizen;
 import org.unitedlands.unitedlands.classes.Coordinates;
 import org.unitedlands.unitedlands.classes.Country;
 import org.unitedlands.unitedlands.classes.GeopolAttribute;
+import org.unitedlands.unitedlands.classes.GeopolObject;
 import org.unitedlands.unitedlands.classes.PlaytimeRecord;
 import org.unitedlands.unitedlands.classes.Region;
 import org.unitedlands.unitedlands.classes.RegionIndex;
 import org.unitedlands.unitedlands.classes.Settlement;
 import org.unitedlands.unitedlands.classes.SettlementChunk;
+import org.unitedlands.unitedlands.classes.ULCINCRecord;
 import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.classes.events.country.CountryCreatedEvent;
 import org.unitedlands.unitedlands.classes.events.country.CountryPreRemoveEvent;
@@ -218,6 +221,40 @@ public class UnitedLandsDataManager {
         countries = new HashMap<>();
     }
 
+    //#region Generic
+
+    // **************************************************
+    // Generic
+    // **************************************************
+
+    public GeopolObject getGeopolObject(UUID uuid) {
+        if (countries.containsKey(uuid))
+            return getCountry(uuid);
+        if (regions.containsKey(uuid))
+            return getRegion(uuid);
+        if (settlements.containsKey(uuid))
+            return getSettlement(uuid);
+        return null;
+    }
+
+    
+    public GeopolObject getGeopolObject(String name) {
+        var country = countries.values().stream().filter(c -> c.getName().equals(name)).findFirst().orElse(null);
+        if (country != null)
+            return country;
+        var region = regions.values().stream().filter(c -> c.getName().equals(name)).findFirst().orElse(null);
+        if (region != null)
+            return region;
+        var settlement = settlements.values().stream().filter(c -> c.getName().equals(name)).findFirst().orElse(null);
+        if (settlement != null)
+            return settlement;
+        return null;
+    }
+
+
+
+    //#endregion
+
     // #region Citizens
 
     // **************************************************
@@ -235,12 +272,20 @@ public class UnitedLandsDataManager {
         databaseManager.getCitizenService().updateAsync(citizen);
     }
 
+    public void updateCitizenDbData(Collection<Citizen> citizens) {
+        databaseManager.getCitizenService().updateAllAsync(citizens);
+    }
+
     public void removeCitizenDbData(Citizen citizen) {
         databaseManager.getCitizenService().deleteAsync(citizen);
         unregisterCitizen(citizen);
     }
 
     // Cache operations
+
+    public Collection<Citizen> getCitizens() {
+        return citizens.values();
+    }
 
     public Citizen getCitizen(Player player) {
         return citizens.get(player.getUniqueId());
@@ -325,6 +370,7 @@ public class UnitedLandsDataManager {
 
             UnitedLandsEconomyManager.instance().withdraw(mayor.getUuid(),
                     UnitedLandsConfig.get().economy().costs().settlement().createCosts(),
+                    BankRecordTransactionType.CREATION,
                     "Settlement creation payment");
         }
 
@@ -369,6 +415,7 @@ public class UnitedLandsDataManager {
 
         UnitedLandsEconomyManager.instance().deposit(prevailing.getUuid(),
                 UnitedLandsEconomyManager.instance().getBalance(merging.getUuid()),
+                BankRecordTransactionType.SYSTEM,
                 "Merging of settlement bank of " + merging.getName());
 
         removeSettlement(merging);
@@ -404,11 +451,19 @@ public class UnitedLandsDataManager {
     // Database operations
 
     public void createSettlementDbData(Settlement settlement) {
-        databaseManager.getSettlementChunkService().createAllAsync(settlement.getChunks());
-        databaseManager.getSettlementService().createAsync(settlement);
-        registerSettlement(settlement);
+        var settlementFuture = databaseManager.getSettlementService().createAsync(settlement);
+        var settlementChunkFuture = databaseManager.getSettlementChunkService().createAllAsync(settlement.getChunks());
+        CompletableFuture.allOf(settlementFuture, settlementChunkFuture).thenAccept(result -> {
+            registerSettlement(settlement);
+            Pl3xMapRenderer.instance().addToRenderQueue(settlement);
+        }).join();
+        United.logger().debug("End of createSettlementDbData");
+    }
 
-        Pl3xMapRenderer.instance().addToRenderQueue(settlement);
+    public CompletableFuture<Void> createSettlementDbDataAsync(Settlement settlement) {
+        var settlementFuture = databaseManager.getSettlementService().createAsync(settlement);
+        var settlementChunkFuture = databaseManager.getSettlementChunkService().createAllAsync(settlement.getChunks());
+        return CompletableFuture.allOf(settlementFuture, settlementChunkFuture);
     }
 
     public void updateSettlementDbData(Settlement settlement, boolean render) {
@@ -646,7 +701,9 @@ public class UnitedLandsDataManager {
             leader.save();
 
             UnitedLandsEconomyManager.instance().withdraw(leader.getUuid(),
-                    UnitedLandsConfig.get().economy().costs().country().createCosts(), "Country creation costs");
+                    UnitedLandsConfig.get().economy().costs().country().createCosts(),
+                    BankRecordTransactionType.CREATION,
+                    "Country creation costs");
 
         }
 
@@ -705,6 +762,11 @@ public class UnitedLandsDataManager {
 
     // Database operations
 
+    public CompletableFuture<Boolean> createCountryDbDataAsync(Country country) {
+        return databaseManager.getCountryService().createAsync(country);
+    }
+
+
     public void createCountryDbData(Country country) {
         databaseManager.getCountryService().createAsync(country);
         registerCountry(country);
@@ -762,6 +824,17 @@ public class UnitedLandsDataManager {
         return countries.get(countryId);
     }
 
+    public Country getCountry(Citizen citizen) {
+        return citizen.getCountry();
+    }
+
+    public Country getCountry(Player player) {
+        var citizen = getCitizen(player);
+        if (citizen == null)
+            return null;
+        return citizen.getCountry();
+    }
+
     public List<String> getCountryNames() {
         CompletableFuture<List<String>> future = CompletableFuture.supplyAsync(() -> {
             return countries.values().stream().map(Country::getName).collect(Collectors.toList());
@@ -797,6 +870,15 @@ public class UnitedLandsDataManager {
         }
     }
 
+    public List<BankRecord> getBankRecords(BankRecordTransactionType type, int days) {
+        try {
+            return databaseManager.getBankRecordService().getRecordsByTypeAsync(type, days).get();
+        } catch (Exception ex) {
+            United.logger().error("Could not retrieve bank records for type " + type, "UnitedLands");
+            return new ArrayList<>();
+        }
+    }
+
     // **************************************************
     // Playtime Records
     // **************************************************
@@ -805,11 +887,42 @@ public class UnitedLandsDataManager {
         databaseManager.getPlaytimeRecordService().createAsync(record);
     }
 
+    public List<PlaytimeRecord> getRecentPlaytimeRecords(int days) {
+        try {
+            return databaseManager.getPlaytimeRecordService().getForLastDaysAsync(days).get();
+        } catch (Exception ex) {
+            United.logger().error("Could not retrieve playtime records", "UnitedLands");
+            return new ArrayList<>();
+        }
+    }
+
+
     public List<PlaytimeRecord> getRecentPlaytimeRecords(UUID playerId, int days) {
         try {
             return databaseManager.getPlaytimeRecordService().getForLastDaysAsync(playerId, days).get();
         } catch (Exception ex) {
             United.logger().error("Could not retrieve playtime records for player " + playerId, "UnitedLands");
+            return new ArrayList<>();
+        }
+    }
+
+    // **************************************************
+    // ULCINC Records
+    // **************************************************
+
+    public void createUlcincRecordDbData(ULCINCRecord record) {
+        databaseManager.getUlcincService().createAsync(record);
+    }
+
+    public void createUlcincRecordDbData(Collection<ULCINCRecord> records) {
+        databaseManager.getUlcincService().createAllAsync(records);
+    }
+
+    public List<ULCINCRecord> getRecentUlcincRecords(int days) {
+        try {
+            return databaseManager.getUlcincService().getForLastDaysAsync(days).get();
+        } catch (Exception ex) {
+            United.logger().error("Could not retrieve ULCINC records", "UnitedLands");
             return new ArrayList<>();
         }
     }

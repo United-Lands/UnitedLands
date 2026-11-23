@@ -52,7 +52,7 @@ public class CmdCountryClaim extends CountryCommandHandler {
             if (PolygonUtils.sharesVertex(countryRegion.getPolygon(), region.getPolygon()))
                 connected = true;
         }
-        if (!connected) {
+        if (!connected && !(region.isCoastal() && context.country().isCoastal())) {
             United.messenger().send(context.player(), "player.country.claim.disconnected");
             return;
         }

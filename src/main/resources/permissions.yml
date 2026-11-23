@@ -81,6 +81,7 @@ country:
     - region.manage.perms
     - politics.pay.tribute
     - politics.pay.propaganda
+    - politics.embargo
   assistant:
     - foo.bar
   general:

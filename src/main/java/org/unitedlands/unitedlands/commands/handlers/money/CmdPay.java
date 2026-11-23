@@ -8,6 +8,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.unitedlands.annotations.UnitedCommand;
 import org.unitedlands.registrars.command.UnitedCommandExecutor;
+import org.unitedlands.unitedlands.classes.BankRecordTransactionType;
 import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.utils.United;
 
@@ -52,8 +53,8 @@ public class CmdPay implements UnitedCommandExecutor {
             return;
         }
 
-        UnitedLandsEconomyManager.instance().withdraw(player.getUniqueId(), amount, "Payment to " + targetPlayer.getName());
-        UnitedLandsEconomyManager.instance().deposit(targetPlayer.getUniqueId(), amount, "Payment from " + player.getName());
+        UnitedLandsEconomyManager.instance().withdraw(player.getUniqueId(), amount, BankRecordTransactionType.TRANSFER, "Payment to " + targetPlayer.getName());
+        UnitedLandsEconomyManager.instance().deposit(targetPlayer.getUniqueId(), amount, BankRecordTransactionType.TRANSFER, "Payment from " + player.getName());
 
         United.messenger().send(player, "player.money.pay.success", UnitedLandsEconomyManager.instance().format(amount), targetPlayer.getName());
         if (targetPlayer.isOnline()) {

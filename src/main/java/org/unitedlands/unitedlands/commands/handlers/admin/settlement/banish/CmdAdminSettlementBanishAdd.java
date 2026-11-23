@@ -7,7 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.unitedlands.annotations.UnitedSubCommand;
-import org.unitedlands.unitedlands.classes.commandhandlers.SettlementAdminCommandHandler;
+import org.unitedlands.unitedlands.classes.commandhandlers.AdminCommandHandler;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.utils.United;
 
@@ -18,7 +18,7 @@ import org.unitedlands.utils.United;
         usage           = "/ula settlement banish add <settlement> <player>",
         catchAll        = true
 )
-public class CmdAdminSettlementBanishAdd extends SettlementAdminCommandHandler {
+public class CmdAdminSettlementBanishAdd extends AdminCommandHandler {
 
     @Override
     public List<String> handleTab(CommandSender sender, String[] args) {

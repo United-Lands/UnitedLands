@@ -4,7 +4,7 @@ import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
-import org.unitedlands.unitedlands.classes.commandhandlers.SettlementAdminCommandHandler;
+import org.unitedlands.unitedlands.classes.commandhandlers.AdminCommandHandler;
 
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.utils.United;
@@ -15,7 +15,7 @@ import org.unitedlands.utils.United;
         description = "Deletes a settlement",
         usage = "/ula settlement delete <settlement_name>"
 )
-public class CmdAdminSettlementDelete extends SettlementAdminCommandHandler {
+public class CmdAdminSettlementDelete extends AdminCommandHandler {
 
     @Override
     public void handleCommand(CommandSender sender, String[] args) {

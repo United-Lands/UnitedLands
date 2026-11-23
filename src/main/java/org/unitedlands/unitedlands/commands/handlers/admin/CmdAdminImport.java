@@ -64,17 +64,31 @@ public class CmdAdminImport implements UnitedCommandExecutor {
 
                 boolean create = false;
 
-                var region = UnitedLandsDataManager.instance().getRegion(entry.getKey());
+                var cleanKey = entry.getKey()
+                                    .replace("_ISLAND", "")
+                                    .replace("_COASTAL", "");
+
+                var region = UnitedLandsDataManager.instance().getRegion(cleanKey);
                 if (region == null) {
                     United.logger().info("Region " + entry.getKey() + " not found, creating...");
                     create = true;
                     region = new Region();
                     region.setUuid(UUID.randomUUID());
-                    region.setName(entry.getKey());
-                    region.setDefaultName(entry.getKey());
+                    region.setName(cleanKey);
+                    region.setDefaultName(cleanKey);
+
+                    
+                    if (entry.getKey().contains("_ISLAND"))
+                        region.setIsland(true);
+                    if (entry.getKey().contains("_COASTAL"))
+                        region.setCoastal(true);
                 } else {
                     United.logger().info("Region " + entry.getKey() + " found, updating default name and polygon...");
-                    region.setDefaultName(entry.getKey());
+                    if (entry.getKey().contains("_ISLAND"))
+                        region.setIsland(true);
+                    if (entry.getKey().contains("_COASTAL"))
+                        region.setCoastal(true);
+                    region.setDefaultName(cleanKey);
                 }
 
                 var val = entry.getValue();

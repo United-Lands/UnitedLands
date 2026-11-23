@@ -7,7 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.unitedlands.annotations.UnitedSubCommand;
-import org.unitedlands.unitedlands.classes.commandhandlers.SettlementAdminCommandHandler;
+import org.unitedlands.unitedlands.classes.commandhandlers.AdminCommandHandler;
 
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.utils.United;
@@ -19,7 +19,7 @@ import org.unitedlands.utils.United;
         usage = "/ula settlement citizen add <settlement_name> <player>",
         catchAll = true
 )
-public class CmdAdminSettlementCitizenAdd extends SettlementAdminCommandHandler {
+public class CmdAdminSettlementCitizenAdd extends AdminCommandHandler {
 
     @Override
     public void handleCommand(CommandSender sender, String[] args) {

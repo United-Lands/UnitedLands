@@ -4,7 +4,7 @@ import java.util.List;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.unitedlands.annotations.UnitedSubCommand;
-import org.unitedlands.unitedlands.classes.commandhandlers.SettlementAdminCommandHandler;
+import org.unitedlands.unitedlands.classes.commandhandlers.AdminCommandHandler;
 
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.utils.CoordinateUtils;
@@ -17,7 +17,7 @@ import org.unitedlands.utils.United;
         usage = "/ula settlement set spawn <settlement_name>",
         playerOnly = true
 )
-public class CmdAdminSettlementSetVisitorSpawn extends SettlementAdminCommandHandler {
+public class CmdAdminSettlementSetVisitorSpawn extends AdminCommandHandler {
 
     @Override
     public void handleCommand(CommandSender sender, String[] args) {

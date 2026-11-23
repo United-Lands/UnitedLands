@@ -5,7 +5,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.unitedlands.classes.LocationMembership;
-import org.unitedlands.unitedlands.classes.commandhandlers.SettlementAdminCommandHandler;
+import org.unitedlands.unitedlands.classes.commandhandlers.AdminCommandHandler;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.utils.United;
 
@@ -17,7 +17,7 @@ import org.unitedlands.utils.United;
         catchAll = true,
         playerOnly = true
 )
-public class CmdAdminSettlementPermission extends SettlementAdminCommandHandler {
+public class CmdAdminSettlementPermission extends AdminCommandHandler {
 
     List<String> permissions = List.of("break", "place", "containers", "switch", "block_use", "interact");
     List<String> memberships = List.of("settlement_residents", "region_residents", "country_residents", "foreigners");

@@ -4,7 +4,7 @@ import java.util.List;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.unitedlands.annotations.UnitedSubCommand;
-import org.unitedlands.unitedlands.classes.commandhandlers.SettlementAdminCommandHandler;
+import org.unitedlands.unitedlands.classes.commandhandlers.AdminCommandHandler;
 import org.unitedlands.unitedlands.classes.events.settlement.SettlementUnclaimEvent;
 
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
@@ -18,7 +18,7 @@ import org.unitedlands.utils.United;
         usage = "/ula settlement unclaim",
         playerOnly = true
 )
-public class CmdAdminSettlementUnclaim extends SettlementAdminCommandHandler {
+public class CmdAdminSettlementUnclaim extends AdminCommandHandler {
 
     @Override
     public List<String> handleTab(CommandSender sender, String[] args) {

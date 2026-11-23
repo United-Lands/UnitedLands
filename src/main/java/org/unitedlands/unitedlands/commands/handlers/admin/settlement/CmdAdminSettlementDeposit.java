@@ -4,7 +4,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
-import org.unitedlands.unitedlands.classes.commandhandlers.SettlementAdminCommandHandler;
+import org.unitedlands.unitedlands.classes.BankRecordTransactionType;
+import org.unitedlands.unitedlands.classes.commandhandlers.AdminCommandHandler;
 
 import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
@@ -16,7 +17,7 @@ import org.unitedlands.utils.United;
         description = "Deposits money into the settlement bank",
         usage = "/ula settlement deposit <settlement_name> <amount>"
 )
-public class CmdAdminSettlementDeposit extends SettlementAdminCommandHandler {
+public class CmdAdminSettlementDeposit extends AdminCommandHandler {
 
     @Override
     public List<String> handleTab(CommandSender sender, String[] args) {
@@ -46,7 +47,7 @@ public class CmdAdminSettlementDeposit extends SettlementAdminCommandHandler {
             return;
         }
 
-        UnitedLandsEconomyManager.instance().deposit(settlement.getUuid(), amount, sender.getName());
+        UnitedLandsEconomyManager.instance().deposit(settlement.getUuid(), amount, BankRecordTransactionType.ADMIN, sender.getName());
         United.messenger().send(sender, 
             "admin.settlement.deposit.success", 
             UnitedLandsEconomyManager.instance().format(amount), 

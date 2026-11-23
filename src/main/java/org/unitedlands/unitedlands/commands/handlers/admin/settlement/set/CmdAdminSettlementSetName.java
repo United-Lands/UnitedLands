@@ -3,7 +3,7 @@ package org.unitedlands.unitedlands.commands.handlers.admin.settlement.set;
 import java.util.List;
 import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
-import org.unitedlands.unitedlands.classes.commandhandlers.SettlementAdminCommandHandler;
+import org.unitedlands.unitedlands.classes.commandhandlers.AdminCommandHandler;
 
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.utils.United;
@@ -14,7 +14,7 @@ import org.unitedlands.utils.United;
     description     = "Changes a settlement's name",
     usage           = "/ula settlement set name <settlement_name> <new_name>"
 )
-public class CmdAdminSettlementSetName extends SettlementAdminCommandHandler {
+public class CmdAdminSettlementSetName extends AdminCommandHandler {
 
     @Override
     public void handleCommand(CommandSender sender, String[] args) {

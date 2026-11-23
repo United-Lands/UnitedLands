@@ -2,8 +2,7 @@ package org.unitedlands.unitedlands.commands.handlers.admin.settlement.attribute
 
 import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
-import org.unitedlands.unitedlands.classes.commandhandlers.SettlementAdminCommandHandler;
-
+import org.unitedlands.unitedlands.classes.commandhandlers.AdminCommandHandler;
 import org.unitedlands.utils.United;
 
 @UnitedSubCommand(
@@ -13,7 +12,7 @@ import org.unitedlands.utils.United;
         usage = "/ula settlement attributes list"
 )
 
-public class CmdAdminSetttlementAttributesList extends SettlementAdminCommandHandler {
+public class CmdAdminSetttlementAttributesList extends AdminCommandHandler {
 
     @Override
     public void handleCommand(CommandSender sender, String[] args) {

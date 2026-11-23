@@ -5,7 +5,8 @@ import java.util.List;
 
 import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
-import org.unitedlands.unitedlands.classes.commandhandlers.CountryAdminCommandHandler;
+import org.unitedlands.unitedlands.classes.BankRecordTransactionType;
+import org.unitedlands.unitedlands.classes.commandhandlers.AdminCommandHandler;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.utils.United;
@@ -17,7 +18,7 @@ import org.unitedlands.utils.United;
         usage = "/ula country deposit <country_name> <amount>",
         catchAll = true
 )
-public class CmdAdminCountryDeposit extends CountryAdminCommandHandler {
+public class CmdAdminCountryDeposit extends AdminCommandHandler {
 
     @Override
     public List<String> handleTab(CommandSender arg0, String[] args) {
@@ -48,7 +49,7 @@ public class CmdAdminCountryDeposit extends CountryAdminCommandHandler {
             return;
         }
 
-        UnitedLandsEconomyManager.instance().deposit(country.getUuid(), amount, sender.getName());
+        UnitedLandsEconomyManager.instance().deposit(country.getUuid(), amount, BankRecordTransactionType.ADMIN, sender.getName());
         United.messenger().send(sender, 
             "admin.country.deposit.success", 
             UnitedLandsEconomyManager.instance().format(amount), 

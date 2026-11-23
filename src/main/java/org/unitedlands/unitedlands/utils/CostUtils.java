@@ -88,6 +88,9 @@ public class CostUtils {
         var regionBaseUpkeep = UnitedLandsConfig.get().economy().costs().country().regionUkeepBaseCosts();
         var regionUpkeepFormula = UnitedLandsConfig.get().economy().costs().country().regionUpkeepFormula();
 
+        if (!country.hasCapital())
+            return regionBaseUpkeep;
+
         var distance = region.getHomeChunkCoordinates().distance(country.getCapital().getHomeChunkCoordinates()) * 16;
 
         Expression expression = new ExpressionBuilder(regionUpkeepFormula)
@@ -117,7 +120,7 @@ public class CostUtils {
             upkeepCosts = upkeepCosts - (upkeepCosts * discountAttribute.getCurrentValue());
         }
 
-        CountryUpkeepCalculatedEvent event = new CountryUpkeepCalculatedEvent(upkeepCosts);
+        CountryUpkeepCalculatedEvent event = new CountryUpkeepCalculatedEvent(country, upkeepCosts);
         event.callEvent();
 
         return event.getFinalCosts();

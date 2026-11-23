@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -57,6 +58,21 @@ public class SerializationUtils {
         return null;
     }
 
+    public static <T> Set<T> deserializeUuidListToSet(String serialized, Function<UUID, T> supplier) {
+        if (serialized != null) {
+            try {
+                return Arrays.stream(serialized.split("#"))
+                        .map(c -> supplier.apply(UUID.fromString(c)))
+                        .collect(Collectors.toSet());
+            } catch (Exception ex) {
+                United.logger().error("Deserialization error in deserializeUuidListToSet: " + ex.getMessage());
+                return new HashSet<T>();
+            }
+        } else {
+            return new HashSet<T>();
+        }
+    }
+
      public static String serializeUuidList(Collection<UUID> list) {
         if (list != null && !list.isEmpty()) {
             try {
@@ -101,20 +117,7 @@ public class SerializationUtils {
         }
     }
 
-    public static <T> Set<T> deserializeUuidListToSet(String serialized, Function<UUID, T> supplier) {
-        if (serialized != null) {
-            try {
-                return Arrays.stream(serialized.split("#"))
-                        .map(c -> supplier.apply(UUID.fromString(c)))
-                        .collect(Collectors.toSet());
-            } catch (Exception ex) {
-                United.logger().error("Deserialization error in deserializeUuidListToSet: " + ex.getMessage());
-                return new HashSet<T>();
-            }
-        } else {
-            return new HashSet<T>();
-        }
-    }
+
 
     public static String serializeStringIntegerMap(Map<String, Integer> map) {
         if (map != null && !map.isEmpty()) {
@@ -159,6 +162,45 @@ public class SerializationUtils {
         if (claimedTitlesSerialized == null)
             return new HashSet<>();
         return Arrays.stream(claimedTitlesSerialized.split(";")).collect(Collectors.toSet());
+    }
+
+    public static String serializeIdentifiableMap(Map<? extends Identifiable, ? extends Identifiable> map) {
+        if (map != null && !map.isEmpty()) {
+            try {
+                return map.entrySet().stream()
+                        .map(e -> e.getKey().getUuid().toString() + ":" + e.getValue().getUuid().toString())
+                        .collect(Collectors.joining("#"));
+            } catch (Exception ex) {
+                United.logger().error("Serialization error in serializeIdentifiableMap: " + ex.getMessage());
+                return null;
+            }
+        }
+        return null;
+    }
+
+    public static <K, V> Map<K, V> deserializeUuidMap(String serialized,
+                                                      Function<UUID, K> keySupplier,
+                                                      Function<UUID, V> valueSupplier) {
+        if (serialized != null && !serialized.isEmpty()) {
+            try {
+                Map<K, V> result = new LinkedHashMap<>();
+                for (String entry : serialized.split("#")) {
+                    String[] parts = entry.split(":");
+                    if (parts.length != 2) {
+                        throw new IllegalArgumentException("Invalid map entry: " + entry);
+                    }
+                    result.put(
+                            keySupplier.apply(UUID.fromString(parts[0])),
+                            valueSupplier.apply(UUID.fromString(parts[1])));
+                }
+                return result;
+            } catch (Exception ex) {
+                United.logger().error("Deserialization error in deserializeUuidMap: " + ex.getMessage());
+                return new HashMap<>();
+            }
+        } else {
+            return new HashMap<>();
+        }
     }
 
 }

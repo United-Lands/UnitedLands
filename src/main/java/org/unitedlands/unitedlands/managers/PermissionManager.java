@@ -107,6 +107,13 @@ public class PermissionManager {
         return false;
     }
 
+    public boolean hasRankPermission(String permission, Player player) {
+        var citizen = UnitedLandsDataManager.instance().getCitizen(player);
+        if (citizen == null)
+            return false;
+        return hasRankPermission(permission, citizen);
+    }
+
     public boolean hasRankPermission(String permission, Citizen citizen) {
         var requiredRanks = new HashSet<>(rankPermissions.computeIfAbsent(permission, k -> new HashSet<>()));
         var citizenRanks = new HashSet<>();
