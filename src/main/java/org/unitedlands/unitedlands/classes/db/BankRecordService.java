@@ -6,6 +6,7 @@ import java.util.concurrent.CompletableFuture;
 
 import org.unitedlands.unitedlands.classes.BankRecord;
 import org.unitedlands.unitedlands.classes.BankRecordTransactionType;
+import org.unitedlands.classes.database.BaseDbService;
 import org.unitedlands.libs.ormlite.dao.Dao;
 import org.unitedlands.libs.ormlite.stmt.QueryBuilder;
 

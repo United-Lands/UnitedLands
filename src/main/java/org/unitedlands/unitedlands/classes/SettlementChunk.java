@@ -5,7 +5,7 @@ import java.util.Set;
 import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
-import org.unitedlands.unitedlands.classes.db.Identifiable;
+import org.unitedlands.classes.database.Identifiable;
 import org.unitedlands.unitedlands.classes.interfaces.CoordinateHolder;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.utils.SerializationUtils;

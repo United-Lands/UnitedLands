@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.unitedlands.unitedlands.classes.db.Identifiable;
+import org.unitedlands.classes.database.Identifiable;
 import org.unitedlands.utils.United;
 
 public class SerializationUtils {

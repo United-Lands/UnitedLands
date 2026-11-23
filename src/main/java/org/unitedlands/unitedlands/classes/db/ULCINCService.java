@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+import org.unitedlands.classes.database.BaseDbService;
 import org.unitedlands.libs.ormlite.dao.Dao;
 import org.unitedlands.unitedlands.classes.ULCINCRecord;
 

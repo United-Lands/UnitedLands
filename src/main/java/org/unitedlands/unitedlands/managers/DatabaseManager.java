@@ -12,7 +12,6 @@ import org.unitedlands.unitedlands.classes.SettlementChunk;
 import org.unitedlands.unitedlands.classes.ULCINCRecord;
 import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.classes.db.BankRecordService;
-import org.unitedlands.unitedlands.classes.db.BaseDbService;
 import org.unitedlands.unitedlands.classes.db.CitizenService;
 import org.unitedlands.unitedlands.classes.db.CountryService;
 import org.unitedlands.unitedlands.classes.db.LoginChallengeService;
@@ -24,7 +23,7 @@ import org.unitedlands.unitedlands.classes.db.SettlementService;
 import org.unitedlands.unitedlands.classes.db.ULCINCService;
 import org.unitedlands.unitedlands.classes.webservices.LoginChallenge;
 import org.unitedlands.utils.United;
-
+import org.unitedlands.classes.database.BaseDbService;
 import org.unitedlands.libs.ormlite.dao.Dao;
 import org.unitedlands.libs.ormlite.dao.DaoManager;
 import org.unitedlands.libs.ormlite.jdbc.DataSourceConnectionSource;

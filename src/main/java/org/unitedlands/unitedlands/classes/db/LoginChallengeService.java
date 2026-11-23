@@ -3,7 +3,7 @@ package org.unitedlands.unitedlands.classes.db;
 import java.util.UUID;
 
 import org.unitedlands.unitedlands.classes.webservices.LoginChallenge;
-
+import org.unitedlands.classes.database.BaseDbService;
 import org.unitedlands.libs.ormlite.dao.Dao;
 
 public class LoginChallengeService extends BaseDbService<LoginChallenge> {

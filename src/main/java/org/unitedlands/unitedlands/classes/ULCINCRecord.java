@@ -3,7 +3,7 @@ package org.unitedlands.unitedlands.classes;
 import java.util.UUID;
 
 import org.unitedlands.libs.ormlite.field.DatabaseField;
-import org.unitedlands.unitedlands.classes.db.Identifiable;
+import org.unitedlands.classes.database.Identifiable;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 
 public class ULCINCRecord implements Identifiable {
