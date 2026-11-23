@@ -345,7 +345,7 @@ public class CmdAdminTownyImport implements UnitedCommandExecutor {
 
                     if (resident.isMayor()) {
                         citizen.addSettlementRank("mayor");
-                        citizen.save();
+                        UnitedLandsDataManager.instance().getDatabaseManager().getCitizenService().updateAsync(citizen);
                     }
                 }
 

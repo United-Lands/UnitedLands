@@ -64,6 +64,8 @@ admin:
     deposit:
       success: <success>Deposited {1} into the settlement bank of {2}.</success>
       bankruptcy-stopped: <success>Your settlement is no longer bankrupt. All commands have been enabled.</success>
+    merge:
+      is-capital: <error>{1} is the capital of {2} and cannot be merged into another settlement.</error>
     permission:
       success: <success>Settlement {1} permission {2} for {3} set to {4}.</success>
       unknown-membership: '<error>Unknown group: {1}.</error>'
@@ -309,6 +311,16 @@ player:
     no-permission: <error>Sorry, you're not allowed to fly here.</error>
     removing: <error>You are outside of an allowed flight zone. Flight will be removed in 5s unless you return to an allowed zone.</error>
     removed: <body>Flight removed.</body>
+  merge:
+    cannot-merge-foreign-settlement: <error><blue>{1}</blue> belongs to a different country. You can only merge into settlements of your own country.</error>
+    cannot-merge-self: <error>You cannot merge a settlement into itself.</error>
+    confirm: <label>Do you want to merge your settlement into <blue>{1}</blue>? All chunks, citizens and the bank balance of your settlement will be transferred and your settlement will be dissolved. <bold>This cannot be undone!</bold> The mayor of <blue>{1}</blue> still has to accept.</label>
+    request: <label><blue>{1}</blue> wants to merge into your settlement. Its chunks, citizens and bank balance will be added to your settlement. Accept?</label>
+    target-in-region: <error>Settlements outside of a region can only merge with other settlements outside of a region.</error>
+    target-is-npc: <error>This settlement has no mayor and cannot accept a merge.</error>
+    target-mayor-offline: <error>The mayor of the target settlement must be online to accept the merge.</error>
+    target-not-adjacent: <error>You can only merge into settlements in your own or a neighbouring region.</error>
+    target-not-in-region: <error>Settlements inside a region can only merge with other settlements inside a region.</error>
   money:
     paid-taxes: "<body>You paid {1} taxes to your settlement.</body>"
     balance: "<body><b>{1}</b>'s Balance: {2}</body>"
@@ -394,11 +406,13 @@ player:
       is-mayor: <error>You're the mayor of this settlement, you can't leave.</error>
       settlement-left: <success>You have left <blue>{1}</blue>.</success>
     merge:
-      broadcast: (missing)
-      confirm: (missing)
-      mayor-not-online: (missing)
-      target-has-country: (missing)
-      target-not-in-country: (missing)
+      broadcast: <success>The settlement of <blue>{2}</blue> has merged into <blue>{1}</blue>.</success>
+      confirm: <label><blue>{1}</blue> wants to merge <blue>{2}</blue> into their settlement. All chunks, citizens and the bank balance of <blue>{2}</blue> will be transferred and <blue>{2}</blue> will be dissolved. <bold>This cannot be undone!</bold> Accept?</label>
+      is-capital: <error>{1} is a country capital and cannot be merged into another settlement. Move the capital first.</error>
+      mayor-not-online: <error>The mayor of <blue>{1}</blue> must be online to accept the merge.</error>
+      target-has-country: <error><blue>{1}</blue> belongs to a country. Settlements without a country can only merge with other settlements without a country.</error>
+      target-is-npc: <error><blue>{1}</blue> has no mayor and cannot be merged.</error>
+      target-not-in-country: <error><blue>{1}</blue> is not part of your country.</error>
     not-in-settlement: <error>{1} is not a member of the settlement.</error>
     permission:
       success: <success>Settlement permission {1} for {2} set to {3}.</success>

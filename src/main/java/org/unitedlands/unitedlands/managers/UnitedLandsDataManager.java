@@ -29,10 +29,21 @@ import org.unitedlands.unitedlands.classes.Settlement;
 import org.unitedlands.unitedlands.classes.SettlementChunk;
 import org.unitedlands.unitedlands.classes.ULCINCRecord;
 import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
+import org.unitedlands.unitedlands.classes.events.DataLoadedEvent;
+import org.unitedlands.unitedlands.classes.events.citizen.CitizenUpdatedEvent;
 import org.unitedlands.unitedlands.classes.events.country.CountryCreatedEvent;
 import org.unitedlands.unitedlands.classes.events.country.CountryPreRemoveEvent;
 import org.unitedlands.unitedlands.classes.events.country.CountryRemovedEvent;
+import org.unitedlands.unitedlands.classes.events.country.CountryUpdatedEvent;
+import org.unitedlands.unitedlands.classes.events.region.RegionCreatedEvent;
+import org.unitedlands.unitedlands.classes.events.region.RegionRemovedEvent;
+import org.unitedlands.unitedlands.classes.events.region.RegionUpdatedEvent;
 import org.unitedlands.unitedlands.classes.events.settlement.SettlementCreatedEvent;
+import org.unitedlands.unitedlands.classes.events.settlement.SettlementRemovedEvent;
+import org.unitedlands.unitedlands.classes.events.settlement.SettlementUpdatedEvent;
+import org.unitedlands.unitedlands.classes.events.settlementchunk.SettlementChunkCreatedEvent;
+import org.unitedlands.unitedlands.classes.events.settlementchunk.SettlementChunkRemovedEvent;
+import org.unitedlands.unitedlands.classes.events.settlementchunk.SettlementChunkUpdatedEvent;
 import org.unitedlands.unitedlands.utils.CoordinateUtils;
 import org.unitedlands.utils.United;
 
@@ -94,10 +105,7 @@ public class UnitedLandsDataManager {
 
             validateGeopolAttributes();
 
-            IntegrationManager.instance().getMapRenderer().setDebugMode(false);
-            IntegrationManager.instance().getMapRenderer().addSettlementsToRenderQueue(getSettlements());
-            IntegrationManager.instance().getMapRenderer().addRegionsToRenderQueue(getRegions());
-            IntegrationManager.instance().getMapRenderer().addCountriesToRenderQueue(getCountries());
+            new DataLoadedEvent().callEvent();
 
         } catch (Exception ex) {
             United.logger().error("Initialization failed: " + ex.getMessage(), "UnitedLands");
@@ -171,10 +179,6 @@ public class UnitedLandsDataManager {
     public void buildCountries(List<Country> loadedCountries) {
         for (var country : loadedCountries) {
             countries.put(country.getUuid(), country);
-
-            if (country.getIconPosition() != null)
-                IntegrationManager.instance().getMapRenderer().registerIcon(country.getUuid().toString(),
-                        country.getUuid().toString() + ".png");
         }
         United.logger().info("Loaded " + countries.size() + " countries to memory.", "UnitedLands");
     }
@@ -270,8 +274,9 @@ public class UnitedLandsDataManager {
         registerCitizen(citizen);
     }
 
-    public void updateCitizenDbData(Citizen citizen) {
+    public void saveCitizen(Citizen citizen) {
         databaseManager.getCitizenService().updateAsync(citizen);
+        new CitizenUpdatedEvent(citizen).callEvent();
     }
 
     public void updateCitizenDbData(Collection<Citizen> citizens) {
@@ -376,10 +381,9 @@ public class UnitedLandsDataManager {
                     new GeopolAttribute(UnitedLandsConfig.get().geopolAttributeDefaults().settlement().get(key)));
         }
 
-        UnitedLandsDataManager.instance().createSettlementDbData(settlement);
-
         UnitedLandsEconomyManager.instance().createAccount(settlement.getUuid(), settlement.getName());
-        (new SettlementCreatedEvent(settlement)).callEvent();
+
+        UnitedLandsDataManager.instance().createSettlementDbData(settlement);
 
         return settlement;
     }
@@ -451,7 +455,7 @@ public class UnitedLandsDataManager {
         databaseManager.getSettlementService().createAsync(settlement);
         databaseManager.getSettlementChunkService().createAllAsync(settlement.getChunks());
         registerSettlement(settlement);
-        IntegrationManager.instance().getMapRenderer().addToRenderQueue(settlement);
+        new SettlementCreatedEvent(settlement).callEvent();
     }
 
     public CompletableFuture<Void> createSettlementDbDataAsync(Settlement settlement) {
@@ -460,11 +464,9 @@ public class UnitedLandsDataManager {
         return CompletableFuture.allOf(settlementFuture, settlementChunkFuture);
     }
 
-    public void updateSettlementDbData(Settlement settlement, boolean render) {
+    public void saveSettlement(Settlement settlement, boolean visualChange) {
         databaseManager.getSettlementService().updateAsync(settlement);
-
-        if (render)
-            IntegrationManager.instance().getMapRenderer().addToRenderQueue(settlement);
+        new SettlementUpdatedEvent(settlement, visualChange).callEvent();
     }
 
     public void removeSettlementDbData(Settlement settlement) {
@@ -473,7 +475,7 @@ public class UnitedLandsDataManager {
 
         unregisterSettlement(settlement);
 
-        IntegrationManager.instance().getMapRenderer().removeSettlement(settlement);
+        new SettlementRemovedEvent(settlement).callEvent();
     }
 
     // Cache operations
@@ -544,18 +546,19 @@ public class UnitedLandsDataManager {
         databaseManager.getSettlementChunkService().createAsync(settlementChunk);
         registerSettlementChunk(settlementChunk);
 
-        IntegrationManager.instance().getMapRenderer().addToRenderQueue(settlementChunk.getSettlement());
+        new SettlementChunkCreatedEvent(settlementChunk.getSettlement(), settlementChunk).callEvent();
     }
 
-    public void updateSettlementChunkDbData(SettlementChunk settlementChunk) {
+    public void saveSettlementChunk(SettlementChunk settlementChunk) {
         databaseManager.getSettlementChunkService().updateAsync(settlementChunk);
+        new SettlementChunkUpdatedEvent(settlementChunk.getSettlement(), settlementChunk).callEvent();
     }
 
     public void removeSettlementChunkDbData(SettlementChunk settlementChunk) {
         databaseManager.getSettlementChunkService().deleteAsync(settlementChunk);
         unregisterSettlementChunk(settlementChunk);
 
-        IntegrationManager.instance().getMapRenderer().addToRenderQueue(settlementChunk.getSettlement());
+        new SettlementChunkRemovedEvent(settlementChunk.getSettlement(), settlementChunk).callEvent();
     }
 
     // Cache operations
@@ -589,27 +592,19 @@ public class UnitedLandsDataManager {
     public void createRegionDbData(Region region) {
         databaseManager.getRegionService().createAsync(region);
         registerRegion(region);
-        queueRegionRender(region);
+        new RegionCreatedEvent(region).callEvent();
     }
 
-    public void updateRegionDbData(Region region, boolean render) {
+    public void saveRegion(Region region, boolean visualChange) {
         databaseManager.getRegionService().updateAsync(region);
-        if (render)
-            queueRegionRender(region);
+        new RegionUpdatedEvent(region, visualChange).callEvent();
     }
 
     public void removeRegionDbData(Region region) {
         databaseManager.getRegionService().deleteAsync(region);
         unregisterRegion(region);
         buildRegionIndex();
-        IntegrationManager.instance().getMapRenderer().removeRegion(region);
-    }
-
-    private void queueRegionRender(Region region) {
-        for (var settlement : region.getSettlements()) {
-            IntegrationManager.instance().getMapRenderer().addToRenderQueue(settlement);
-        }
-        IntegrationManager.instance().getMapRenderer().addToRenderQueue(region);
+        new RegionRemovedEvent(region).callEvent();
     }
 
     // Cache operations
@@ -713,11 +708,9 @@ public class UnitedLandsDataManager {
                     new GeopolAttribute(UnitedLandsConfig.get().geopolAttributeDefaults().country().get(key)));
         }
 
-        UnitedLandsDataManager.instance().createCountryDbData(country);
-
         UnitedLandsEconomyManager.instance().createAccount(country.getUuid(), country.getName());
 
-        (new CountryCreatedEvent(country)).callEvent();
+        UnitedLandsDataManager.instance().createCountryDbData(country);
 
         return country;
     }
@@ -747,8 +740,6 @@ public class UnitedLandsDataManager {
         UnitedLandsDataManager.instance().removeCountryDbData(country);
 
         United.messenger().broadcast("general-broadcasts.country-removed", country.getCleanName());
-
-        (new CountryRemovedEvent(country)).callEvent();
     }
 
     // Database operations
@@ -761,32 +752,18 @@ public class UnitedLandsDataManager {
     public void createCountryDbData(Country country) {
         databaseManager.getCountryService().createAsync(country);
         registerCountry(country);
-        queueCountryRender(country);
+        new CountryCreatedEvent(country).callEvent();
     }
 
-    public void updateCountryDbData(Country country, boolean render) {
+    public void saveCountry(Country country, boolean visualChange) {
         databaseManager.getCountryService().updateAsync(country);
-        if (render)
-            queueCountryRender(country);
-    }
-
-    private void queueCountryRender(Country country) {
-        for (var region : country.getRegions()) {
-            for (var settlement : region.getSettlements()) {
-                IntegrationManager.instance().getMapRenderer().addToRenderQueue(settlement);
-            }
-            IntegrationManager.instance().getMapRenderer().addToRenderQueue(region);
-        }
-        IntegrationManager.instance().getMapRenderer().addToRenderQueue(country);
-        if (country.getOverlord() != null) {
-            queueCountryRender(country.getOverlord());
-        }
+        new CountryUpdatedEvent(country, visualChange).callEvent();
     }
 
     public void removeCountryDbData(Country country) {
         databaseManager.getCountryService().deleteAsync(country);
         unregisterCountry(country);
-        IntegrationManager.instance().getMapRenderer().removeCountry(country);
+        new CountryRemovedEvent(country).callEvent();
     }
 
     // Cache operations

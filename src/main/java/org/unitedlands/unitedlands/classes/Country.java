@@ -11,7 +11,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.unitedlands.unitedlands.UnitedLands;
-import org.unitedlands.unitedlands.managers.DisplayManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.utils.ColorUtils;
 import org.unitedlands.unitedlands.utils.CostUtils;
@@ -348,16 +347,12 @@ public class Country extends GeopolObject {
 
     @Override
     public void save() {
-        for (var settlement : getSettlements())
-            DisplayManager.instance().refreshSettlementDisplay(settlement);
-        UnitedLandsDataManager.instance().updateCountryDbData(this, false);
+        UnitedLandsDataManager.instance().saveCountry(this, false);
     }
 
     @Override
     public void saveAndRender() {
-        for (var settlement : getSettlements())
-            DisplayManager.instance().refreshSettlementDisplay(settlement);
-        UnitedLandsDataManager.instance().updateCountryDbData(this, true);
+        UnitedLandsDataManager.instance().saveCountry(this, true);
     }
 
 }

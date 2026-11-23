@@ -37,6 +37,12 @@ public class CmdAdminSettlementMerge implements UnitedCommandExecutor {
             return;
         }
 
+        if (targetSettlement.isCapital()) {
+            United.messenger().send(sender, "admin.settlement.merge.is-capital", targetSettlement.getCleanName(),
+                    targetSettlement.getCountry().getCleanName());
+            return;
+        }
+
         UnitedLandsDataManager.instance().mergeSettlements(sourceSettlement, targetSettlement);
 
         // TODO: Message

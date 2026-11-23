@@ -1,18 +1,14 @@
 package org.unitedlands.unitedlands.commands.handlers.settlement;
 
 import java.util.List;
-import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.unitedlands.annotations.UnitedSubCommand;
-import org.unitedlands.unitedlands.classes.BankRecordTransactionType;
 import org.unitedlands.unitedlands.classes.Confirmation;
 import org.unitedlands.unitedlands.classes.commandhandlers.SettlementCommandHandler;
 
-import org.unitedlands.unitedlands.managers.IntegrationManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
-import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.utils.United;
 
 @UnitedSubCommand(
@@ -51,63 +47,46 @@ public class CmdSettlementMerge extends SettlementCommandHandler {
             return;
         }
 
+        if (targetSettlement.isCapital()) {
+            United.messenger().send(sender, "player.settlement.merge.is-capital", targetSettlement.getCleanName());
+            return;
+        }
+
         var targetMayor = targetSettlement.getMayor();
-        if (!targetMayor.getPlayer().isOnline()) {
-            United.messenger().send(sender, "player.settlement.merge.mayor-not-online");
+        if (targetMayor == null) {
+            United.messenger().send(sender, "player.settlement.merge.target-is-npc", targetSettlement.getCleanName());
+            return;
+        }
+
+        var targetMayorPlayer = targetMayor.getPlayer();
+        if (targetMayorPlayer == null || !targetMayorPlayer.isOnline()) {
+            United.messenger().send(sender, "player.settlement.merge.mayor-not-online", targetSettlement.getCleanName());
             return;
         }
 
         if (context.settlement().hasCountry()) {
             if (!context.settlement().getCountry().equals(targetSettlement.getCountry())) {
-                United.messenger().send(sender, "player.settlement.merge.target-not-in-country", context.settlement().getCleanName());
+                United.messenger().send(sender, "player.settlement.merge.target-not-in-country", targetSettlement.getCleanName());
                 return;
             }
         } else {
             if (targetSettlement.hasCountry()) {
-                United.messenger().send(sender, "player.settlement.merge.target-has-country", context.settlement().getCleanName());
+                United.messenger().send(sender, "player.settlement.merge.target-has-country", targetSettlement.getCleanName());
                 return;
             }
         }
 
         Confirmation confirmation = new Confirmation("merge-settlement");
         confirmation.setRunnable(() -> {
-            for (var chunk : targetSettlement.getChunks()) {
-                context.settlement().addChunk(chunk);
-                chunk.setSettlement(context.settlement());
-                chunk.save();
-            }
-            for (var citizen : targetSettlement.getCitizens()) {
-                citizen.setSettlement(context.settlement());
-                citizen.removeSettlementRanks();
-                citizen.save();
-            }
-
-            if (targetSettlement.hasRegion()) {
-                var region = targetSettlement.getRegion();
-                region.removeSettlement(targetSettlement);
-            }
-            if (targetSettlement.hasCountry()) {
-                var country = targetSettlement.getCountry();
-                country.removeSettlement(targetSettlement);
-            }
-
-            UnitedLandsEconomyManager.instance().deposit(context.settlement().getUuid(),
-                    UnitedLandsEconomyManager.instance().getBalance(targetSettlement.getUuid()),
-                    BankRecordTransactionType.SYSTEM,
-                    "Merging of settlement bank of " + targetSettlement.getName());
-            UnitedLandsEconomyManager.instance().deleteAccount(targetSettlement.getUuid());
-
             var targetSettlementName = targetSettlement.getCleanName();
-            UnitedLandsDataManager.instance().removeSettlementDbData(targetSettlement);
-
-            IntegrationManager.instance().getMapRenderer().removeSettlement(targetSettlement);
+            UnitedLandsDataManager.instance().mergeSettlements(context.settlement(), targetSettlement);
 
             United.messenger().send(Bukkit.getServer(), "player.settlement.merge.broadcast", context.settlement().getCleanName(), targetSettlementName);
         })
-                .setTitle("player.settlement.merge.CONFIRM")
-                .setReplacements(Map.of("settlement", context.settlement().getCleanName()))
+                .setTitle(United.messenger().get("player.settlement.merge.confirm",
+                        context.settlement().getCleanName(), targetSettlement.getCleanName()))
                 .setSender((Player) sender)
-                .setReceiver(targetMayor.getPlayer())
+                .setReceiver(targetMayorPlayer)
                 .send();
 
     }

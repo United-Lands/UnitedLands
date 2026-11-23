@@ -30,6 +30,11 @@ public class CmdAdminSettlementDelete extends AdminCommandHandler {
             return;
         }
 
+        if (settlement.isCapital()) {
+            United.messenger().send(sender, "admin.settlement.delete.is-capital");
+            return;
+        }
+
         UnitedLandsDataManager.instance().removeSettlement(settlement);
      
         United.messenger().send(Bukkit.getServer(), "admin.settlement.delete.success", settlement.getCleanName());

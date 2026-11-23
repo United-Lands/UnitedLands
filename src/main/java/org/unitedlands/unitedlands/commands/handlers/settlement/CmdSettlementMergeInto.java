@@ -48,7 +48,12 @@ public class CmdSettlementMergeInto extends SettlementCommandHandler {
 
         if (targetSettlement.equals(context.settlement())) {
             United.messenger().send(sender, "player.merge.cannot-merge-self");
-            return;  
+            return;
+        }
+
+        if (context.settlement().isCapital()) {
+            United.messenger().send(sender, "player.settlement.merge.is-capital", context.settlement().getCleanName());
+            return;
         }
 
         if (targetSettlement.getMayor() == null) {
@@ -56,7 +61,8 @@ public class CmdSettlementMergeInto extends SettlementCommandHandler {
             return;  
         }
 
-        if (!targetSettlement.getMayor().getPlayer().isOnline()) {
+        var targetMayorPlayer = targetSettlement.getMayor().getPlayer();
+        if (targetMayorPlayer == null || !targetMayorPlayer.isOnline()) {
             United.messenger().send(sender, "player.merge.target-mayor-offline");
             return;  
         }
@@ -103,9 +109,9 @@ public class CmdSettlementMergeInto extends SettlementCommandHandler {
 
                 UnitedLandsDataManager.instance().mergeSettlements(targetSettlement, context.settlement());
 
-                United.messenger().send(Bukkit.getServer(), "player.settlement.merge.broadcast", 
-                    context.settlement().getCleanName(), 
-                    targetSettlement.getCleanName());
+                United.messenger().send(Bukkit.getServer(), "player.settlement.merge.broadcast",
+                    targetSettlement.getCleanName(),
+                    context.settlement().getCleanName());
 
             })
             .setTitle(requestStr)

@@ -297,7 +297,7 @@ public class Citizen implements Identifiable, MetadataHolder {
     }
 
     public void save() {
-        UnitedLandsDataManager.instance().updateCitizenDbData(this);
+        UnitedLandsDataManager.instance().saveCitizen(this);
     }
 
     @Override

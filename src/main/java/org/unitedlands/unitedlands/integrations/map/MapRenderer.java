@@ -33,6 +33,26 @@ public interface MapRenderer {
 
     void addCountriesToRenderQueue(Collection<Country> countries);
 
+    default void addRegionWithDependentsToRenderQueue(Region region) {
+        for (var settlement : region.getSettlements()) {
+            addToRenderQueue(settlement);
+        }
+        addToRenderQueue(region);
+    }
+
+    default void addCountryWithDependentsToRenderQueue(Country country) {
+        for (var region : country.getRegions()) {
+            for (var settlement : region.getSettlements()) {
+                addToRenderQueue(settlement);
+            }
+            addToRenderQueue(region);
+        }
+        addToRenderQueue(country);
+        if (country.getOverlord() != null) {
+            addCountryWithDependentsToRenderQueue(country.getOverlord());
+        }
+    }
+
     void removeSettlement(Settlement settlement);
 
     void removeRegion(Region region);

@@ -14,7 +14,6 @@ import org.unitedlands.unitedlands.UnitedLands;
 import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.classes.events.settlement.SettlementPreClaimEvent;
 import org.unitedlands.unitedlands.managers.DisplayManager;
-import org.unitedlands.unitedlands.managers.PlayerCacheManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.utils.ColorUtils;
 import org.unitedlands.unitedlands.utils.CoordinateUtils;
@@ -685,16 +684,12 @@ public class Settlement extends GeopolObject implements PermissionHolder {
 
     @Override
     public void save() {
-        PlayerCacheManager.instance().refreshMembershipsForSettlement(this);
-        DisplayManager.instance().refreshSettlementDisplay(this);
-        UnitedLandsDataManager.instance().updateSettlementDbData(this, false);
+        UnitedLandsDataManager.instance().saveSettlement(this, false);
     }
 
     @Override
     public void saveAndRender() {
-        PlayerCacheManager.instance().refreshMembershipsForSettlement(this);
-        DisplayManager.instance().refreshSettlementDisplay(this);
-        UnitedLandsDataManager.instance().updateSettlementDbData(this, true);
+        UnitedLandsDataManager.instance().saveSettlement(this, true);
     }
 
 }
