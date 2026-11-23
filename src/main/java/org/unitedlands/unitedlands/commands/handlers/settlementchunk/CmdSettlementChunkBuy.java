@@ -6,9 +6,8 @@ import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.unitedlands.classes.BankRecordTransactionType;
 import org.unitedlands.unitedlands.classes.commandhandlers.SettlementChunkCommandHandler;
-import org.unitedlands.unitedlands.classes.events.settlementChunk.SettlementChunkPrePurchaseEvent;
-import org.unitedlands.unitedlands.classes.events.settlementChunk.SettlementChunkPurchaseEvent;
-
+import org.unitedlands.unitedlands.classes.events.settlementchunk.SettlementChunkPrePurchaseEvent;
+import org.unitedlands.unitedlands.classes.events.settlementchunk.SettlementChunkPurchaseEvent;
 import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.utils.United;
 

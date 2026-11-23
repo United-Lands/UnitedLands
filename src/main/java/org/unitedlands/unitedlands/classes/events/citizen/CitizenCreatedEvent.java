@@ -1,4 +1,4 @@
-package org.unitedlands.unitedlands.classes.events.cititen;
+package org.unitedlands.unitedlands.classes.events.citizen;
 
 import org.unitedlands.unitedlands.classes.Citizen;
 import org.unitedlands.unitedlands.classes.events.base.CitizenEvent;

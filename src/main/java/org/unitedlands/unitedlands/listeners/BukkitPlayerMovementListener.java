@@ -22,7 +22,7 @@ import org.unitedlands.unitedlands.classes.Settlement;
 import org.unitedlands.unitedlands.classes.SettlementChunk;
 import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.classes.events.base.PlayerChangeChunkEvent;
-import org.unitedlands.unitedlands.classes.events.cititen.CitizenCreatedEvent;
+import org.unitedlands.unitedlands.classes.events.citizen.CitizenCreatedEvent;
 import org.unitedlands.unitedlands.classes.events.player.PlayerEnterRegionEvent;
 import org.unitedlands.unitedlands.classes.events.player.PlayerEnterSettlementEvent;
 import org.unitedlands.unitedlands.classes.events.player.PlayerExitRegionEvent;

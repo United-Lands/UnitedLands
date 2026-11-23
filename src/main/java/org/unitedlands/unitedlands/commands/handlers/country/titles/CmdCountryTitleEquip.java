@@ -22,9 +22,9 @@ public class CmdCountryTitleEquip extends CountryCommandHandler {
     @Override
     public List<String> handleTab(CommandSender sender, String[] args) {
         if (args.length == 1) {
-            var cititen = getCitizen((Player) sender);
-            if (cititen != null) {
-                var country = getCitizenCountry(cititen);
+            var citizen = getCitizen((Player) sender);
+            if (citizen != null) {
+                var country = getCitizenCountry(citizen);
                 if (country != null) {
                     return country.getClaimedTitles().stream().toList();
                 }

@@ -1,4 +1,4 @@
-package org.unitedlands.unitedlands.classes.events.settlementChunk;
+package org.unitedlands.unitedlands.classes.events.settlementchunk;
 
 import org.unitedlands.unitedlands.classes.Settlement;
 import org.unitedlands.unitedlands.classes.SettlementChunk;
