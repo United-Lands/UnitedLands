@@ -91,8 +91,7 @@ public class CmdAdminCountryModifiersAdd extends AdminCommandHandler {
         country.addAttributeModifier(attrModifier);
         country.save();
 
-        // TODO: Move strings to config
-        United.messenger().sendRaw(sender, "<green>Attribute modifier added to " + country.getCleanName());
+        United.messenger().send(sender, "admin.country.addmodifier.success", country.getCleanName());
 
     }
 

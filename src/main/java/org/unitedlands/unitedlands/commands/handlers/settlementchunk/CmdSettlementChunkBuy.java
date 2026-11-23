@@ -33,7 +33,7 @@ public class CmdSettlementChunkBuy extends SettlementChunkCommandHandler {
             return;
 
         if (!context.settlementChunk().isForSale()) {
-            United.messenger().send(context.player(), "player.settlementchunk.buy.not_for_sale");
+            United.messenger().send(context.player(), "player.settlementchunk.buy.not-for-sale");
             return;
         }
 

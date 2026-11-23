@@ -43,9 +43,10 @@ public class CmdAdminSettlementMerge implements UnitedCommandExecutor {
             return;
         }
 
+        var targetName = targetSettlement.getCleanName();
         UnitedLandsDataManager.instance().mergeSettlements(sourceSettlement, targetSettlement);
 
-        // TODO: Message
+        United.messenger().send(sender, "admin.settlement.merge.success", targetName, sourceSettlement.getCleanName());
     }
 
     @Override

@@ -1,7 +1,6 @@
 package org.unitedlands.unitedlands.commands.handlers.settlement;
 
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -43,8 +42,7 @@ public class CmdSettlementDelete extends SettlementCommandHandler {
             UnitedLandsDataManager.instance().removeSettlement(context.settlement());
             United.messenger().send(Bukkit.getServer(), "player.settlement.delete.broadcast-message", context.settlement().getCleanName());
         })
-                .setTitle("player.settlement.delete.CONFIRM")
-                .setReplacements(Map.of("settlement", context.settlement().getCleanName()))
+                .setTitle(United.messenger().get("player.settlement.delete.confirm", context.settlement().getCleanName()))
                 .setSender(context.player())
                 .setReceiver(context.player())
                 .send();

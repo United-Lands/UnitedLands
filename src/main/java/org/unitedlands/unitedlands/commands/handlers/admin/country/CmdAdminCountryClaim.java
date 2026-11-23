@@ -45,11 +45,11 @@ public class CmdAdminCountryClaim extends AdminCommandHandler {
         }
 
         long claimDuration = 0;
-        if (args.length > 1) {
+        if (args.length > 2) {
             try {
                 claimDuration = Long.parseLong(args[2]);
             } catch (Exception ex) {
-                United.messenger().send(player, "general-errors.wrong-number-format");
+                United.messenger().send(player, "general-errors.wrong-number-format", args[2]);
             }
         }
 

@@ -1,7 +1,6 @@
 package org.unitedlands.unitedlands.commands.handlers.settlement;
 
 import java.text.SimpleDateFormat;
-import java.util.Map;
 
 import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
@@ -33,8 +32,7 @@ public class CmdSettlementBankHistory extends SettlementCommandHandler {
             try {
                 startIndex = (Integer.parseInt(args[0]) - 1);
             } catch (Exception ex) {
-                United.messenger().send(context.player(), "general-errors.wrong-number-format",
-                        Map.of("input", args[0]));
+                United.messenger().send(context.player(), "general-errors.wrong-number-format", args[0]);
                 return;
             }
         }

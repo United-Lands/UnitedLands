@@ -32,7 +32,7 @@ public class CmdAdminSettlementRankRemove extends AdminCommandHandler {
                 if (settlement != null)
                     return settlement.getCitizens().stream().map(Citizen::getName).collect(Collectors.toList());
             case 3:
-                return PermissionManager.instance().getCountryRanks();
+                return PermissionManager.instance().getSettlementRanks();
         }
         return null;
     }

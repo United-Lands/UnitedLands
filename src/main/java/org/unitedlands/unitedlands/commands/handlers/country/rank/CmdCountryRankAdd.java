@@ -88,8 +88,6 @@ public class CmdCountryRankAdd extends CountryCommandHandler {
             if (!hasPermission("country.manage.ranks.leader", context.citizen()))
                 return;
 
-            // TODO: Move strings to config
-
             var confirmation = new Confirmation("new-leader");
             confirmation.setRunnable(() -> {
 

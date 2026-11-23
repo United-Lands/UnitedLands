@@ -48,8 +48,6 @@ public class CitizenInfoScreen extends InfoScreen {
 
         if (metadata != null && !metadata.isEmpty()) {
 
-            var metaDataWrapper = United.messenger().get("info-screens.citizen.metadata");
-
             List<String> fields = new ArrayList<>();
             for (var m : metadata.values()) {
                 if (!m.showInScreens())
@@ -74,7 +72,7 @@ public class CitizenInfoScreen extends InfoScreen {
             }
 
             if (!fields.isEmpty()) {
-                var finalMetaDataString = metaDataWrapper.replace("{metadata}",
+                var finalMetaDataString = United.messenger().get("info-screens.citizen.metadata",
                         String.join("<dark_gray> | </dark_gray>", fields));
                 var metadataComponent = United.miniMessage().get().deserialize(finalMetaDataString);
                 addComponent("metadata", metadataComponent);

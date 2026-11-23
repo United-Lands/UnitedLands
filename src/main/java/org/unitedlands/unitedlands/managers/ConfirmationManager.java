@@ -29,9 +29,8 @@ public class ConfirmationManager {
 
         confirmations.add(confirmation);
 
-        // TODO: move strings to config
         if (!confirmation.getSender().equals(confirmation.getReceiver()))
-            United.messenger().sendRaw(confirmation.getSender(), "Your request has been sent.");
+            United.messenger().send(confirmation.getSender(), "confirmation.request-sent");
 
     }
 
@@ -44,9 +43,8 @@ public class ConfirmationManager {
         if (confirmation == null)
             return;
 
-        // TODO: Move string to config
         if (!confirmation.getSender().equals(confirmation.getReceiver()))
-            United.messenger().sendRaw(confirmation.getSender(), "<red>Your request was rejected.</red>");
+            United.messenger().send(confirmation.getSender(), "confirmation.request-rejected");
 
         confirmations.remove(confirmation);
     }

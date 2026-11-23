@@ -39,7 +39,7 @@ public class CmdCountryDelete extends CountryCommandHandler {
             United.messenger().send(Bukkit.getServer(), "player.country.delete.broadcast-message", context.country().getCleanName());
 
         })
-                .setTitle(United.messenger().get("player.country.delete.delete-confirm", context.country().getCleanName()))
+                .setTitle(United.messenger().get("player.country.delete.confirm", context.country().getCleanName()))
                 .setSender(context.player())
                 .setReceiver(context.player())
                 .send();

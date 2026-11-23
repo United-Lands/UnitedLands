@@ -1,7 +1,6 @@
 package org.unitedlands.unitedlands.commands.handlers.settlement;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
@@ -44,7 +43,7 @@ public class CmdSettlementInvite extends SettlementCommandHandler {
 
         var targetPlayer = Bukkit.getPlayerExact(args[0]);
         if (targetPlayer == null || !targetPlayer.isOnline()) {
-            United.messenger().send(context.player(), "general-errors.player-not-found");
+            United.messenger().send(context.player(), "general-errors.player-not-found", args[0]);
             return;
         }
 
@@ -69,8 +68,7 @@ public class CmdSettlementInvite extends SettlementCommandHandler {
             United.messenger().send(context.settlement().getOnlinePlayers(), "player.settlement.invite.player-joined", targetPlayer.getName());
             United.messenger().send(targetPlayer, "player.settlement.invite.player-message", context.settlement().getCleanName());
         })
-                .setTitle("player.settlement.invite.invite-message")
-                .setReplacements(Map.of("settlement", context.settlement().getCleanName()))
+                .setTitle(United.messenger().get("player.settlement.invite.invite-message", context.settlement().getCleanName()))
                 .setSender(context.player())
                 .setReceiver(targetPlayer)
                 .send();

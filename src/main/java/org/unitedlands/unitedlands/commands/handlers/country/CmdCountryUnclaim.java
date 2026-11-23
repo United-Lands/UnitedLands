@@ -59,7 +59,7 @@ public class CmdCountryUnclaim extends CountryCommandHandler {
                     var confirmTitle = United.messenger().get("player.country.unclaim.confirm");
                     var countrySettlements = region.getSettlements(context.country());
                     if (countrySettlements.size() > 0) {
-                        confirmTitle += " " + United.messenger().get("player.country.unclaim.confirm-warn-settlement");
+                        confirmTitle += " " + United.messenger().get("player.country.unclaim.confirm-warn-settlements");
                         var citizen = UnitedLandsDataManager.instance().getCitizen(player);
                         if (citizen != null && countrySettlements.stream().anyMatch(s -> s.getCitizens().contains(citizen))) {
                             confirmTitle += " " + United.messenger().get("player.country.unclaim.confirm-warn-leader");
@@ -84,7 +84,7 @@ public class CmdCountryUnclaim extends CountryCommandHandler {
                         context.country().removeRegion(region);
                         context.country().saveAndRender();
 
-                        United.messenger().send(context.player(), "player.country.unclaim.success");
+                        United.messenger().send(context.player(), "player.country.unclaim.success", region.getCleanName());
                     })
                             .setTitle(confirmTitle)
                             .setSender(player)
@@ -96,7 +96,7 @@ public class CmdCountryUnclaim extends CountryCommandHandler {
                 if (region.getClaimantCountry() != null) {
                     if (!context.country().equals(region.getClaimantCountry())) {
                         // Being claimed, but by someone else
-                        United.messenger().send(context.player(), "player.country.unclaim.other-country-claiming");
+                        United.messenger().send(context.player(), "player.country.unclaim.other-country-claiming", region.getClaimantCountry().getCleanName());
                         return;
                     } else {
                         // Being claimed by country

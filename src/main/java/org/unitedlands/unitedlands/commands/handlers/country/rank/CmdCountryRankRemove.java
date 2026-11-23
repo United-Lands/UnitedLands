@@ -65,7 +65,7 @@ public class CmdCountryRankRemove extends CountryCommandHandler {
 
         var targetPlayer = Bukkit.getPlayer(args[0]);
         if (targetPlayer == null) {
-            United.messenger().send(context.player(), "general-errors.player-not-found");
+            United.messenger().send(context.player(), "general-errors.player-not-found", args[0]);
             return;
         }
 

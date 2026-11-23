@@ -53,7 +53,7 @@ public class CmdChannelUnblock implements UnitedCommandExecutor {
 
         var targetPlayer = Bukkit.getPlayerExact(args[0]);
         if (targetPlayer == null || !targetPlayer.isOnline()) {
-            United.messenger().send(player, "general-errors.player-not-found");
+            United.messenger().send(player, "general-errors.player-not-found", args[0]);
             return;
         }
 

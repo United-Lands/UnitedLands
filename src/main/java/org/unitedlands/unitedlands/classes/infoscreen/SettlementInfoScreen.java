@@ -108,8 +108,6 @@ public class SettlementInfoScreen extends InfoScreen {
 
         if (metadata != null && !metadata.isEmpty()) {
 
-            var metaDataWrapper = "info-screens.settlement.metadata";
-
             List<String> fields = new ArrayList<>();
             for (var m : metadata.values()) {
                 if (!m.showInScreens())
@@ -134,7 +132,7 @@ public class SettlementInfoScreen extends InfoScreen {
             }
 
             if (!fields.isEmpty()) {
-                var finalMetaDataString = metaDataWrapper.replace("{metadata}",
+                var finalMetaDataString = United.messenger().get("info-screens.settlement.metadata",
                         String.join("<dark_gray> | </dark_gray>", fields));
                 addComponent("metadata", United.miniMessage().get().deserialize(finalMetaDataString));
             }

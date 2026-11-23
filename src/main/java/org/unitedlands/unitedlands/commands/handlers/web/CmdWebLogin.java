@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.registrars.command.UnitedCommandExecutor;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
+import org.unitedlands.utils.United;
 
 @UnitedSubCommand(
         parent = CmdWeb.class,
@@ -30,12 +31,12 @@ public class CmdWebLogin implements UnitedCommandExecutor {
         var loginChallenge = UnitedLandsDataManager.instance().getDatabaseManager().getLoginChallengeService()
                 .getByCode(code);
         if (loginChallenge == null) {
-            // TODO: Errors
+            United.messenger().send(sender, "web.login.invalid-code");
             return;
         }
 
         if (System.currentTimeMillis() > loginChallenge.getExpiresAt()) {
-            // TODO: Errors
+            United.messenger().send(sender, "web.login.code-expired");
             return;
         }
 

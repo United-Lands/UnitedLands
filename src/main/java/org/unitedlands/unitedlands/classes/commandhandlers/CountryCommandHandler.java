@@ -58,7 +58,7 @@ public class CountryCommandHandler implements UnitedCommandExecutor {
     protected Citizen getCitizen(Player player) {
         var citizen = UnitedLandsDataManager.instance().getCitizen(player);
         if (citizen == null) {
-            United.messenger().send(player, "general-errors.no-citizen-data");
+            United.messenger().send(player, "general-errors.no-citizen-data", player.getName());
             return null;
         }
         return citizen;
@@ -66,7 +66,7 @@ public class CountryCommandHandler implements UnitedCommandExecutor {
 
     protected Country getCitizenCountry(Citizen citizen) {
         if (citizen.getCountry() == null) {
-            United.messenger().send((Player) citizen.getPlayer(), "general-errors.player-not-in-country");
+            United.messenger().send((Player) citizen.getPlayer(), "general-errors.not-in-country");
             return null;
         }
         return citizen.getCountry();

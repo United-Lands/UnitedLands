@@ -54,8 +54,7 @@ public class CmdAdminCountryModifiersRemove extends AdminCommandHandler {
 
         country.removeAttributeModifiers(args[1], args[2]);
 
-        // TODO: Move strings to config
-        United.messenger().sendRaw(sender, "<green>Removed all modifiers for attribute " + args[1] + " with key " + args[2]);
+        United.messenger().send(sender, "admin.country.removemodifier.success", args[1], args[2], country.getCleanName());
 
     }
 

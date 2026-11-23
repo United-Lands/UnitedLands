@@ -1,7 +1,6 @@
 package org.unitedlands.unitedlands.commands.handlers.settlement;
 
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -60,8 +59,7 @@ public class CmdSettlementJoinCountry extends SettlementCommandHandler {
             United.messenger().send(Bukkit.getServer(), "player.settlement.joincountry.broadcast-message", context.settlement().getCleanName(),
                     country.getCleanName());
         })
-                .setTitle("player.settlement.joincountry.confirm")
-                .setReplacements(Map.of("country", country.getCleanName()))
+                .setTitle(United.messenger().get("player.settlement.joincountry.confirm", country.getCleanName()))
                 .setSender(context.player())
                 .setReceiver(context.player())
                 .send();

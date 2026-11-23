@@ -1,7 +1,6 @@
 package org.unitedlands.unitedlands.commands.handlers.settlement;
 
 import java.util.List;
-import java.util.Map;
 import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.unitedlands.classes.Confirmation;
@@ -32,7 +31,7 @@ public class CmdSettlementLeave extends SettlementCommandHandler {
             return;
 
         if (context.citizen().hasSettlementRank("mayor")) {
-            United.messenger().send(context.player(), "player.settlement.leave.is_mayor");
+            United.messenger().send(context.player(), "player.settlement.leave.is-mayor");
             return;
         }
 
@@ -61,8 +60,7 @@ public class CmdSettlementLeave extends SettlementCommandHandler {
             United.messenger().send(context.player(), "player.settlement.leave.settlement-left", context.settlement().getCleanName());
 
         })
-                .setTitle("player.settlement.leave.confirm")
-                .setReplacements(Map.of("settlement", context.settlement().getCleanName()))
+                .setTitle(United.messenger().get("player.settlement.leave.confirm", context.settlement().getCleanName()))
                 .setSender(context.player())
                 .setReceiver(context.player())
                 .send();

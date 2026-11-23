@@ -1,14 +1,17 @@
 admin:
   country:
+    addmodifier:
+      success: <success>Attribute modifier added to {1}.</success>
     addrank:
       success: <success>Successfully added rank {1} to {2} in country {3}.</success>
     addsettlement:
+      not-country-region: <error>{1} is not located in a region of this country.</error>
       settlement-has-country: <error>{1} is already in a country.</error>
       success: <success>Successfully added {1} to {2}.</success>
-    citzen-not-in-country: <error>{1} is not in the country</error>
+    citizen-not-in-country: <error>{1} is not in {2}.</error>
     claim:
-      already-claimed: <error>The region is already claimed.</error>
-      no-region: <error>This location has no region.</error>
+      already-claimed: <error>The region {1} is already claimed by {2}.</error>
+      no-region: <error>Region {1} not found.</error>
       success: <success>Successfully started claiming of {1} for {2}.</success>
     create:
       no-region: <error>{1} is not in any region.</error>
@@ -19,23 +22,30 @@ admin:
       success: <success>Country {1} successfully deleted.</success>
     deposit:
       success: <success>Deposited {1} into the country bank of {2}.</success>
-      bankruptcy-stopped: <success>Your country is no longer bankrupt. All commands have been enabled.</success>
+    removemodifier:
+      success: <success>Removed all modifiers for attribute {1} with key {2} from {3}.</success>
     removerank:
       success: <success>Successfully removed rank {1} from {2} in country {3}.</success>
     removesettlement:
       not-in-country: <error>{1} is not part of the country.</error>
       success: <success>Successfully removed {1} from {2}.</success>
     setcapital:
-      settlement-not-in-country: <error>{1} is not in the country.</error>
+      settlement-not-in-country: <error>{1} is not in {2}.</error>
       success: <success>Successfully changed the capital of {1} to {2}.</success>
     setcolor:
       success: <success>Successfully changed color of {1} to {2}.</success>
+    seticon:
+      removed: <success>Successfully removed the icon of {1}.</success>
+      success: <success>Successfully set the icon of {1}. It was placed at the country spawn.</success>
+    seticonlocation:
+      no-icon: <error>{1} has no icon set.</error>
+      success: <success>Successfully moved the icon of {1} to this location.</success>
     setname:
       success: <success>Successfully changed name of {1} to {2}.</success>
     unclaim:
       not-claimed: <error>The region is not claimed.</error>
       success: <success>Successfully unclaimed region {1} from {2}.</success>
-    unknown-rank: <label>/ula country setname <country_name> <new_name></label>
+    unknown-rank: '<error>Unknown rank: {1}</error>'
     withdraw:
       success: <success>Withdrew {1} from the country bank of {2}.</success>
   region:
@@ -47,6 +57,8 @@ admin:
     addcitizen:
       already-in-settlement: <error>{1} is already part of {2}.</error>
       success: <success>Successfully added {1} to settlement {2}.</success>
+    addmodifier:
+      success: <success>Attribute modifier added to {1}.</success>
     addrank:
       success: <success>Successfully added rank {1} to {2} in settlement {3}.</success>
     citizen-not-in-settlement: <error>{1} is not a member of {2}.</error>
@@ -63,9 +75,9 @@ admin:
       success: <success>Successfully deleted settlement {1}.</success>
     deposit:
       success: <success>Deposited {1} into the settlement bank of {2}.</success>
-      bankruptcy-stopped: <success>Your settlement is no longer bankrupt. All commands have been enabled.</success>
     merge:
       is-capital: <error>{1} is the capital of {2} and cannot be merged into another settlement.</error>
+      success: <success>Successfully merged {1} into {2}.</success>
     permission:
       success: <success>Settlement {1} permission {2} for {3} set to {4}.</success>
       unknown-membership: '<error>Unknown group: {1}.</error>'
@@ -78,6 +90,8 @@ admin:
       success: <success>Removed trust from {1} in {2}</success>
     removecitizen:
       success: <success>Successfully removed {1} from settlement {2}.</success>
+    removemodifier:
+      success: <success>Removed all modifiers for attribute {1} with key {2} from {3}.</success>
     removerank:
       success: <success>Successfully removed rank {1} from {2} in settlement {3}.</success>
     setname:
@@ -85,6 +99,9 @@ admin:
     setspawn:
       not-in-claims: <error>Location is not inside settlement claims.</error>
       success: <success>Successfully changed the spawn of {1}.</success>
+    toggle:
+      success: <success>Toggled {2} to {3} for settlement {1}.</success>
+      unknown-toggle: '<error>Unknown toggle: {1}.</error>'
     unclaim:
       has-spawn: <error>Cannot unclaim the chunk that contains the settlement spawn. Move the spawn first.</error>
       has-visitor-spawn: <error>Cannot unclaim the chunk that contains the settlement visitor spawn. Move the spawn first.</error>
@@ -96,9 +113,9 @@ admin:
       success: <success>Withdrew {1} from the settlement bank of {2}.</success>
   towny:
     import:
-      error: <red>Error while importing Towny data. Please review the console.</red>
+      error: '<red>Error while importing Towny data: {1}. Please review the console.</red>'
       finished: <success>Import finished.</success>
-      success-settlement: <success>Successfully imported settlement {1}.</success>
+      success-settlement: <success>Successfully imported settlement {1} ({2} plots).</success>
       success-country: <success>Successfully imported country {1}.</success>
 
 chat:
@@ -113,7 +130,7 @@ chat:
   got-unblocked: <success>You were unblocked from joining channel {1}.</success>
   join: <success>{1} joined channel {2}.</success>
   kicked: <success>Kicked player {1} from the channel.</success>
-  left: <success>{1} left the channel.</success>
+  left: <success>{1} left channel {2}.</success>
   no-audience: <dark_gray>No one can hear you.</dark_gray>
   not-blocked: <error>The player isn't blocked.</error>
   not-creator: <error>This command can only be used by the creator of the channel.</error>
@@ -122,9 +139,12 @@ chat:
   player-not-in-channel: <error>Player is not in the channel.</error>
   tag-set: <success>Tag set to {1}.</success>
   switch: <body>Now talking in <{1}>{2}</{1}></body>
-  unblock: <success>Unblocked {1} from this channel.</success>
+  unblocked: <success>Unblocked {1} from this channel.</success>
   unknown-channel: <error>Unknown channel.</error>
   wrong-password: <error>Wrong password.</error>
+confirmation:
+  request-rejected: <error>Your request was rejected.</error>
+  request-sent: <success>Your request has been sent.</success>
 
 general-errors:
   citizen-not-found: <error>Citizen {1} not found.</error>
@@ -141,7 +161,7 @@ general-errors:
   no-funds-settlement: <error>The settlement doesn't have {1} in its bank.</error>
   no-permission: <error>You don't have permission to perform this action.</error>
   no-region-permission: <error>You don't have permissions in this region.</error>
-  no-settlement-permission: <error>You don't have the necessary settlement rank do this ({perm}).</error>
+  no-settlement-permission: <error>You don't have the necessary settlement rank do this ({1}).</error>
   not-allowed: <error>Sorry, you're not allowed to do that here, this area is protected.</error>
   not-in-claim: <error>You're not inside of a claimed area.</error>
   not-in-country: <error>You're not part of a country.</error>
@@ -152,7 +172,7 @@ general-errors:
   settlement-bankrupt: <error>You cannot use this command while the settlement is bankrupt.</error>
   settlement-not-found: <error>Settlement {1} not found.</error>
   wrong-color-format: <error>Wrong color format, must be hex (#000000).</error>
-  wrong-number-format: <error>Invalid number format.</error>
+  wrong-number-format: '<error>Invalid number format: {1}</error>'
   wrong-world: <error>You cannot use the command in this world.</error>
 general-broadcasts:
   country-removed: <success>The country of {1} has ceased to exist!</success>
@@ -226,12 +246,14 @@ new-day:
 player:
   country:
     addrank:
+      target-player-not-in-country: <error>{1} is not a member of {2}.</error>
+      confirm-new-leader: <label>Are you sure you want to give the leadership of your country to <blue>{1}</blue> permanently?</label>
       rank-already-owned: <error>{1} already has the rank {2}.</error>
       rank-received: <success>You've received the country rank of {1}.</success>
       success: <success>Successfully added rank {1} to {2}.</success>
     claim:
       already-being-claimed: <error>This region is already being claimed by {1}</error>
-      already-claimed: <error>This region is already claimed.</error>
+      already-claimed: <error>This region is already claimed by {1}.</error>
       claimed-broadcast: <success><success>{1}</success> has claimed the region of <red>{2}</red></success>
       no-region: <error>There is no region in this location.</error>
       start-broadcast: <success><success>{1}</success> has started claiming the region of <red>{2}</red>. They will take control of it in {3}.</success>
@@ -242,10 +264,13 @@ player:
       confirm: <label>You will create the country of <success>{1}</success> with capital <blue>{2}</blue>. This will cost you {3}. Continue?</label>
       broadcast-message: '<success>{1} has created the country of <success>{2}</success> (Region: <red>{3}</red>)'
       player-message: <success>Congratulations, you have crated the country of <success>{1}</success>! Find out how to manage it on our /wiki and don't hesitate to ask other players in the chat.</success>
+      no-region: <error>{1} is not located in a region.</error>
       region-occupied: <error>This region is already owned by {1}</error>
     delete:
       broadcast-message: <success>{1} has ceased to exist.</success>
+      confirm: <error>Are you sure you wish to delete the country of <blue>{1}</blue>? <bold>This cannot be undone!</bold></error>
     deposit:
+      bankruptcy-stopped: <success>You deposited {1}. Your country is no longer bankrupt, all commands have been enabled.</success>
       success: <success>You deposited {1} into the country bank.</success>
     list:
       citizens: "<label>Citizens of {1}: <body>{2}</body></label>"
@@ -281,7 +306,8 @@ player:
       no-host: <error>URL has no host.</error>
       png-read-error: <error>The PNG image could not be read.</error>
       invalid-filename: <error>Invalid file name.</error>
-      write-error: <error>File write error.</error>
+      write-error: '<error>File write error: {1}</error>'
+      removed: <success>Successfully removed your country icon.</success>
       success: <success>Successfully set your country icon. Use ""/c set icon none"" to remove it from the map, or  ""/c set iconlocation"" to move it to your current position.</success>
     seticonlocation:
       no-icon: <error>You have no icon set. User ""/c set icon <url>"" first.</error>
@@ -294,6 +320,8 @@ player:
       success-broadcast: <success>{1} has claimed the unique title {2}.</success>
       equipped: <success>Successfully equipped country title {1}.</success>
       unequipped: <success>Successfully unequipped the current country title.</success>
+      not-owned: <error>Your country doesn't own this title.</error>
+      no-title-equipped: <error>Your country has no title equipped.</error>
     unclaim:
       confirm: <error>You will lose control of this region. Continue?</error>
       confirm-warn-leader: '<red>WARNING: You will lose leadership of the country!</red>'
@@ -346,6 +374,7 @@ player:
       unknown-toggle: '<error>Unknown toggle: {1}'
   settlement:
     addrank:
+      confirm-new-mayor: <label>Are you sure you want to give the mayorship to <blue>{1}</blue> permanently?</label>
       rank-already-owned: <error>{1} already has the rank {2}.</error>
       rank-received: <success>You've received the settlement rank of {1}.</success>
       success: <success>Successfully added rank {1} to {2}.</success>
@@ -372,7 +401,7 @@ player:
       success: <success>Claimed chunk {2} for {1} for {3}</success>
     create:
       already-claimed: <error>This space is already claimed.</error>
-      already-in-settlement: <error>You are already a member of a settlement. Leave your current settlement first.</error>
+      already-in-settlement: <error>You are already a member of {1}. Leave your current settlement first.</error>
       broadcast-message: '<success>{1} has just created the settlement of <blue>{2}</blue> (Region: <red>{3}</red> | Country: <success>{4}</success>)</success>'
       confirm: <success>You will create the new settlement <blue>{1}</blue> in this location. This will cost {2}.Continue?</success>
       country-warning: <error>If you make a settlement here, you will automatically join the country of <success>{1}</success>.</error>
@@ -382,6 +411,7 @@ player:
       confirm: <success>Are you sure you wish to delete <blue>{1}</blue>? <bold>This cannot be undone!</bold></success>
       is-capital: <error>You cannot delete a country capital. Move the capital or delete the country first.</error>
     deposit:
+      bankruptcy-stopped: <success>You deposited {1}. Your settlement is no longer bankrupt, all commands have been enabled.</success>
       success: <success>You deposited {1} into the settlement bank.</success>
     invite:
       already-in-settlement: <error>That player is already in a settlement.</error>
@@ -422,7 +452,7 @@ player:
     removebanish:
       not-banished: <error>{1} is not on the banish list.</error>
       success: <success>Removed {1} from the banish list.</success>
-      untrusted: <success>You are no longer banished from in {1}.</success>
+      unbanished: <success>You are no longer banished from {1}.</success>
     removerank:
       cannot-remove-mayor: <error>You cannot remove the mayor rank. You can only pass it to another citizen.</error>
       lost: <success>You lost the settlement rank {1}.
@@ -472,7 +502,7 @@ player:
       success: <success>You abandoned this plot.</success>
     buy:
       not-for-sale: <error>This plot is not for sale.</error>
-      success: <success>You successfully bought the plot for {price}.</success>
+      success: <success>You successfully bought the plot for {1}.</success>
     evict:
       not-owner: <error>This plot is not owned by anyone.</error>
       success: <success>You evicted the current owner of this plot.</success>
@@ -483,10 +513,14 @@ player:
     permission:
       success: <success>Plot permission {1} for {2} set to {3}</success>
     settype:
-      success: <success>Set plot to {type}.</success>
+      success: <success>Set plot to {1}.</success>
       too-many-of-type: <error>The settlement can only have {1} plots of type {2}.</error>
       unknown-type: '<error>Unknown type: {1}.</error>'
     toggle:
       success: <success>Toggled plot {1} to {2}</success>
 prefix: <bold><red>U</red><label>L</label> <dark_gray>» </dark_gray></bold>
 reload: <success>Plugin reloaded.</success>
+web:
+  login:
+    code-expired: <error>This login code has expired. Please request a new one.</error>
+    invalid-code: <error>Invalid login code.</error>

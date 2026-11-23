@@ -56,7 +56,7 @@ public class SettlementChunkCommandHandler implements UnitedCommandExecutor {
     protected Citizen getCitizen(Player player) {
         var citizen = UnitedLandsDataManager.instance().getCitizen(player);
         if (citizen == null) {
-            United.messenger().send(player, "general-errors.no-citizen-data");
+            United.messenger().send(player, "general-errors.no-citizen-data", player.getName());
             return null;
         }
         return citizen;

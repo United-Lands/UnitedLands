@@ -47,7 +47,7 @@ public class CmdCountryCreate implements UnitedCommandExecutor {
         var region = settlement.getRegion();
 
         if (region == null) {
-            United.messenger().send(player, "general-errors.region-not-found");
+            United.messenger().send(player, "player.country.create.no-region", settlement.getCleanName());
             return;
         }
 

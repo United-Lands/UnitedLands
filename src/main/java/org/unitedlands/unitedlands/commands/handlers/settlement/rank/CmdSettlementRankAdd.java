@@ -61,7 +61,7 @@ public class CmdSettlementRankAdd extends SettlementCommandHandler {
 
         var targetPlayer = Bukkit.getPlayer(args[0]);
         if (targetPlayer == null) {
-            United.messenger().send(context.player(), "general-errors.player-not-found");
+            United.messenger().send(context.player(), "general-errors.player-not-found", args[0]);
             return;
         }
 
@@ -80,12 +80,10 @@ public class CmdSettlementRankAdd extends SettlementCommandHandler {
         }
 
         if (targetCitizen.getSettlementRanks().contains(args[1])) {
-            United.messenger().send(context.player(), "player.settlement.addrank.rank-already-owned", context.citizen().getName(), args[1],
-                    targetCitizen.getName());
+            United.messenger().send(context.player(), "player.settlement.addrank.rank-already-owned", targetCitizen.getName(), args[1]);
             return;
         }
 
-        // TODO: Move strings to config
         if (args[1].equals("mayor")) {
 
             if (!hasPermission("settlement.manage.ranks.mayor", context.citizen()))
@@ -110,8 +108,7 @@ public class CmdSettlementRankAdd extends SettlementCommandHandler {
                 }
 
             })
-                    .setTitle("<yellow>Are you sure you want to give the mayorship to " + args[0]
-                            + " permanently?</yellow>")
+                    .setTitle(United.messenger().get("player.settlement.addrank.confirm-new-mayor", targetCitizen.getName()))
                     .setSender(context.player())
                     .setReceiver(context.player())
                     .send();

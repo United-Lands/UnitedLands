@@ -91,8 +91,7 @@ public class CmdAdminSettlementModifiersAdd extends AdminCommandHandler {
         settlement.addAttributeModifier(attrModifier);
         settlement.save();
 
-        // TODO: Move strings to config
-        United.messenger().sendRaw(sender, "<green>Attribute modifier added to " + settlement.getCleanName());
+        United.messenger().send(sender, "admin.settlement.addmodifier.success", settlement.getCleanName());
 
     }
 
