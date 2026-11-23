@@ -21,7 +21,7 @@ import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.unitedlands.UnitedLands;
 import org.unitedlands.unitedlands.classes.commandhandlers.CountryCommandHandler;
-import org.unitedlands.unitedlands.integrations.Pl3xMap.Pl3xMapRenderer;
+import org.unitedlands.unitedlands.managers.IntegrationManager;
 import org.unitedlands.utils.United;
 
 @UnitedSubCommand(
@@ -53,13 +53,18 @@ public class CmdCountrySetIcon extends CountryCommandHandler {
             return;
         }
 
+        if (!IntegrationManager.instance().getMapRenderer().isAvailable()) {
+            United.messenger().send(sender, "general-errors.map-not-available");
+            return;
+        }
+
         var context = validate(sender, "country.seticon");
         if (context == null)
             return;
 
 
         if (args[0].equalsIgnoreCase("none")) {
-            Pl3xMapRenderer.instance().removeCountryIcon(context.country());
+            IntegrationManager.instance().getMapRenderer().removeCountryIcon(context.country());
             context.country().clearIconPosition();
             context.country().save();
             
@@ -84,7 +89,7 @@ public class CmdCountrySetIcon extends CountryCommandHandler {
                 save(fileName, data);
 
                 Bukkit.getScheduler().runTask(UnitedLands.instance(), () -> {
-                    Pl3xMapRenderer.instance().registerIcon(context.country().getUuid().toString(), fileName);
+                    IntegrationManager.instance().getMapRenderer().registerIcon(context.country().getUuid().toString(), fileName);
 
                     context.country().setIconPosition(context.country().getSpawn());
                     context.country().saveAndRender();

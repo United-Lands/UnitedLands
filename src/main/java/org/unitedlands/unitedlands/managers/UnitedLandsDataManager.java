@@ -33,7 +33,6 @@ import org.unitedlands.unitedlands.classes.events.country.CountryCreatedEvent;
 import org.unitedlands.unitedlands.classes.events.country.CountryPreRemoveEvent;
 import org.unitedlands.unitedlands.classes.events.country.CountryRemovedEvent;
 import org.unitedlands.unitedlands.classes.events.settlement.SettlementCreatedEvent;
-import org.unitedlands.unitedlands.integrations.Pl3xMap.Pl3xMapRenderer;
 import org.unitedlands.unitedlands.utils.CoordinateUtils;
 import org.unitedlands.utils.United;
 
@@ -61,7 +60,7 @@ public class UnitedLandsDataManager {
 
     private LRUCache<Coordinates, Region> coordinateRegionCache = new LRUCache<>(5000);
 
-    public UnitedLandsDataManager(Pl3xMapRenderer mapRenderer) {
+    public UnitedLandsDataManager() {
         instance = this;
 
         databaseManager = new DatabaseManager();
@@ -95,10 +94,10 @@ public class UnitedLandsDataManager {
 
             validateGeopolAttributes();
 
-            Pl3xMapRenderer.instance().setDebugMode(false);
-            Pl3xMapRenderer.instance().addSettlementsToRenderQueue(getSettlements());
-            Pl3xMapRenderer.instance().addRegionsToRenderQueue(getRegions());
-            Pl3xMapRenderer.instance().addCountriesToRenderQueue(getCountries());
+            IntegrationManager.instance().getMapRenderer().setDebugMode(false);
+            IntegrationManager.instance().getMapRenderer().addSettlementsToRenderQueue(getSettlements());
+            IntegrationManager.instance().getMapRenderer().addRegionsToRenderQueue(getRegions());
+            IntegrationManager.instance().getMapRenderer().addCountriesToRenderQueue(getCountries());
 
         } catch (Exception ex) {
             United.logger().error("Initialization failed: " + ex.getMessage(), "UnitedLands");
@@ -174,7 +173,7 @@ public class UnitedLandsDataManager {
             countries.put(country.getUuid(), country);
 
             if (country.getIconPosition() != null)
-                Pl3xMapRenderer.instance().registerIcon(country.getUuid().toString(),
+                IntegrationManager.instance().getMapRenderer().registerIcon(country.getUuid().toString(),
                         country.getUuid().toString() + ".png");
         }
         United.logger().info("Loaded " + countries.size() + " countries to memory.", "UnitedLands");
@@ -452,7 +451,7 @@ public class UnitedLandsDataManager {
         databaseManager.getSettlementService().createAsync(settlement);
         databaseManager.getSettlementChunkService().createAllAsync(settlement.getChunks());
         registerSettlement(settlement);
-        Pl3xMapRenderer.instance().addToRenderQueue(settlement);
+        IntegrationManager.instance().getMapRenderer().addToRenderQueue(settlement);
     }
 
     public CompletableFuture<Void> createSettlementDbDataAsync(Settlement settlement) {
@@ -465,7 +464,7 @@ public class UnitedLandsDataManager {
         databaseManager.getSettlementService().updateAsync(settlement);
 
         if (render)
-            Pl3xMapRenderer.instance().addToRenderQueue(settlement);
+            IntegrationManager.instance().getMapRenderer().addToRenderQueue(settlement);
     }
 
     public void removeSettlementDbData(Settlement settlement) {
@@ -474,7 +473,7 @@ public class UnitedLandsDataManager {
 
         unregisterSettlement(settlement);
 
-        Pl3xMapRenderer.instance().removeSettlement(settlement);
+        IntegrationManager.instance().getMapRenderer().removeSettlement(settlement);
     }
 
     // Cache operations
@@ -545,7 +544,7 @@ public class UnitedLandsDataManager {
         databaseManager.getSettlementChunkService().createAsync(settlementChunk);
         registerSettlementChunk(settlementChunk);
 
-        Pl3xMapRenderer.instance().addToRenderQueue(settlementChunk.getSettlement());
+        IntegrationManager.instance().getMapRenderer().addToRenderQueue(settlementChunk.getSettlement());
     }
 
     public void updateSettlementChunkDbData(SettlementChunk settlementChunk) {
@@ -556,7 +555,7 @@ public class UnitedLandsDataManager {
         databaseManager.getSettlementChunkService().deleteAsync(settlementChunk);
         unregisterSettlementChunk(settlementChunk);
 
-        Pl3xMapRenderer.instance().addToRenderQueue(settlementChunk.getSettlement());
+        IntegrationManager.instance().getMapRenderer().addToRenderQueue(settlementChunk.getSettlement());
     }
 
     // Cache operations
@@ -603,14 +602,14 @@ public class UnitedLandsDataManager {
         databaseManager.getRegionService().deleteAsync(region);
         unregisterRegion(region);
         buildRegionIndex();
-        Pl3xMapRenderer.instance().removeRegion(region);
+        IntegrationManager.instance().getMapRenderer().removeRegion(region);
     }
 
     private void queueRegionRender(Region region) {
         for (var settlement : region.getSettlements()) {
-            Pl3xMapRenderer.instance().addToRenderQueue(settlement);
+            IntegrationManager.instance().getMapRenderer().addToRenderQueue(settlement);
         }
-        Pl3xMapRenderer.instance().addToRenderQueue(region);
+        IntegrationManager.instance().getMapRenderer().addToRenderQueue(region);
     }
 
     // Cache operations
@@ -774,11 +773,11 @@ public class UnitedLandsDataManager {
     private void queueCountryRender(Country country) {
         for (var region : country.getRegions()) {
             for (var settlement : region.getSettlements()) {
-                Pl3xMapRenderer.instance().addToRenderQueue(settlement);
+                IntegrationManager.instance().getMapRenderer().addToRenderQueue(settlement);
             }
-            Pl3xMapRenderer.instance().addToRenderQueue(region);
+            IntegrationManager.instance().getMapRenderer().addToRenderQueue(region);
         }
-        Pl3xMapRenderer.instance().addToRenderQueue(country);
+        IntegrationManager.instance().getMapRenderer().addToRenderQueue(country);
         if (country.getOverlord() != null) {
             queueCountryRender(country.getOverlord());
         }
@@ -787,7 +786,7 @@ public class UnitedLandsDataManager {
     public void removeCountryDbData(Country country) {
         databaseManager.getCountryService().deleteAsync(country);
         unregisterCountry(country);
-        Pl3xMapRenderer.instance().removeCountry(country);
+        IntegrationManager.instance().getMapRenderer().removeCountry(country);
     }
 
     // Cache operations

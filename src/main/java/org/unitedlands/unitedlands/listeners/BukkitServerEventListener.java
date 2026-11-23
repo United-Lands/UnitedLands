@@ -4,7 +4,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.ServerLoadEvent;
 import org.unitedlands.annotations.UnitedListener;
-import org.unitedlands.unitedlands.integrations.Pl3xMap.Pl3xMapRenderer;
+import org.unitedlands.unitedlands.managers.IntegrationManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.unitedlands.schedulers.NewDayScheduler;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
@@ -16,7 +16,7 @@ public class BukkitServerEventListener implements Listener {
     @EventHandler
     public void onServerLoad(ServerLoadEvent event) {
 
-        Pl3xMapRenderer.instance().initialize();
+        IntegrationManager.instance().getMapRenderer().initialize();
         UnitedLandsDataManager.instance().loadDataFromDatabase();
         NewDayScheduler.instance().scheduleNewDay();
 

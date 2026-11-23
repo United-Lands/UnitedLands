@@ -58,7 +58,9 @@ public interface UnitedLandsConfig extends UnitedConfigHandler {
             @UnitedSetting(key = "port",     def = "3306")          int    port,
             @UnitedSetting(key = "username", def = "unitedlands")   String username,
             @UnitedSetting(key = "password", def = "unitedlands")   String password,
-            @UnitedSetting(key = "database", def = "unitedlands")   String database
+            @UnitedSetting(key = "database", def = "unitedlands")   String database,
+            @UnitedSetting(key = "use-ssl", def = "true")           boolean useSsl,
+            @UnitedSetting(key = "reset-database-on-start", def = "false") boolean resetDatabaseOnStart
     ) {}
 
 

@@ -39,6 +39,7 @@ import org.unitedlands.unitedlands.classes.Settlement;
 import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.classes.interfaces.CoordinateHolder;
 import org.unitedlands.unitedlands.classes.map.LayerOptions;
+import org.unitedlands.unitedlands.integrations.map.MapRenderer;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.unitedlands.utils.CoordinateUtils;
@@ -59,7 +60,7 @@ import net.pl3x.map.core.markers.option.Fill;
 import net.pl3x.map.core.markers.option.Options;
 import net.pl3x.map.core.markers.option.Popup;
 
-public class Pl3xMapRenderer {
+public class Pl3xMapRenderer implements MapRenderer {
 
     private static Pl3xMapRenderer instance;
 
@@ -184,6 +185,11 @@ public class Pl3xMapRenderer {
         regionQueue.clear();
         countryQueue.clear();
         renderExecutor.shutdownNow();
+    }
+
+    @Override
+    public boolean isAvailable() {
+        return true;
     }
 
     public void setDebugMode(boolean debugMode) {

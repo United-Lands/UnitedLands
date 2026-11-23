@@ -4,7 +4,6 @@
 # +---------------------------------------------+ #
 ###################################################
 
-# CAUTION! Developer mode will drop all database tables on startup. DO NOT USE IN PRODUCTION.
 developer-mode: false
 
 # Database connection settings.
@@ -14,6 +13,9 @@ mysql:
   username: unitedregions
   password: unitedregions
   database: unitedregions
+  use-ssl: true
+  # CAUTION! Drops and recreates all database tables on every startup. All data is lost. DO NOT USE IN PRODUCTION.
+  reset-database-on-start: false
 
 general:
 

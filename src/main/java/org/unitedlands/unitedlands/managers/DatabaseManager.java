@@ -63,7 +63,7 @@ public class DatabaseManager {
                 host,
                 port,
                 database,
-                UnitedLandsConfig.get().developerMode() ? "false" : "true");
+                UnitedLandsConfig.get().mysql().useSsl() ? "true" : "false");
 
         try {
 
@@ -87,6 +87,13 @@ public class DatabaseManager {
             connectionSource = new DataSourceConnectionSource(hikariDataSource, jdbcUrl);
 
             United.logger().info("Connected to MySQL database with HikariCP.", "UnitedLands");
+
+            if (UnitedLandsConfig.get().mysql().resetDatabaseOnStart()) {
+                United.logger().warning("**************************************************************", "UnitedLands");
+                United.logger().warning("reset-database-on-start is enabled: ALL tables in database '" + database
+                        + "' are being dropped and recreated. All data is lost.", "UnitedLands");
+                United.logger().warning("**************************************************************", "UnitedLands");
+            }
 
             verifySchemaVersion();
             registerServices();
@@ -112,7 +119,7 @@ public class DatabaseManager {
 
     private void verifySchemaVersion() throws SQLException {
 
-        if (UnitedLandsConfig.get().developerMode())
+        if (UnitedLandsConfig.get().mysql().resetDatabaseOnStart())
             return;
 
         Dao<SchemaVersion, Integer> versionDao = getDao(SchemaVersion.class);
@@ -129,7 +136,7 @@ public class DatabaseManager {
     private void applyMigrations(Dao<SchemaVersion, Integer> versionDao, SchemaVersion version) throws SQLException {
         // Example for future migrations on production server
 
-        if (UnitedLandsConfig.get().developerMode())
+        if (UnitedLandsConfig.get().mysql().resetDatabaseOnStart())
             return;
 
         // if (version.getVersion() < 2) {
@@ -147,7 +154,7 @@ public class DatabaseManager {
     public <T, ID> Dao<T, ID> getDao(Class<T> clazz) throws SQLException {
 
         // In developer mode, drop the table if it exists
-        if (UnitedLandsConfig.get().developerMode())
+        if (UnitedLandsConfig.get().mysql().resetDatabaseOnStart())
             TableUtils.dropTable(connectionSource, clazz, true);
 
         TableUtils.createTableIfNotExists(connectionSource, clazz);

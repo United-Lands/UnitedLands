@@ -2,7 +2,6 @@ package org.unitedlands.unitedlands;
 
 import org.bukkit.plugin.java.JavaPlugin;
 import org.unitedlands.classes.ConfigFile;
-import org.unitedlands.unitedlands.integrations.Pl3xMap.Pl3xMapRenderer;
 import org.unitedlands.unitedlands.managers.ChatChannelManager;
 import org.unitedlands.unitedlands.managers.ConfirmationManager;
 import org.unitedlands.unitedlands.managers.DisplayManager;
@@ -65,8 +64,8 @@ public class UnitedLands extends JavaPlugin {
                 newDayScheduler.stopScheduler();
         });
         runShutdownStep("map renderer", () -> {
-            if (Pl3xMapRenderer.instance() != null)
-                Pl3xMapRenderer.instance().shutdown();
+            if (IntegrationManager.instance() != null)
+                IntegrationManager.instance().getMapRenderer().shutdown();
         });
         runShutdownStep("database", () -> {
             var dataManager = UnitedLandsDataManager.instance();
@@ -86,7 +85,7 @@ public class UnitedLands extends JavaPlugin {
     private void createManagers() {
 
         new PermissionManager();
-        new UnitedLandsDataManager(new Pl3xMapRenderer());
+        new UnitedLandsDataManager();
         new DisplayManager();
         new ConfirmationManager();
         new PlayerCacheManager();

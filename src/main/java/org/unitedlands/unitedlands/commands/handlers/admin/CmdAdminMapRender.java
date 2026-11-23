@@ -4,8 +4,9 @@ import java.util.List;
 import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.registrars.command.UnitedCommandExecutor;
-import org.unitedlands.unitedlands.integrations.Pl3xMap.Pl3xMapRenderer;
+import org.unitedlands.unitedlands.managers.IntegrationManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
+import org.unitedlands.utils.United;
 
 @UnitedSubCommand(
         parent = CmdAdmin.class,
@@ -34,7 +35,11 @@ public class CmdAdminMapRender implements UnitedCommandExecutor {
             return;
         }
 
-        var renderer = Pl3xMapRenderer.instance();
+        var renderer = IntegrationManager.instance().getMapRenderer();
+        if (!renderer.isAvailable()) {
+            United.messenger().send(sender, "general-errors.map-not-available");
+            return;
+        }
 
         switch (args[0]) {
             case "settlements":

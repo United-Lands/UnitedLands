@@ -130,6 +130,7 @@ general-errors:
   country-not-found: <error>Country {1} not found.</error>
   damage-disabled: <error>You cannot do any damage here.</error>
   illegal-characters: <error>Your input {1} contains blacklisted characters.</error>
+  map-not-available: <error>The map is not available on this server.</error>
   no-citizen-data: <error>Missing citizen data for player {1}.</error>
   no-claim-permission: <error>You don't have permissions in this claim.</error>
   no-country-permission: <error>You don't have the necessary country rank do this ({1}).</error>

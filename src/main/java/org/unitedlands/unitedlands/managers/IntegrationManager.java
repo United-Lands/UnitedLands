@@ -2,7 +2,10 @@ package org.unitedlands.unitedlands.managers;
 
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
+import org.unitedlands.unitedlands.integrations.Pl3xMap.Pl3xMapRenderer;
 import org.unitedlands.unitedlands.integrations.Towny.TownyProvider;
+import org.unitedlands.unitedlands.integrations.map.MapRenderer;
+import org.unitedlands.unitedlands.integrations.map.NoOpMapRenderer;
 import org.unitedlands.unitedlands.integrations.papi.PlaceholderAPIIntegration;
 import org.unitedlands.utils.United;
 
@@ -14,6 +17,7 @@ public class IntegrationManager {
     }
 
     private TownyProvider townyProvider;
+    private MapRenderer mapRenderer = new NoOpMapRenderer();
 
     private boolean useFloodgate;
     private boolean usePAPI;
@@ -24,6 +28,14 @@ public class IntegrationManager {
     }
 
     public void loadIntegrations() {
+
+        Plugin pl3xMap = Bukkit.getPluginManager().getPlugin("Pl3xMap");
+        if (pl3xMap != null && pl3xMap.isEnabled()) {
+            mapRenderer = new Pl3xMapRenderer();
+            United.logger().info("Found Pl3xMap, enabling map rendering...", "UnitedLands");
+        } else {
+            United.logger().warning("Pl3xMap not found, map rendering is disabled.", "UnitedLands");
+        }
 
         Plugin towny = Bukkit.getPluginManager().getPlugin("Towny");
         if (towny != null && towny.isEnabled()) {
@@ -37,11 +49,15 @@ public class IntegrationManager {
         }
         Plugin papi = Bukkit.getPluginManager().getPlugin("PlaceholderAPI");
         if (papi != null && papi.isEnabled()) {
-            United.logger().info("Enabling floodgate integrations.", "UnitedLands");
+            United.logger().info("Enabling PlaceholderAPI integrations.", "UnitedLands");
             new PlaceholderAPIIntegration();
             usePAPI = true;
         }
 
+    }
+
+    public MapRenderer getMapRenderer() {
+        return mapRenderer;
     }
 
     public TownyProvider getTownyProvider() {

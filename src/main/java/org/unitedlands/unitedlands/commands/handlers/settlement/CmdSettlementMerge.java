@@ -10,7 +10,7 @@ import org.unitedlands.unitedlands.classes.BankRecordTransactionType;
 import org.unitedlands.unitedlands.classes.Confirmation;
 import org.unitedlands.unitedlands.classes.commandhandlers.SettlementCommandHandler;
 
-import org.unitedlands.unitedlands.integrations.Pl3xMap.Pl3xMapRenderer;
+import org.unitedlands.unitedlands.managers.IntegrationManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.utils.United;
@@ -100,7 +100,7 @@ public class CmdSettlementMerge extends SettlementCommandHandler {
             var targetSettlementName = targetSettlement.getCleanName();
             UnitedLandsDataManager.instance().removeSettlementDbData(targetSettlement);
 
-            Pl3xMapRenderer.instance().removeSettlement(targetSettlement);
+            IntegrationManager.instance().getMapRenderer().removeSettlement(targetSettlement);
 
             United.messenger().send(Bukkit.getServer(), "player.settlement.merge.broadcast", context.settlement().getCleanName(), targetSettlementName);
         })

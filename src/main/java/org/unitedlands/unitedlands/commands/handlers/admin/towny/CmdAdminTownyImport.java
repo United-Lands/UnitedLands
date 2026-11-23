@@ -23,7 +23,6 @@ import org.unitedlands.unitedlands.classes.metadata.IntegerMetaDataField;
 import org.unitedlands.unitedlands.classes.metadata.LocationMetaDataField;
 import org.unitedlands.unitedlands.classes.metadata.LongMetaDataField;
 import org.unitedlands.unitedlands.classes.metadata.StringMetaDataField;
-import org.unitedlands.unitedlands.integrations.Pl3xMap.Pl3xMapRenderer;
 import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.unitedlands.managers.IntegrationManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
@@ -189,7 +188,7 @@ public class CmdAdminTownyImport implements UnitedCommandExecutor {
             United.logger().info(
             "---------------------------------------------------------------------- Finished setting settlement countries, starting rendering...");
 
-            var renderer = Pl3xMapRenderer.instance();
+            var renderer = IntegrationManager.instance().getMapRenderer();
             renderer.setDebugMode(false);
             renderer.addSettlementsToRenderQueue(UnitedLandsDataManager.instance().getSettlements());
             renderer.addRegionsToRenderQueue(UnitedLandsDataManager.instance().getRegions());
