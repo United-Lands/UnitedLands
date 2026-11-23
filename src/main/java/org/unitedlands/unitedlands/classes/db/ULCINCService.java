@@ -1,10 +1,10 @@
 package org.unitedlands.unitedlands.classes.db;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -23,19 +23,19 @@ public class ULCINCService extends BaseDbService<ULCINCRecord> {
                                            .toInstant()
                                            .toEpochMilli();
 
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                return dao.query(
-                    dao.queryBuilder().where()
-                        .ge("timestamp", cutoff)
-                        .prepare()
-                );
-            } catch (SQLException e) {
-                e.printStackTrace();
-                return Collections.emptyList();
-            }
-        });          
-        
+        return readAsync("Query of ULCINC records", () -> dao.query(
+                dao.queryBuilder().where()
+                    .ge("timestamp", cutoff)
+                    .prepare()
+            ), Collections.emptyList());
+
+    }
+
+    public CompletableFuture<Optional<Long>> getLatestTimestampAsync() {
+        return readAsync("Query of latest ULCINC timestamp", () -> {
+            var latest = dao.queryBuilder().orderBy("timestamp", false).limit(1L).queryForFirst();
+            return Optional.ofNullable(latest).map(ULCINCRecord::getTimestamp);
+        }, Optional.empty());
     }
 
 }

@@ -33,7 +33,6 @@ general:
     # United Lands Composite Index of National Capability
     ulcinc:
       smoothing-days: 14
-      total-formula: "((activity + economy + military + geography) / 4) * 100"
       economy-weights:
         income: 0.5
         wealth: 0.5

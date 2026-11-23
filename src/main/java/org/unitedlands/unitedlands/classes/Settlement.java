@@ -3,7 +3,6 @@ package org.unitedlands.unitedlands.classes;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.awt.Color;
@@ -205,7 +204,7 @@ public class Settlement extends GeopolObject implements PermissionHolder {
 
     public Location getVisitorSpawn() {
         if (visitorSpawn == null && visitorSpawnSerialized != null)
-            this.visitorSpawn = SerializationUtils.deserializeLocation(spawnSerialized);
+            this.visitorSpawn = SerializationUtils.deserializeLocation(visitorSpawnSerialized);
         return visitorSpawn;
     }
 
@@ -227,10 +226,7 @@ public class Settlement extends GeopolObject implements PermissionHolder {
     }
 
     public Set<SettlementChunk> getChunksOfType(String type) {
-        CompletableFuture<Set<SettlementChunk>> chunkTypeFuture = CompletableFuture.supplyAsync(() -> {
-            return getChunks().stream().filter(c -> type.equals(c.getChunkType())).collect(Collectors.toSet());
-        });
-        return chunkTypeFuture.join();
+        return getChunks().stream().filter(c -> type.equals(c.getChunkType())).collect(Collectors.toSet());
     }
 
     public void setChunks(Set<SettlementChunk> chunks) {

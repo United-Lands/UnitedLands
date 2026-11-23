@@ -39,7 +39,13 @@ public class UnitedLands extends JavaPlugin {
 
         permissionConfig = new ConfigFile(this, "permissions.yml");
 
-        createManagers();
+        try {
+            createManagers();
+        } catch (Exception ex) {
+            getLogger().severe("UnitedLands failed to start and will be disabled: " + ex.getMessage());
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
 
         webServices = new UnitedLandsWebServices();
 
@@ -50,9 +56,31 @@ public class UnitedLands extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        webServices.stopWebServices();
-        newDayScheduler.stopScheduler();
-        Pl3xMapRenderer.instance().shutdown();
+        runShutdownStep("web services", () -> {
+            if (webServices != null)
+                webServices.stopWebServices();
+        });
+        runShutdownStep("new day scheduler", () -> {
+            if (newDayScheduler != null)
+                newDayScheduler.stopScheduler();
+        });
+        runShutdownStep("map renderer", () -> {
+            if (Pl3xMapRenderer.instance() != null)
+                Pl3xMapRenderer.instance().shutdown();
+        });
+        runShutdownStep("database", () -> {
+            var dataManager = UnitedLandsDataManager.instance();
+            if (dataManager != null && dataManager.getDatabaseManager() != null)
+                dataManager.getDatabaseManager().close();
+        });
+    }
+
+    private void runShutdownStep(String name, Runnable step) {
+        try {
+            step.run();
+        } catch (Exception ex) {
+            getLogger().severe("Error while shutting down " + name + ": " + ex.getMessage());
+        }
     }
 
     private void createManagers() {

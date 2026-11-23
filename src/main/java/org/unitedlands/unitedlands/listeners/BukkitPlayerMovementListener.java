@@ -55,6 +55,7 @@ public class BukkitPlayerMovementListener implements Listener {
         updatePlayerLocation(player, player.getLocation(), new Location(player.getLocation().getWorld(), 0, 0, 0));
         ChatChannelManager.instance().unregisterPlayer(player);
         updatePlaytime(player);
+        PlayerCacheManager.instance().removePlayerCache(player);
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)

@@ -68,7 +68,7 @@ public class VaultEconomyProvider implements IEconomyProvider {
         if (response.type != ResponseType.SUCCESS) {
             United.logger().warning("Error depositing to " + uuid.toString() + ": " + response.errorMessage, "UnitedLands");
         }
-        return true;
+        return response.transactionSuccess();
     }
 
     @Override
@@ -78,7 +78,7 @@ public class VaultEconomyProvider implements IEconomyProvider {
             United.logger().warning("Error withdrawing from " + uuid.toString() + ": " + response.errorMessage,
                     "UnitedLands");
         }
-        return true;
+        return response.transactionSuccess();
     }
 
 }

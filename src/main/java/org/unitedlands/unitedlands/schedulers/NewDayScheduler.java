@@ -24,6 +24,8 @@ public class NewDayScheduler {
     private BukkitTask scheduleTask;
     private BukkitTask newDayTask;
 
+    private boolean newDayRunning = false;
+
     public NewDayScheduler() {
         instance = this;
     }
@@ -56,6 +58,8 @@ public class NewDayScheduler {
         } else {
             if (scheduleTask != null)
                 scheduleTask.cancel();
+            if (newDayTask != null)
+                newDayTask.cancel();
             newDayTask = Bukkit.getScheduler().runTaskLater(UnitedLands.instance(), new NewDayTask(),
                     secondsToNewDay * 20L);
             United.logger().info("Scheduling new day in " + United.formatter().formatDuration(secondsToNewDay * 1000),
@@ -64,7 +68,15 @@ public class NewDayScheduler {
 
     }
 
+    public boolean tryStartNewDay() {
+        if (newDayRunning)
+            return false;
+        newDayRunning = true;
+        return true;
+    }
+
     public void finishNewDay() {
+        newDayRunning = false;
         lastExecutionTime = System.currentTimeMillis();
         if (scheduleTask != null)
             scheduleTask.cancel();

@@ -10,13 +10,20 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
@@ -29,13 +36,11 @@ import org.unitedlands.unitedlands.classes.Coordinates;
 import org.unitedlands.unitedlands.classes.Country;
 import org.unitedlands.unitedlands.classes.Region;
 import org.unitedlands.unitedlands.classes.Settlement;
-import org.unitedlands.unitedlands.classes.SettlementChunk;
 import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.classes.interfaces.CoordinateHolder;
 import org.unitedlands.unitedlands.classes.map.LayerOptions;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
-import org.unitedlands.unitedlands.utils.ColorUtils;
 import org.unitedlands.unitedlands.utils.CoordinateUtils;
 import org.unitedlands.unitedlands.utils.PolygonUtils;
 import org.unitedlands.utils.United;
@@ -45,6 +50,7 @@ import net.pl3x.map.core.image.IconImage;
 import net.pl3x.map.core.markers.Point;
 import net.pl3x.map.core.markers.Vector;
 import net.pl3x.map.core.markers.layer.SimpleLayer;
+import net.pl3x.map.core.markers.marker.Icon;
 import net.pl3x.map.core.markers.marker.Marker;
 import net.pl3x.map.core.markers.marker.MultiPolygon;
 import net.pl3x.map.core.markers.marker.Polygon;
@@ -64,9 +70,15 @@ public class Pl3xMapRenderer {
     private final int BATCH_SIZE = 150;
     private final long FREQUENCY = 20l;
 
-    private Deque<Settlement> settlementQueue = new LinkedList<Settlement>();
-    private Deque<Region> regionQueue = new LinkedList<Region>();
-    private Deque<Country> countryQueue = new LinkedList<Country>();
+    private final Set<Settlement> settlementQueue = new LinkedHashSet<>();
+    private final Set<Region> regionQueue = new LinkedHashSet<>();
+    private final Set<Country> countryQueue = new LinkedHashSet<>();
+
+    private final ExecutorService renderExecutor = Executors.newSingleThreadExecutor(r -> {
+        Thread t = new Thread(r, "unitedlands-map-render");
+        t.setDaemon(true);
+        return t;
+    });
 
     private BukkitTask queueCheckTask;
 
@@ -88,6 +100,65 @@ public class Pl3xMapRenderer {
         private Set<CoordinateHolder> chunks = new HashSet<>();
     }
 
+    private record MapChunk(Coordinates coordinates) implements CoordinateHolder {
+
+        private static final int SIZE = 16;
+
+        @Override
+        public Coordinates getCoordinates() {
+            return coordinates;
+        }
+
+        @Override
+        public Coordinates getWorldCoords() {
+            return new Coordinates(coordinates.getX() * SIZE, coordinates.getZ() * SIZE, coordinates.getWorldName());
+        }
+
+        @Override
+        public Coordinates getCenter() {
+            var worldCoords = getWorldCoords();
+            return new Coordinates(worldCoords.getX() + (SIZE / 2), worldCoords.getZ() - (SIZE / 2),
+                    coordinates.getWorldName());
+        }
+
+        @Override
+        public Coordinates getLowerLeft() {
+            var worldCoords = getWorldCoords();
+            return new Coordinates(worldCoords.getX(), worldCoords.getZ() + SIZE, coordinates.getWorldName());
+        }
+
+        @Override
+        public Coordinates getLowerRight() {
+            var worldCoords = getWorldCoords();
+            return new Coordinates(worldCoords.getX() + SIZE, worldCoords.getZ() + SIZE, coordinates.getWorldName());
+        }
+
+        @Override
+        public Coordinates getUpperLeft() {
+            var worldCoords = getWorldCoords();
+            return new Coordinates(worldCoords.getX(), worldCoords.getZ(), coordinates.getWorldName());
+        }
+
+        @Override
+        public Coordinates getUpperRight() {
+            var worldCoords = getWorldCoords();
+            return new Coordinates(worldCoords.getX() + SIZE, worldCoords.getZ(), coordinates.getWorldName());
+        }
+    }
+
+    private record SettlementSnapshot(UUID uuid, String worldName, String name, int fillColor, int strokeColor,
+            int strokeWidth, String dash, String infoBox, Set<MapChunk> chunks) {
+    }
+
+    private record RegionSnapshot(UUID uuid, String worldName, boolean claimed, boolean claiming,
+            Coordinates homeChunk, String tooltip, int fillColor, int strokeColor, int strokeWidth, String dash,
+            double[] polygon) {
+    }
+
+    private record CountrySnapshot(UUID uuid, String worldName, String name, int strokeColor, int strokeWidth,
+            int offset, Point iconPosition, String infoBox, List<double[]> polygons) {
+    }
+
     public void initialize() {
         registerIcon("region-center", "region-center.png");
         registerIcon("claiming", "claiming.png");
@@ -107,7 +178,12 @@ public class Pl3xMapRenderer {
     public void shutdown() {
         if (queueCheckTask != null) {
             queueCheckTask.cancel();
+            queueCheckTask = null;
         }
+        settlementQueue.clear();
+        regionQueue.clear();
+        countryQueue.clear();
+        renderExecutor.shutdownNow();
     }
 
     public void setDebugMode(boolean debugMode) {
@@ -132,31 +208,14 @@ public class Pl3xMapRenderer {
 
     public void checkQueue() {
 
-        if (settlementQueue.size() > 0) {
-            List<Settlement> settlementRenderList = new ArrayList<>();
-            while (!settlementQueue.isEmpty() && settlementRenderList.size() < BATCH_SIZE) {
-                settlementRenderList.add(settlementQueue.poll()); // Removes from the front
-            }
-            renderSettlements(settlementRenderList);
-        }
+        var settlements = snapshotBatch(settlementQueue, this::snapshot, "settlement");
+        var regions = snapshotBatch(regionQueue, region -> snapshot(region, debugMode), "region");
+        var countries = snapshotBatch(countryQueue, this::snapshot, "country");
 
-        if (regionQueue.size() > 0) {
-            List<Region> regionRenderList = new ArrayList<>();
-            while (!regionQueue.isEmpty() && regionRenderList.size() < BATCH_SIZE) {
-                regionRenderList.add(regionQueue.poll()); // Removes from the front
-            }
-            renderPolyRegions(regionRenderList, debugMode);
-        }
+        if (!settlements.isEmpty() || !regions.isEmpty() || !countries.isEmpty())
+            render(settlements, regions, countries);
 
-        if (countryQueue.size() > 0) {
-            List<Country> countryRenderList = new ArrayList<>();
-            while (!countryQueue.isEmpty() && countryRenderList.size() < BATCH_SIZE) {
-                countryRenderList.add(countryQueue.poll()); // Removes from the front
-            }
-            renderCountries(countryRenderList);
-        }
-
-        if (settlementQueue.size() == 0 && regionQueue.size() == 0 && countryQueue.size() == 0) {
+        if (settlementQueue.isEmpty() && regionQueue.isEmpty() && countryQueue.isEmpty()) {
             queueCheckTask.cancel();
             queueCheckTask = null;
             United.logger().info("Stopped map rendering task.", "UnitedLands");
@@ -164,42 +223,97 @@ public class Pl3xMapRenderer {
 
     }
 
+    private <T, S> List<S> snapshotBatch(Set<T> queue, Function<T, S> snapshotter, String type) {
+        List<S> snapshots = new ArrayList<>();
+        Iterator<T> iterator = queue.iterator();
+        int count = 0;
+        while (iterator.hasNext() && count < BATCH_SIZE) {
+            T item = iterator.next();
+            iterator.remove();
+            count++;
+            try {
+                snapshots.add(snapshotter.apply(item));
+            } catch (Exception ex) {
+                United.logger().error("Could not prepare " + type + " for map rendering: " + ex.getMessage(),
+                        "UnitedLands");
+            }
+        }
+        return snapshots;
+    }
+
+    private void render(List<SettlementSnapshot> settlements, List<RegionSnapshot> regions,
+            List<CountrySnapshot> countries) {
+
+        var startTime = System.currentTimeMillis();
+
+        CompletableFuture.supplyAsync(() -> {
+            List<Runnable> actions = new ArrayList<>();
+            for (var settlement : settlements)
+                build(actions, () -> buildSettlement(settlement), "settlement " + settlement.uuid());
+            for (var region : regions)
+                build(actions, () -> buildRegion(region), "region " + region.uuid());
+            for (var country : countries)
+                build(actions, () -> buildCountry(country), "country " + country.uuid());
+            return actions;
+        }, renderExecutor).thenAccept(actions -> runOnMainThread(() -> {
+            for (var action : actions) {
+                try {
+                    action.run();
+                } catch (Exception ex) {
+                    United.logger().error("Error applying map marker: " + ex.getMessage(), "UnitedLands");
+                }
+            }
+            United.logger().info("Rendered " + settlements.size() + " settlements, " + regions.size()
+                    + " regions and " + countries.size() + " countries in "
+                    + (System.currentTimeMillis() - startTime) + "ms", "UnitedLands");
+        })).exceptionally(ex -> {
+            United.logger().error("Error rendering map: " + ex.getMessage(), "UnitedLands");
+            return null;
+        });
+    }
+
+    private void build(List<Runnable> actions, Supplier<Runnable> builder, String description) {
+        try {
+            actions.add(builder.get());
+        } catch (Exception ex) {
+            United.logger().error("Error rendering " + description + ": " + ex.getMessage(), "UnitedLands");
+        }
+    }
+
+    private void runOnMainThread(Runnable runnable) {
+        var plugin = UnitedLands.instance();
+        if (!plugin.isEnabled())
+            return;
+        Bukkit.getScheduler().runTask(plugin, runnable);
+    }
+
     public void addToRenderQueue(Settlement settlement) {
-        if (!settlementQueue.contains(settlement))
-            settlementQueue.addLast(settlement);
+        settlementQueue.add(settlement);
         startQueueMonitor();
     }
 
     public void addToRenderQueue(Region region) {
-        if (!regionQueue.contains(region))
-            regionQueue.addLast(region);
+        regionQueue.add(region);
         startQueueMonitor();
     }
 
     public void addToRenderQueue(Country country) {
-        if (!countryQueue.contains(country))
-            countryQueue.addLast(country);
+        countryQueue.add(country);
         startQueueMonitor();
     }
 
     public void addSettlementsToRenderQueue(Collection<Settlement> settlements) {
-        for (var settlement : settlements)
-            if (!settlementQueue.contains(settlement))
-                settlementQueue.addLast(settlement);
+        settlementQueue.addAll(settlements);
         startQueueMonitor();
     }
 
     public void addRegionsToRenderQueue(Collection<Region> regions) {
-        for (var region : regions)
-            if (!regionQueue.contains(region))
-                regionQueue.addLast(region);
+        regionQueue.addAll(regions);
         startQueueMonitor();
     }
 
     public void addCountriesToRenderQueue(Collection<Country> countries) {
-        for (var country : countries)
-            if (!countryQueue.contains(country))
-                countryQueue.addLast(country);
+        countryQueue.addAll(countries);
         startQueueMonitor();
     }
 
@@ -221,8 +335,9 @@ public class Pl3xMapRenderer {
     public void renderMarker(String worldName, Location location, String markerName, String markerKey, String layerId,
             String layerName) {
         SimpleLayer layer = getOrCreateSimpleLayer(worldName, layerId, layerName, 1, 490);
-        if (layer.hasMarker(markerKey))
-            layer.removeMarker(markerKey);
+        if (layer == null)
+            return;
+        removeIfPresent(layer, markerKey);
         var position = new Point((int) location.getX(), (int) location.getZ());
         var marker = Marker.icon(markerKey, position, markerName);
         marker.setSize(new Vector(16d, 16d));
@@ -231,9 +346,7 @@ public class Pl3xMapRenderer {
     }
 
     public void removeMarker(String worldName, String markerKey, String layerId, String layerName) {
-        SimpleLayer layer = getOrCreateSimpleLayer(worldName, layerId, layerName, 1, 490);
-        if (layer.hasMarker(markerKey))
-            layer.removeMarker(markerKey);
+        removeMarkerFromLayer(worldName, layerId, markerKey);
     }
 
     // #endregion
@@ -244,142 +357,99 @@ public class Pl3xMapRenderer {
     // Country rendering
     // *********************************************************
 
-    private void renderCountries(Collection<Country> countries) {
+    private CountrySnapshot snapshot(Country country) {
 
-        United.logger().info("Starting country map rendering...", "UnitedLands");
-
-        if (countries == null || countries.isEmpty()) {
-            United.logger().info("No countries to render.", "UnitedLands");
-            return;
-        }
-
-        var startTime = System.currentTimeMillis();
-        List<CompletableFuture<Void>> futures = countries.stream()
-                .map(country -> CompletableFuture.runAsync(() -> renderCountryAsync(country))).toList();
-
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenRun(() -> {
-            var executionTime = System.currentTimeMillis() - startTime;
-            United.logger()
-                    .info("Created " + countries.size() + " countries in map overlay in " + executionTime + "ms");
-        }).exceptionally(ex -> {
-            United.logger().error("Error rendering countries: " + ex.getMessage(), "UnitedLands");
-            ex.printStackTrace();
-            return null;
-        });
-
-    }
-
-    private void renderCountryAsync(Country country) {
-
-        SimpleLayer layer = getOrCreateSimpleLayer(country.getWorldName(), "countries", "Countries", 1, 460);
-        SimpleLayer iconLayer = getOrCreateSimpleLayer(country.getWorldName(), "countryicons", "Country Icons", 1, 465);
-
-        var key = "country-" + country.getUuid().toString();
-        if (layer.hasMarker(key))
-            layer.removeMarker(key);
-        var iconKey = "country-icon-" + country.getUuid().toString();
-        if (iconLayer.hasMarker(key))
-            iconLayer.removeMarker(key);
-
-        // Icon rendering
-
-        if (country.getIconPosition() != null) {
-
-            var pos = country.getIconPosition();
-            var iconPosition = new Point((int) pos.getX(), (int) pos.getZ());
-
-            var iconMarker = Marker.icon(iconKey, iconPosition, country.getUuid().toString()).setAnchor(Vector.of(16.0, 16.0));
-            iconLayer.addMarker(iconMarker);
-        }   
-
-        // Border rendering
-
-        var popup = new Popup(getCountryInfoBox(country));
         int strokeWidth = UnitedLandsConfig.get().mapRendering().get("country-default").width();
 
-        var countryPolygons = country.getRegions().stream().map(Region::getPolygon).collect(Collectors.toList());
+        List<double[]> polygons = new ArrayList<>();
+        country.getRegions().stream().map(Region::getPolygon).filter(Objects::nonNull).forEach(polygons::add);
         var vassals = UnitedLandsDataManager.instance().getCountryVassals(country);
         if (vassals.size() > 0) {
             strokeWidth *= 1.5;
             for (var vassal : vassals) {
-                var vassalPolygone = vassal.getRegions().stream().map(Region::getPolygon).collect(Collectors.toList());
-                countryPolygons.addAll(vassalPolygone);
+                vassal.getRegions().stream().map(Region::getPolygon).filter(Objects::nonNull)
+                        .forEach(polygons::add);
             }
         }
 
-        var mergedPolygons = mergePolygons(countryPolygons);
+        int offset = country.getOverlord() == null ? -1 * strokeWidth : -1 * strokeWidth * 3;
+
+        Point iconPosition = null;
+        if (country.getIconPosition() != null) {
+            var pos = country.getIconPosition();
+            iconPosition = new Point((int) pos.getX(), (int) pos.getZ());
+        }
+
+        return new CountrySnapshot(country.getUuid(), country.getWorldName(), country.getCleanName(),
+                country.getStrokeColor(), strokeWidth, offset, iconPosition, getCountryInfoBox(country), polygons);
+    }
+
+    private Runnable buildCountry(CountrySnapshot country) {
+
+        var uuid = country.uuid().toString();
+        var key = "country-" + uuid;
+        var iconKey = "country-icon-" + uuid;
+
+        // Icon rendering
+
+        Icon iconMarker = null;
+        if (country.iconPosition() != null) {
+            iconMarker = Marker.icon(iconKey, country.iconPosition(), uuid).setAnchor(Vector.of(16.0, 16.0));
+        }
+
+        // Border rendering
+
+        var mergedPolygons = mergePolygons(country.polygons());
 
         List<Polygon> finalPolygons = new ArrayList<>();
 
-        var markerOptions = Options.builder().fill(true).fillColor(0).stroke(true).strokeColor(country.getStrokeColor())
-                .strokeWeight(strokeWidth)
-                .tooltipContent(country.getCleanName()).build().setPopup(popup);
+        var markerOptions = Options.builder().fill(true).fillColor(0).stroke(true).strokeColor(country.strokeColor())
+                .strokeWeight(country.strokeWidth())
+                .tooltipContent(country.name()).build().setPopup(new Popup(country.infoBox()));
 
         int i = 0;
         for (var mergedPolygon : mergedPolygons) {
+            double[] offsetPolygon = PolygonUtils.offsetPolygon(mergedPolygon, country.offset());
             LinkedList<Point> polygonPoints = new LinkedList<>();
             for (int j = 0; j < mergedPolygon.length - 2; j = j + 2) {
-                double[] offsetPolygon = null;
-                if (country.getOverlord() == null) {
-                    offsetPolygon = PolygonUtils.offsetPolygon(mergedPolygon, -1 * strokeWidth);
-                } else {
-                    offsetPolygon = PolygonUtils.offsetPolygon(mergedPolygon, -1 * strokeWidth * 3);
-                }
                 // polygonPoints.add(new Point((int) mergedPolygon[j], (int) mergedPolygon[j +
                 // 1]));
                 polygonPoints.add(new Point((int) offsetPolygon[j], (int) offsetPolygon[j + 1]));
             }
             finalPolygons.add(
-                    new Polygon(key, new Polyline("border-" + country.getUuid().toString() + "-" + i, polygonPoints)));
+                    new Polygon(key + "-" + i, new Polyline("border-" + uuid + "-" + i, polygonPoints)));
+            i++;
         }
 
         MultiPolygon mapPolygon = new MultiPolygon(key, finalPolygons);
         mapPolygon.setOptions(markerOptions);
-        layer.addMarker(mapPolygon);
+
+        var finalIconMarker = iconMarker;
+        return () -> {
+            if (UnitedLandsDataManager.instance().getCountry(country.uuid()) == null)
+                return;
+
+            var layer = getCountryLayer(country.worldName());
+            var iconLayer = getCountryIconLayer(country.worldName());
+            if (layer == null || iconLayer == null)
+                return;
+
+            removeIfPresent(iconLayer, iconKey);
+            if (finalIconMarker != null)
+                iconLayer.addMarker(finalIconMarker);
+
+            removeIfPresent(layer, key);
+            layer.addMarker(mapPolygon);
+        };
     }
 
     public void removeCountry(Country country) {
-
-        net.pl3x.map.core.world.World mapworld = Pl3xMap.api().getWorldRegistry().get(country.getWorldName());
-        var countryLayer = mapworld.getLayerRegistry().get("countries");
-
-        if (countryLayer != null) {
-            var countryMarkers = countryLayer.getMarkers();
-            var poly = countryMarkers.stream().filter(m -> m.getKey().equals("country-" + country.getUuid().toString()))
-                    .findFirst().orElse(null);
-            if (poly != null) {
-                countryMarkers.remove(poly);
-                return;
-            }
-        }
-
-        var iconLayer = mapworld.getLayerRegistry().get("countryicons");
-        if (iconLayer != null) {
-            var iconMarkers = iconLayer.getMarkers();
-            var poly = iconMarkers.stream()
-                    .filter(m -> m.getKey().equals("country-icon-" + country.getUuid().toString()))
-                    .findFirst().orElse(null);
-            if (poly != null) {
-                iconMarkers.remove(poly);
-                return;
-            }
-        }
+        removeMarkerFromLayer(country.getWorldName(), "countries", "country-" + country.getUuid().toString());
+        removeCountryIcon(country);
     }
 
     public void removeCountryIcon(Country country) {
-
-        net.pl3x.map.core.world.World mapworld = Pl3xMap.api().getWorldRegistry().get(country.getWorldName());
-        var iconLayer = mapworld.getLayerRegistry().get("countryicons");
-        if (iconLayer != null) {
-            var iconMarkers = iconLayer.getMarkers();
-            var poly = iconMarkers.stream()
-                    .filter(m -> m.getKey().equals("country-icon-" + country.getUuid().toString()))
-                    .findFirst().orElse(null);
-            if (poly != null) {
-                iconMarkers.remove(poly);
-                return;
-            }
-        }
+        removeMarkerFromLayer(country.getWorldName(), "countryicons", "country-icon-" + country.getUuid().toString());
     }
 
     private String getCountryInfoBox(Country country) {
@@ -413,72 +483,7 @@ public class Pl3xMapRenderer {
     // Region rendering
     // *********************************************************
 
-    private void renderPolyRegions(Collection<Region> regions, boolean debug) {
-
-        United.logger().info("Starting region map rendering...", "UnitedLands");
-
-        if (regions == null || regions.isEmpty()) {
-            United.logger().info("No regions to render.", "UnitedLands");
-            return;
-        }
-
-        var startTime = System.currentTimeMillis();
-        List<CompletableFuture<Void>> futures = regions.stream()
-                .map(region -> CompletableFuture.runAsync(() -> renderPolyRegionAsync(region, debug))).toList();
-
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenRun(() -> {
-            var executionTime = System.currentTimeMillis() - startTime;
-            United.logger().info("Created " + regions.size() + " regions in map overlay in " + executionTime + "ms");
-        }).exceptionally(ex -> {
-            United.logger().error("Error rendering regions: " + ex.getMessage(), "UnitedLands");
-            return null;
-        });
-
-    }
-
-    private void renderPolyRegionAsync(Region region, boolean debug) {
-
-        var unclaimedLayer = getOrCreateSimpleLayer(region.getWorldName(), "unclaimedregions", "Unclaimed Regions", 8,
-                450, false);
-        var claimedLayer = getOrCreateSimpleLayer(region.getWorldName(), "claimedregions", "Claimed Regions", 6, 450,
-                false);
-
-        SimpleLayer regionLayer;
-        if (!region.hasCountry()) {
-            regionLayer = unclaimedLayer;
-        } else {
-            regionLayer = claimedLayer;
-        }
-        SimpleLayer regionInfoMarkerLayer = getOrCreateSimpleLayer(region.getWorldName(), "regioninfos", "Region Infos",
-                10, 100);
-
-        var key = "region-" + region.getUuid().toString();
-        if (unclaimedLayer.hasMarker(key))
-            unclaimedLayer.removeMarker(key);
-        if (claimedLayer.hasMarker(key))
-            claimedLayer.removeMarker(key);
-
-        // var centerMarkerKey = "center-" + region.getUuid();
-        // if (regionInfoMarkerLayer.hasMarker(centerMarkerKey))
-        //     regionInfoMarkerLayer.removeMarker(centerMarkerKey);
-        var claimMarkerKey = "claim-" + region.getUuid();
-        if (regionInfoMarkerLayer.hasMarker(claimMarkerKey))
-            regionInfoMarkerLayer.removeMarker(claimMarkerKey);
-
-        var centerWordLocation = CoordinateUtils.chunkToWorldCoordinates(region.getHomeChunkCoordinates());
-        var centerMarkerPosition = new Point(centerWordLocation.getX() + 8, centerWordLocation.getZ() + 8);
-
-        // var centerMarker = Marker.icon(centerMarkerKey, centerMarkerPosition, "region-center");
-        // regionInfoMarkerLayer.addMarker(centerMarker);
-
-        if (region.getClaimEndTime() != null) {
-            var claimMarker = Marker.icon(claimMarkerKey, centerMarkerPosition, "claiming");
-            regionInfoMarkerLayer.addMarker(claimMarker);
-        }
-
-        // var popup = new Popup("<div><p><strong>" + region.getCleanName() +
-        // "</strong></p><p><strong>Owner: </strong>"
-        // + (region.hasFounder() ? region.getFounderName() : "-") + "</p></div>");
+    private RegionSnapshot snapshot(Region region, boolean debug) {
 
         String dash = UnitedLandsConfig.get().mapRendering().get("region-default").dash();
         int strokeWidth = UnitedLandsConfig.get().mapRendering().get("region-default").width();
@@ -505,33 +510,80 @@ public class Pl3xMapRenderer {
                 + (region.isCoastal() ? " &#127754;" : "")
                 + (region.isIsland() ? " &#9875;" : "");
 
-        var markerOptions = Options.builder().fill(true).fillType(Fill.Type.NONZERO).fillColor(fillColor).stroke(true)
-                .strokeColor(strokeColor)
-                .strokeDashPattern(dash).strokeWeight(strokeWidth).tooltipContent(tooltip).build();
+        return new RegionSnapshot(region.getUuid(), region.getWorldName(), region.hasCountry(),
+                region.getClaimEndTime() != null, region.getHomeChunkCoordinates().clone(), tooltip, fillColor,
+                strokeColor, strokeWidth, dash, region.getPolygon());
+    }
 
-        var polyPoints = region.getPolygon();
-        LinkedList<Point> points = new LinkedList<>();
-        for (int i = 0; i < polyPoints.length - 2; i = i + 2) {
-            points.add(new Point((int) polyPoints[i], (int) polyPoints[i + 1]));
+    private Runnable buildRegion(RegionSnapshot region) {
+
+        var key = "region-" + region.uuid().toString();
+        // var centerMarkerKey = "center-" + region.getUuid();
+        // if (regionInfoMarkerLayer.hasMarker(centerMarkerKey))
+        //     regionInfoMarkerLayer.removeMarker(centerMarkerKey);
+        var claimMarkerKey = "claim-" + region.uuid();
+
+        var centerWordLocation = CoordinateUtils.chunkToWorldCoordinates(region.homeChunk());
+        var centerMarkerPosition = new Point(centerWordLocation.getX() + 8, centerWordLocation.getZ() + 8);
+
+        // var centerMarker = Marker.icon(centerMarkerKey, centerMarkerPosition, "region-center");
+        // regionInfoMarkerLayer.addMarker(centerMarker);
+
+        Icon claimMarker = null;
+        if (region.claiming()) {
+            claimMarker = Marker.icon(claimMarkerKey, centerMarkerPosition, "claiming");
         }
 
-        Polygon polygon = new Polygon(key, new Polyline("border-" + region.getUuid().toString(), points));
-        polygon.setOptions(markerOptions);
+        // var popup = new Popup("<div><p><strong>" + region.getCleanName() +
+        // "</strong></p><p><strong>Owner: </strong>"
+        // + (region.hasFounder() ? region.getFounderName() : "-") + "</p></div>");
 
-        regionLayer.addMarker(polygon);
+        var markerOptions = Options.builder().fill(true).fillType(Fill.Type.NONZERO).fillColor(region.fillColor())
+                .stroke(true)
+                .strokeColor(region.strokeColor())
+                .strokeDashPattern(region.dash()).strokeWeight(region.strokeWidth())
+                .tooltipContent(region.tooltip()).build();
+
+        Polygon polygon = null;
+        var polyPoints = region.polygon();
+        if (polyPoints != null) {
+            LinkedList<Point> points = new LinkedList<>();
+            for (int i = 0; i < polyPoints.length - 2; i = i + 2) {
+                points.add(new Point((int) polyPoints[i], (int) polyPoints[i + 1]));
+            }
+
+            polygon = new Polygon(key, new Polyline("border-" + region.uuid().toString(), points));
+            polygon.setOptions(markerOptions);
+        }
+
+        var finalClaimMarker = claimMarker;
+        var finalPolygon = polygon;
+        return () -> {
+            if (UnitedLandsDataManager.instance().getRegion(region.uuid()) == null)
+                return;
+
+            var unclaimedLayer = getUnclaimedRegionLayer(region.worldName());
+            var claimedLayer = getClaimedRegionLayer(region.worldName());
+            var regionInfoMarkerLayer = getRegionInfoLayer(region.worldName());
+            if (unclaimedLayer == null || claimedLayer == null || regionInfoMarkerLayer == null)
+                return;
+
+            removeIfPresent(unclaimedLayer, key);
+            removeIfPresent(claimedLayer, key);
+            if (finalPolygon != null)
+                (region.claimed() ? claimedLayer : unclaimedLayer).addMarker(finalPolygon);
+
+            removeIfPresent(regionInfoMarkerLayer, claimMarkerKey);
+            if (finalClaimMarker != null)
+                regionInfoMarkerLayer.addMarker(finalClaimMarker);
+        };
     }
 
     public void removeRegion(Region region) {
         String key = "region-" + region.getUuid().toString();
-        var unclaimedLayer = getOrCreateSimpleLayer(region.getWorldName(), "unclaimedregions", "Unclaimed Regions", 30,
-                460, false);
-        if (unclaimedLayer.hasMarker(key))
-            unclaimedLayer.removeMarker(key);
-
-        var claimedLayer = getOrCreateSimpleLayer(region.getWorldName(), "claimedregions", "Claimed Regions", 20, 460,
-                false);
-        if (claimedLayer.hasMarker(key))
-            claimedLayer.removeMarker(key);
+        removeMarkerFromLayer(region.getWorldName(), "unclaimedregions", key);
+        removeMarkerFromLayer(region.getWorldName(), "claimedregions", key);
+        removeMarkerFromLayer(region.getWorldName(), "regioninfos", "claim-" + region.getUuid());
     }
 
     // #region Settlement rendering
@@ -540,57 +592,34 @@ public class Pl3xMapRenderer {
     // Settlement rendering
     // *********************************************************
 
-    private void renderSettlements(Collection<Settlement> settlements) {
+    private SettlementSnapshot snapshot(Settlement settlement) {
 
-        United.logger().info("Starting settlement map rendering...", "UnitedLands");
+        var style = settlement.hasCountry() ? "settlement-in-country" : "settlement-default";
+        int strokeWidth = UnitedLandsConfig.get().mapRendering().get(style).width();
+        String dash = UnitedLandsConfig.get().mapRendering().get(style).dash();
 
-        if (settlements == null || settlements.isEmpty()) {
-            United.logger().info("No settlements to render.", "UnitedLands");
-            return;
-        }
+        Set<MapChunk> chunks = settlement.getChunks().stream()
+                .map(c -> new MapChunk(c.getCoordinates().clone()))
+                .collect(Collectors.toSet());
 
-        var startTime = System.currentTimeMillis();
-        List<CompletableFuture<Void>> futures = settlements.stream()
-                .map(settlement -> CompletableFuture.runAsync(() -> renderSettlementAsync(settlement)))
-                .toList();
-
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).thenRun(() -> {
-            var executionTime = System.currentTimeMillis() - startTime;
-            United.logger()
-                    .info("Created " + settlements.size() + " settlements in map overlay in " + executionTime + "ms");
-        }).exceptionally(ex -> {
-            United.logger().error("Error rendering settlements: " + ex.getMessage(), "UnitedLands");
-            return null;
-        });
+        return new SettlementSnapshot(settlement.getUuid(), settlement.getWorldName(), settlement.getCleanName(),
+                settlement.getFillColor(), settlement.getStrokeColor(), strokeWidth, dash,
+                getSettlementInfoBox(settlement), chunks);
     }
 
-    private void renderSettlementAsync(Settlement settlement) {
+    private Runnable buildSettlement(SettlementSnapshot settlement) {
 
-        SimpleLayer layer = getOrCreateSimpleLayer(settlement.getWorldName(), "settlements", "Settlements", 1, 480);
-
-        String uuid = settlement.getUuid().toString();
-        United.logger().info("Rendering settlement " + uuid + "...");
+        String uuid = settlement.uuid().toString();
         String key = "settlement-" + uuid;
-        // if (layer.hasMarker(key))
-        // layer.removeMarker(key);
-
-        var popup = new Popup(getSettlementInfoBox(settlement));
-
-        int strokeWidth = UnitedLandsConfig.get().mapRendering().get("settlement-default").width();
-        String dash = UnitedLandsConfig.get().mapRendering().get("settlement-default").dash();
-
-        if (settlement.hasCountry()) {
-            strokeWidth = UnitedLandsConfig.get().mapRendering().get("settlement-in-country").width();
-            dash = UnitedLandsConfig.get().mapRendering().get("settlement-in-country").dash();
-        }
 
         var markerOptions = Options.builder().fill(true).fillType(Fill.Type.EVENODD)
-                .fillColor(settlement.getFillColor()).stroke(true)
-                .strokeColor(settlement.getStrokeColor()).strokeWeight(strokeWidth).strokeDashPattern(dash)
-                .tooltipContent(settlement.getCleanName()).build()
-                .setPopup(popup);
+                .fillColor(settlement.fillColor()).stroke(true)
+                .strokeColor(settlement.strokeColor()).strokeWeight(settlement.strokeWidth())
+                .strokeDashPattern(settlement.dash())
+                .tooltipContent(settlement.name()).build()
+                .setPopup(new Popup(settlement.infoBox()));
 
-        var chunkClusters = findClusters(settlement.getChunks());
+        var chunkClusters = findClusters(settlement.chunks());
         List<Polygon> polygons = new ArrayList<>();
 
         int i = 0;
@@ -600,36 +629,36 @@ public class Pl3xMapRenderer {
 
             clusterLines.add(new Polyline("border-" + uuid + "-" + i, generatePolygon(cluster.chunks)));
 
-            var holeClusters = findHoles(cluster, settlement.getWorldName());
+            var holeClusters = findHoles(cluster, settlement.worldName());
             int j = 0;
             for (var holeCluster : holeClusters) {
-                clusterLines.add(new Polyline("hole-" + uuid + "-" + j, generatePolygon(holeCluster.chunks)));
+                clusterLines.add(
+                        new Polyline("hole-" + uuid + "-" + i + "-" + j, generatePolygon(holeCluster.chunks)));
                 j++;
             }
 
             polygons.add(new Polygon("cluster-" + uuid + "-" + i, clusterLines));
+            i++;
         }
         MultiPolygon mapPolygon = new MultiPolygon(key, polygons);
         mapPolygon.setOptions(markerOptions);
 
-        layer.addMarker(mapPolygon);
+        return () -> {
+            if (UnitedLandsDataManager.instance().getSettlement(settlement.uuid()) == null)
+                return;
+
+            var layer = getSettlementLayer(settlement.worldName());
+            if (layer == null)
+                return;
+
+            removeIfPresent(layer, key);
+            layer.addMarker(mapPolygon);
+        };
     }
 
     public void removeSettlement(Settlement settlement) {
-
-        net.pl3x.map.core.world.World mapworld = Pl3xMap.api().getWorldRegistry().get(settlement.getWorldName());
-        var settlementsLayer = mapworld.getLayerRegistry().get("settlements");
-
-        if (settlementsLayer != null) {
-            var settlemenMarkers = settlementsLayer.getMarkers();
-            var poly = settlemenMarkers.stream()
-                    .filter(m -> m.getKey().equals("settlement-" + settlement.getUuid().toString())).findFirst()
-                    .orElse(null);
-            if (poly != null) {
-                settlemenMarkers.remove(poly);
-                return;
-            }
-        }
+        removeMarkerFromLayer(settlement.getWorldName(), "settlements",
+                "settlement-" + settlement.getUuid().toString());
     }
 
     private String getSettlementInfoBox(Settlement settlement) {
@@ -782,14 +811,12 @@ public class Pl3xMapRenderer {
 
         // Collect all empty chunks inside the (unexpanded) bounding box
         // that were never reached — these are holes
-        Set<SettlementChunk> holeChunks = new HashSet<>();
+        Set<MapChunk> holeChunks = new HashSet<>();
         for (int x = minX + 1; x <= maxX - 1; x++) {
             for (int z = minZ + 1; z <= maxZ - 1; z++) {
                 String key = toKey(x, z, worldName);
                 if (!occupied.contains(key) && !reachable.contains(key)) {
-                    // Create a synthetic SettlementChunk to represent this empty position
-                    SettlementChunk hole = new SettlementChunk(new Coordinates(x, z, worldName));
-                    holeChunks.add(hole);
+                    holeChunks.add(new MapChunk(new Coordinates(x, z, worldName)));
                 }
             }
         }
@@ -802,11 +829,15 @@ public class Pl3xMapRenderer {
     // Polygon creation
     // *******************************
 
-    private List<Point> generatePolygon(Set<CoordinateHolder> chunks) {
+    private List<Point> generatePolygon(Set<CoordinateHolder> chunkSet) {
+
+        Map<Coordinates, CoordinateHolder> chunks = new HashMap<>();
+        for (var chunk : chunkSet)
+            chunks.put(chunk.getCoordinates(), chunk);
 
         Set<Coordinates> polygon = new LinkedHashSet<>();
 
-        var rightmostChunk = findRightmostChunk(chunks);
+        var rightmostChunk = findRightmostChunk(chunkSet);
 
         var originPoint = rightmostChunk.getUpperLeft();
 
@@ -926,39 +957,75 @@ public class Pl3xMapRenderer {
     private SimpleLayer getOrCreateSimpleLayer(String world, String key, String name, int priority, int zindex,
             boolean setPane) {
 
-        CompletableFuture<SimpleLayer> simpleLayerFuture = new CompletableFuture<>();
+        if (world == null)
+            return null;
 
-        var paneName = key.replace("-", "");
+        net.pl3x.map.core.world.World mapworld = Pl3xMap.api().getWorldRegistry().get(world);
+        if (mapworld == null)
+            return null;
 
-        Bukkit.getScheduler().runTask(UnitedLands.instance(), () -> {
+        SimpleLayer layer = (SimpleLayer) mapworld.getLayerRegistry().get(key);
 
-            net.pl3x.map.core.world.World mapworld = Pl3xMap.api().getWorldRegistry().get(world);
-            SimpleLayer layer = (SimpleLayer) mapworld.getLayerRegistry().get(key);
+        if (layer == null) {
+            var options = new LayerOptions(name, true, false, priority, zindex);
+            layer = new SimpleLayer(key, options::getName);
+            layer.setDefaultHidden(options.isDefaultHidden());
+            layer.setPriority(options.getLayerPriority());
+            if (setPane)
+                layer.setPane(key.replace("-", ""));
+            layer.setZIndex(options.getZIndex());
+            layer.setShowControls(options.showControls());
+            mapworld.getLayerRegistry().register(layer);
+        }
 
-            if (layer == null) {
-                var options = new LayerOptions(name, true, false, priority, zindex);
-                layer = new SimpleLayer(key, options::getName);
-                layer.setDefaultHidden(options.isDefaultHidden());
-                layer.setPriority(options.getLayerPriority());
-                if (setPane)
-                    layer.setPane(paneName);
-                layer.setZIndex(options.getZIndex());
-                layer.setShowControls(options.showControls());
-                mapworld.getLayerRegistry().register(layer);
-            }
-
-            simpleLayerFuture.complete(layer);
-        });
-
-        return simpleLayerFuture.join();
+        return layer;
     }
 
-    private boolean isChunkAtCoordinates(Set<CoordinateHolder> chunks, Coordinates coords) {
-        return chunks.stream().anyMatch(c -> c.getCoordinates().equals(coords));
+    private SimpleLayer getSettlementLayer(String world) {
+        return getOrCreateSimpleLayer(world, "settlements", "Settlements", 1, 480);
     }
 
-    private CoordinateHolder getChunkAtCoordinates(Set<CoordinateHolder> chunks, Coordinates coords) {
-        return chunks.stream().filter(c -> c.getCoordinates().equals(coords)).findFirst().orElse(null);
+    private SimpleLayer getCountryLayer(String world) {
+        return getOrCreateSimpleLayer(world, "countries", "Countries", 1, 460);
+    }
+
+    private SimpleLayer getCountryIconLayer(String world) {
+        return getOrCreateSimpleLayer(world, "countryicons", "Country Icons", 1, 465);
+    }
+
+    private SimpleLayer getUnclaimedRegionLayer(String world) {
+        return getOrCreateSimpleLayer(world, "unclaimedregions", "Unclaimed Regions", 8, 450, false);
+    }
+
+    private SimpleLayer getClaimedRegionLayer(String world) {
+        return getOrCreateSimpleLayer(world, "claimedregions", "Claimed Regions", 6, 450, false);
+    }
+
+    private SimpleLayer getRegionInfoLayer(String world) {
+        return getOrCreateSimpleLayer(world, "regioninfos", "Region Infos", 10, 100);
+    }
+
+    private void removeIfPresent(SimpleLayer layer, String markerKey) {
+        if (layer.hasMarker(markerKey))
+            layer.removeMarker(markerKey);
+    }
+
+    private void removeMarkerFromLayer(String world, String layerKey, String markerKey) {
+        if (world == null)
+            return;
+        net.pl3x.map.core.world.World mapworld = Pl3xMap.api().getWorldRegistry().get(world);
+        if (mapworld == null)
+            return;
+        if (mapworld.getLayerRegistry().get(layerKey) instanceof SimpleLayer layer)
+            removeIfPresent(layer, markerKey);
+    }
+
+    private boolean isChunkAtCoordinates(Map<Coordinates, CoordinateHolder> chunks, Coordinates coords) {
+        return chunks.containsKey(coords);
+    }
+
+    private CoordinateHolder getChunkAtCoordinates(Map<Coordinates, CoordinateHolder> chunks, Coordinates coords) {
+        return chunks.get(coords);
     }
 
     private CoordinateHolder findRightmostChunk(Set<CoordinateHolder> chunks) {

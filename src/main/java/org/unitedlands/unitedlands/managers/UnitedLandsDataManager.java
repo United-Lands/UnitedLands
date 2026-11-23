@@ -3,9 +3,11 @@ package org.unitedlands.unitedlands.managers;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -164,6 +166,7 @@ public class UnitedLandsDataManager {
                 "UnitedLands");
 
         regionIndex.build(regions.values(), worldXMin, worldZMin, worldXMax, worldZMax);
+        coordinateRegionCache.clear();
     }
 
     public void buildCountries(List<Country> loadedCountries) {
@@ -296,17 +299,11 @@ public class UnitedLandsDataManager {
     }
 
     public Citizen getCitizen(String name) {
-        CompletableFuture<Citizen> future = CompletableFuture.supplyAsync(() -> {
-            return citizens.values().stream().filter(c -> name.equalsIgnoreCase(c.getName())).findFirst().orElse(null);
-        });
-        return future.join();
+        return citizens.values().stream().filter(c -> name.equalsIgnoreCase(c.getName())).findFirst().orElse(null);
     }
 
     public List<String> getCitizenNames() {
-        CompletableFuture<List<String>> future = CompletableFuture.supplyAsync(() -> {
-            return citizens.values().stream().map(Citizen::getName).collect(Collectors.toList());
-        });
-        return future.join();
+        return citizens.values().stream().map(Citizen::getName).collect(Collectors.toList());
     }
 
     public void registerCitizen(Citizen citizen) {
@@ -393,25 +390,25 @@ public class UnitedLandsDataManager {
         if (prevailing.equals(merging))
             return;
 
-        for (var chunk : merging.getChunks()) {
-            prevailing.addChunk(chunk);
+        PlayerCacheManager.instance().clearPlayerCachesForSettlement(merging);
+
+        for (var chunk : new HashSet<>(merging.getChunks())) {
+            merging.removeChunk(chunk);
             chunk.setSettlement(prevailing);
+            prevailing.addChunk(chunk);
             chunk.save();
         }
-        for (var citizen : merging.getCitizens()) {
+
+        boolean sameCountry = Objects.equals(prevailing.getCountryUuid(), merging.getCountryUuid());
+        for (var citizen : new HashSet<>(merging.getCitizens())) {
             citizen.setSettlement(prevailing);
             citizen.removeSettlementRanks();
+            if (!sameCountry)
+                citizen.removeCountryRanks();
             citizen.save();
+            prevailing.addCitizen(citizen);
         }
-
-        if (merging.hasRegion()) {
-            var region = merging.getRegion();
-            region.removeSettlement(merging);
-        }
-        if (merging.hasCountry()) {
-            var country = merging.getCountry();
-            country.removeSettlement(merging);
-        }
+        merging.setCitizens(new HashSet<>());
 
         UnitedLandsEconomyManager.instance().deposit(prevailing.getUuid(),
                 UnitedLandsEconomyManager.instance().getBalance(merging.getUuid()),
@@ -419,6 +416,8 @@ public class UnitedLandsDataManager {
                 "Merging of settlement bank of " + merging.getName());
 
         removeSettlement(merging);
+
+        prevailing.saveAndRender();
     }
 
     public void removeSettlement(Settlement settlement) {
@@ -445,19 +444,15 @@ public class UnitedLandsDataManager {
 
         UnitedLandsEconomyManager.instance().deleteAccount(settlement.getUuid());
         UnitedLandsDataManager.instance().removeSettlementDbData(settlement);
-        Pl3xMapRenderer.instance().removeSettlement(settlement);
     }
 
     // Database operations
 
     public void createSettlementDbData(Settlement settlement) {
-        var settlementFuture = databaseManager.getSettlementService().createAsync(settlement);
-        var settlementChunkFuture = databaseManager.getSettlementChunkService().createAllAsync(settlement.getChunks());
-        CompletableFuture.allOf(settlementFuture, settlementChunkFuture).thenAccept(result -> {
-            registerSettlement(settlement);
-            Pl3xMapRenderer.instance().addToRenderQueue(settlement);
-        }).join();
-        United.logger().debug("End of createSettlementDbData");
+        databaseManager.getSettlementService().createAsync(settlement);
+        databaseManager.getSettlementChunkService().createAllAsync(settlement.getChunks());
+        registerSettlement(settlement);
+        Pl3xMapRenderer.instance().addToRenderQueue(settlement);
     }
 
     public CompletableFuture<Void> createSettlementDbDataAsync(Settlement settlement) {
@@ -533,10 +528,7 @@ public class UnitedLandsDataManager {
     }
 
     public List<String> getSettlementNames() {
-        CompletableFuture<List<String>> future = CompletableFuture.supplyAsync(() -> {
-            return settlements.values().stream().map(Settlement::getName).collect(Collectors.toList());
-        });
-        return future.join();
+        return settlements.values().stream().map(Settlement::getName).collect(Collectors.toList());
     }
 
     // #endregion
@@ -610,6 +602,7 @@ public class UnitedLandsDataManager {
     public void removeRegionDbData(Region region) {
         databaseManager.getRegionService().deleteAsync(region);
         unregisterRegion(region);
+        buildRegionIndex();
         Pl3xMapRenderer.instance().removeRegion(region);
     }
 
@@ -624,10 +617,12 @@ public class UnitedLandsDataManager {
 
     public void registerRegion(Region region) {
         regions.put(region.getUuid(), region);
+        coordinateRegionCache.clear();
     }
 
     public void unregisterRegion(Region region) {
         regions.remove(region.getUuid());
+        coordinateRegionCache.clear();
     }
 
     public Collection<Region> getRegions() {
@@ -660,10 +655,7 @@ public class UnitedLandsDataManager {
     }
 
     public List<String> getRegionNames() {
-        CompletableFuture<List<String>> future = CompletableFuture.supplyAsync(() -> {
-            return regions.values().stream().map(Region::getName).collect(Collectors.toList());
-        });
-        return future.join();
+        return regions.values().stream().map(Region::getName).collect(Collectors.toList());
     }
 
     public Set<Region> getRegionClaimsOngoing(Country country) {
@@ -836,17 +828,12 @@ public class UnitedLandsDataManager {
     }
 
     public List<String> getCountryNames() {
-        CompletableFuture<List<String>> future = CompletableFuture.supplyAsync(() -> {
-            return countries.values().stream().map(Country::getName).collect(Collectors.toList());
-        });
-        return future.join();
+        return countries.values().stream().map(Country::getName).collect(Collectors.toList());
     }
 
     public Set<Citizen> getCountryCitizens(Country country) {
-        CompletableFuture<Set<Citizen>> future = CompletableFuture
-                .supplyAsync(() -> settlements.values().stream().filter(s -> country.equals(s.getCountry()))
-                        .flatMap(s -> s.getCitizens().stream()).collect(Collectors.toSet()));
-        return future.join();
+        return settlements.values().stream().filter(s -> country.equals(s.getCountry()))
+                .flatMap(s -> s.getCitizens().stream()).collect(Collectors.toSet());
     }
 
     // #endregion
@@ -870,9 +857,9 @@ public class UnitedLandsDataManager {
         }
     }
 
-    public List<BankRecord> getBankRecords(BankRecordTransactionType type, int days) {
+    public List<BankRecord> getBankRecords(BankRecordTransactionType type, long from, long to) {
         try {
-            return databaseManager.getBankRecordService().getRecordsByTypeAsync(type, days).get();
+            return databaseManager.getBankRecordService().getRecordsByTypeAsync(type, from, to).get();
         } catch (Exception ex) {
             United.logger().error("Could not retrieve bank records for type " + type, "UnitedLands");
             return new ArrayList<>();
@@ -924,6 +911,15 @@ public class UnitedLandsDataManager {
         } catch (Exception ex) {
             United.logger().error("Could not retrieve ULCINC records", "UnitedLands");
             return new ArrayList<>();
+        }
+    }
+
+    public Long getLatestUlcincTimestamp() {
+        try {
+            return databaseManager.getUlcincService().getLatestTimestampAsync().get().orElse(null);
+        } catch (Exception ex) {
+            United.logger().error("Could not retrieve latest ULCINC timestamp", "UnitedLands");
+            return null;
         }
     }
 

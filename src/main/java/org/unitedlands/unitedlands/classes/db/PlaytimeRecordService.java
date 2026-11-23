@@ -1,6 +1,5 @@
 package org.unitedlands.unitedlands.classes.db;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Collections;
@@ -23,19 +22,12 @@ public class PlaytimeRecordService extends BaseDbService<PlaytimeRecord> {
                                            .toInstant()
                                            .toEpochMilli();
 
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                return dao.query(
-                    dao.queryBuilder().where()
-                        .ge("logon", cutoff)
-                        .prepare()
-                );
-            } catch (SQLException e) {
-                e.printStackTrace();
-                return Collections.emptyList();
-            }
-        });          
-        
+        return readAsync("Query of playtime records", () -> dao.query(
+                dao.queryBuilder().where()
+                    .ge("logon", cutoff)
+                    .prepare()
+            ), Collections.emptyList());
+
     }
 
     public CompletableFuture<List<PlaytimeRecord>> getForLastDaysAsync(UUID playerId, int days) {
@@ -44,21 +36,14 @@ public class PlaytimeRecordService extends BaseDbService<PlaytimeRecord> {
                                            .toInstant()
                                            .toEpochMilli();
 
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                return dao.query(
-                    dao.queryBuilder().where()
-                        .ge("logon", cutoff)
-                        .and()
-                        .eq("player_uuid", playerId)
-                        .prepare()
-                );
-            } catch (SQLException e) {
-                e.printStackTrace();
-                return Collections.emptyList();
-            }
-        });          
-        
+        return readAsync("Query of playtime records for " + playerId, () -> dao.query(
+                dao.queryBuilder().where()
+                    .ge("logon", cutoff)
+                    .and()
+                    .eq("player_uuid", playerId)
+                    .prepare()
+            ), Collections.emptyList());
+
     }
 
 }

@@ -41,6 +41,10 @@ public class PlayerCacheManager {
         return playerCache.computeIfAbsent(playerUuid, k -> new PlayerCache(Bukkit.getPlayer(playerUuid)));
     }
 
+    public void removePlayerCache(Player player) {
+        playerCache.remove(player.getUniqueId());
+    }
+
     // Cache clearing (e.g. when a settlement is removed)
 
     public void clearOnlinePlayerCaches() {

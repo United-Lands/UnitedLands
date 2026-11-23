@@ -83,12 +83,14 @@ public class CmdCountrySetIcon extends CountryCommandHandler {
                 String fileName = context.country().getUuid().toString() + ".png";
                 save(fileName, data);
 
-                Pl3xMapRenderer.instance().registerIcon(context.country().getUuid().toString(), fileName);
+                Bukkit.getScheduler().runTask(UnitedLands.instance(), () -> {
+                    Pl3xMapRenderer.instance().registerIcon(context.country().getUuid().toString(), fileName);
 
-                context.country().setIconPosition(context.country().getSpawn());
-                context.country().saveAndRender();
+                    context.country().setIconPosition(context.country().getSpawn());
+                    context.country().saveAndRender();
 
-                United.messenger().send(sender, "play.country.seticon.success");
+                    United.messenger().send(sender, "play.country.seticon.success");
+                });
             } catch (IconException e) {
                 United.messenger().sendRaw(sender, e.getMessage());
             } catch (InterruptedException e) {

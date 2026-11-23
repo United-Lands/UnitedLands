@@ -1,7 +1,9 @@
 package org.unitedlands.unitedlands;
 
 import java.io.File;
+import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Base64;
 
 import org.unitedlands.classes.ConfigFile;
 import org.unitedlands.unitedlands.classes.webservices.ApiRouter;
@@ -24,6 +26,8 @@ import io.undertow.server.handlers.resource.ResourceHandler;
 import io.undertow.util.HttpString;
 
 public class UnitedLandsWebServices {
+
+    private static final String LEGACY_DEFAULT_SIGNING_KEY = "dkFycUlwb2t2YWczdWZ4YmNka2p0VkhIc1ZNeW9neUtrRGxPN1Z6UDRYalVTODVxUw===";
 
     private ConfigFile config;
     private Undertow server;
@@ -75,11 +79,26 @@ public class UnitedLandsWebServices {
         }
     }
 
+    private String getOrCreateSigningKey() {
+        var secret = config.get().getString("signing-key");
+        if (secret != null && !secret.isBlank() && !secret.equals(LEGACY_DEFAULT_SIGNING_KEY))
+            return secret;
+
+        byte[] keyBytes = new byte[64];
+        new SecureRandom().nextBytes(keyBytes);
+        secret = Base64.getEncoder().encodeToString(keyBytes);
+
+        config.get().set("signing-key", secret);
+        config.save();
+
+        United.logger().warning("No custom web services signing key found, generated a new one in webservices.yml. "
+                + "Existing web sessions are no longer valid.", "UnitedLands");
+        return secret;
+    }
+
     private Undertow buildServer(String host, int port, File webDir) {
 
-        var secret = config.get().getString("signing-key");
-        if (secret == null)
-            throw new IllegalStateException("No signing key found, cannot start web services.");
+        var secret = getOrCreateSigningKey();
 
         HttpHandler apiRouter = new ApiRouter()
                 .get("/auth/status/{id}", new AuthStatusHandler())
@@ -143,7 +162,8 @@ public class UnitedLandsWebServices {
     }
 
     public void stopWebServices() {
-        server.stop();
+        if (server != null)
+            server.stop();
     }
 
 }

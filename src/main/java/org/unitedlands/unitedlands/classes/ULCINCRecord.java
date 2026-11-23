@@ -82,6 +82,10 @@ public class ULCINCRecord implements Identifiable {
         this.countryId = country.getUuid();
     }
 
+    public UUID getCountryId() {
+        return countryId;
+    }
+
     public double getActivityIndex() {
         return activityIndex;
     }

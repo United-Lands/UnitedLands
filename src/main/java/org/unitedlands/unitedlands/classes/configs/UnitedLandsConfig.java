@@ -172,7 +172,6 @@ public interface UnitedLandsConfig extends UnitedConfigHandler {
 
     public record ULCINC(
         @UnitedSetting(key = "smoothing-days", def = "14") int smoothingDays,
-        @UnitedSetting(key = "total-formula", def = "((activity + economy + military + geography) / 4) * 100")  String  totalFormula, 
         @UnitedSection(key = "economy-weights") ULCINCEconomyWeights economyWeights,       
         @UnitedSection(key = "geography-weights") ULCINCGeographyWeights geographyWeights
     ) {}

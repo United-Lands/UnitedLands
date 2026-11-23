@@ -12,6 +12,7 @@ import org.unitedlands.unitedlands.classes.SettlementChunk;
 import org.unitedlands.unitedlands.classes.ULCINCRecord;
 import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.classes.db.BankRecordService;
+import org.unitedlands.unitedlands.classes.db.BaseDbService;
 import org.unitedlands.unitedlands.classes.db.CitizenService;
 import org.unitedlands.unitedlands.classes.db.CountryService;
 import org.unitedlands.unitedlands.classes.db.LoginChallengeService;
@@ -93,7 +94,7 @@ public class DatabaseManager {
             United.logger().info("DatabaseManager initialized successfully.", "UnitedLands");
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new IllegalStateException("Database initialization failed: " + e.getMessage(), e);
         }
     }
 
@@ -154,6 +155,7 @@ public class DatabaseManager {
     }
 
     public void close() {
+        BaseDbService.shutdownExecutors(30);
         try {
             if (connectionSource != null) {
                 connectionSource.close();

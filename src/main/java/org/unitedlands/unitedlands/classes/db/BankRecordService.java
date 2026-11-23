@@ -1,8 +1,5 @@
 package org.unitedlands.unitedlands.classes.db;
 
-import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -20,42 +17,29 @@ public class BankRecordService extends BaseDbService<BankRecord> {
 
     public CompletableFuture<List<BankRecord>> getRecordsAsync(UUID id, long page, int pageSize) {
 
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                QueryBuilder<BankRecord, UUID> queryBuilder = dao.queryBuilder();
-                queryBuilder.where().eq("subject", id);
-                queryBuilder.orderBy("timestamp", false);
-                queryBuilder.orderBy("amount", true);
-                queryBuilder.offset(page * pageSize);
-                queryBuilder.limit((long) pageSize);
-                return dao.query(queryBuilder.prepare());
-            } catch (SQLException e) {
-                e.printStackTrace();
-                return List.of();
-            }
-        });
+        return readAsync("Query of bank records for " + id, () -> {
+            QueryBuilder<BankRecord, UUID> queryBuilder = dao.queryBuilder();
+            queryBuilder.where().eq("subject", id);
+            queryBuilder.orderBy("timestamp", false);
+            queryBuilder.orderBy("amount", true);
+            queryBuilder.offset(page * pageSize);
+            queryBuilder.limit((long) pageSize);
+            return dao.query(queryBuilder.prepare());
+        }, List.of());
     }
 
-    public CompletableFuture<List<BankRecord>> getRecordsByTypeAsync(BankRecordTransactionType type, int days) {
+    public CompletableFuture<List<BankRecord>> getRecordsByTypeAsync(BankRecordTransactionType type, long from, long to) {
 
-        
-        var cutoff = LocalDate.now().minusDays(days).atStartOfDay(ZoneId.systemDefault())
-                                           .toInstant()
-                                           .toEpochMilli();
-
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                QueryBuilder<BankRecord, UUID> queryBuilder = dao.queryBuilder();
-                queryBuilder.where()
-                .eq("transaction_type", type)
-                .and()
-                .ge("timestamp", cutoff);
-                return dao.query(queryBuilder.prepare());
-            } catch (SQLException e) {
-                e.printStackTrace();
-                return List.of();
-            }
-        });
+        return readAsync("Query of bank records of type " + type, () -> {
+            QueryBuilder<BankRecord, UUID> queryBuilder = dao.queryBuilder();
+            queryBuilder.where()
+            .eq("transaction_type", type)
+            .and()
+            .ge("timestamp", from)
+            .and()
+            .lt("timestamp", to);
+            return dao.query(queryBuilder.prepare());
+        }, List.of());
     }
 
 

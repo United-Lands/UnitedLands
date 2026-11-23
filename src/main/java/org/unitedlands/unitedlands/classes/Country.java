@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -283,10 +282,7 @@ public class Country extends GeopolObject {
     }
 
     public Set<Citizen> getCitizens() {
-        CompletableFuture<Set<Citizen>> future = CompletableFuture.supplyAsync(() -> {
-            return settlements.stream().map(Settlement::getCitizens).flatMap(Set::stream).collect(Collectors.toSet());
-        });
-        return future.join();
+        return settlements.stream().map(Settlement::getCitizens).flatMap(Set::stream).collect(Collectors.toSet());
     }
 
     public Set<Player> getOnlinePlayers() {
