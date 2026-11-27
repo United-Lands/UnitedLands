@@ -2,6 +2,7 @@ package org.unitedlands.unitedlands.managers;
 
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
+import org.unitedlands.unitedlands.integrations.BlueMap.BlueMapRenderer;
 import org.unitedlands.unitedlands.integrations.Pl3xMap.Pl3xMapRenderer;
 import org.unitedlands.unitedlands.integrations.Towny.TownyProvider;
 import org.unitedlands.unitedlands.integrations.map.MapRenderer;
@@ -30,11 +31,15 @@ public class IntegrationManager {
     public void loadIntegrations() {
 
         Plugin pl3xMap = Bukkit.getPluginManager().getPlugin("Pl3xMap");
+        Plugin blueMap = Bukkit.getPluginManager().getPlugin("BlueMap");
         if (pl3xMap != null && pl3xMap.isEnabled()) {
             mapRenderer = new Pl3xMapRenderer();
             United.logger().info("Found Pl3xMap, enabling map rendering...", "UnitedLands");
+        } else if (blueMap != null && blueMap.isEnabled()) {
+            mapRenderer = new BlueMapRenderer();
+            United.logger().info("Found BlueMap, enabling map rendering...", "UnitedLands");
         } else {
-            United.logger().warning("Pl3xMap not found, map rendering is disabled.", "UnitedLands");
+            United.logger().warning("Neither Pl3xMap nor BlueMap found, map rendering is disabled.", "UnitedLands");
         }
 
         Plugin towny = Bukkit.getPluginManager().getPlugin("Towny");
