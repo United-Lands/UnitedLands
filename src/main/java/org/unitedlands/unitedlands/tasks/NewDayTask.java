@@ -20,6 +20,7 @@ import org.unitedlands.unitedlands.classes.PlaytimeRecord;
 import org.unitedlands.unitedlands.classes.Settlement;
 import org.unitedlands.unitedlands.classes.ULCINCRecord;
 import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
+import org.unitedlands.unitedlands.classes.events.NewDayEvent;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.unitedlands.schedulers.NewDayScheduler;
@@ -131,6 +132,7 @@ public class NewDayTask implements Runnable {
             logError("processing countries", ex);
         } finally {
             NewDayScheduler.instance().finishNewDay();
+            new NewDayEvent(dayStart).callEvent();
         }
     }
 
