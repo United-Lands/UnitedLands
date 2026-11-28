@@ -103,7 +103,7 @@ public class UnitedLandsDataManager {
 
                     }).get();
 
-            validateGeopolAttributes();
+            validateGeopolProperties();
 
             new DataLoadedEvent().callEvent();
 
@@ -183,9 +183,9 @@ public class UnitedLandsDataManager {
         United.logger().info("Loaded " + countries.size() + " countries to memory.", "UnitedLands");
     }
 
-    private void validateGeopolAttributes() {
+    private void validateGeopolProperties() {
 
-        // Make sure all geopol objects have the correct attributes
+        // Make sure all geopol objects have the correct attributes and properties
 
         for (var settlement : settlements.values()) {
             boolean changed = false;
@@ -212,6 +212,17 @@ public class UnitedLandsDataManager {
                     changed = true;
                     country.addAttribute(key,
                             new GeopolAttribute(UnitedLandsConfig.get().geopolAttributeDefaults().country().get(key)));
+                }
+            }
+            if (country.getSpawn() == null) {
+                var capital = country.getCapital();
+                if (capital != null && capital.getSpawn() != null) {
+                    United.logger().info("Country " + country.getName() + " has no spawn, using capital spawn...");
+                    country.setSpawn(capital.getSpawn());
+                    changed = true;
+                } else {
+                    United.logger().warning("Country " + country.getName()
+                            + " has no spawn and no capital spawn to fall back to.");
                 }
             }
             if (changed)

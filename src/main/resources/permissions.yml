@@ -68,6 +68,7 @@ country:
     - country.manage.military-ranks
     - country.setname
     - country.setcolor
+    - country.setspawn
     - country.settaxes
     - country.claim
     - country.unclaim

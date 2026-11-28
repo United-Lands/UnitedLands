@@ -42,6 +42,9 @@ admin:
       success: <success>Successfully moved the icon of {1} to this location.</success>
     setname:
       success: <success>Successfully changed name of {1} to {2}.</success>
+    setspawn:
+      not-in-region: <error>The spawn of {1} must be inside one of its regions.</error>
+      success: <success>Successfully moved the spawn of {1} to this location.</success>
     unclaim:
       not-claimed: <error>The region is not claimed.</error>
       success: <success>Successfully unclaimed region {1} from {2}.</success>
@@ -320,6 +323,9 @@ player:
       no-icon: <error>You have no icon set. User ""/c set icon <url>"" first.</error>
       not-in-region: <error>The icon location must be inside of a region you own.</error>
       success: <success>Successfully moved your country icon to this location. Use ""/c set icon none"" to remove it from the map.</success>
+    setspawn:
+      not-in-region: <error>The country spawn must be inside of a region you own.</error>
+      success: <success>Successfully set your country spawn to this location.</success>
     titles:
       unknown-title: "<error>Unknown title: {1}</error>"
       already-claimed: <error>This title is alreay claimed by {1}</error>
