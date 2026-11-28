@@ -295,6 +295,13 @@ player:
       regions: "<label>Regions of {1}: <body>{2}</body></label>"
       settlements: "<label>Settlements of {1}: <body>{2}</body></label>"
     not-in-country: <error>You're not member of a country.</error>
+    release:
+      not-in-country: <error>{1} is not a member of {2}.</error>
+      is-capital: <error>You cannot release your country's capital.</error>
+      is-leader: <error>You cannot release the settlement of the country leader.</error>
+      confirm: <error>Are you sure you wish to release <blue>{1}</blue> from <blue>{2}</blue>? <bold>This cannot be undone!</bold> The settlement can only return to the country by joining voluntarily or by being forced through a subjugation war.</error>
+      released: <error>Your settlement has been released from <blue>{1}</blue>.</error>
+      broadcast-message: <success>{1} has been released from the country of {2}.</success>
     removerank:
       cannot-remove-leader: <error>You cannot remove the leader rank. You can only pass it to another citizen.</error>
       rank-lost: <success>You lost the country rank {1}.</success>
