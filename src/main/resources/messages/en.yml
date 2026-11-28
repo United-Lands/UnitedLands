@@ -262,6 +262,37 @@ new-day:
   settlement-bankrupt-broadcast: <red><b>The settlement {1} just went bankrupt.</b></red>
   start: <success><bold>A new day is starting.</bold> Collecting taxes from settlements and countries...</success>
 player:
+  lists:
+    citizens:
+      title: Citizens
+      body: "{1}"
+    countries:
+      title: Countries
+      body: "{1}"
+    settlements:
+      title: Settlements
+      body: "{1}"
+    sorted-by: "<label>Sorted by <body>{1}</body> ({2}) <dark_gray>|</dark_gray> <body>{3}</body> total</label>"
+    direction-asc: ascending
+    direction-desc: descending
+    entry: "<dark_gray>{1}.</dark_gray> <click:run_command:'{2}'><hover:show_text:'<label>Click for details</label>'><body>{3}</body></hover></click> <dark_gray>-</dark_gray> <label>{4}</label>"
+    navigation: "{1} <dark_gray>|</dark_gray> <label>Page <body>{2}</body>/<body>{3}</body></label> <dark_gray>|</dark_gray> {4}"
+    previous: "<click:run_command:'{1}'><hover:show_text:'<label>Previous page</label>'><success>« Previous</success></hover></click>"
+    previous-disabled: <dark_gray>« Previous</dark_gray>
+    next: "<click:run_command:'{1}'><hover:show_text:'<label>Next page</label>'><success>Next »</success></hover></click>"
+    next-disabled: <dark_gray>Next »</dark_gray>
+    empty: <error>There is nothing to list.</error>
+    invalid-argument: "<error>Unknown argument \"{1}\". Valid criteria: {2}. Direction: asc, desc. Page: a number.</error>"
+    values:
+      balance: "{1}"
+      chunks: "{1} chunks"
+      citizens: "{1} citizens"
+      founded: "Founded {1}"
+      joined: "Joined {1}"
+      regions: "{1} regions"
+      settlement: "{1}"
+      settlements: "{1} settlements"
+      upkeep: "{1} upkeep"
   country:
     addrank:
       target-player-not-in-country: <error>{1} is not a member of {2}.</error>
