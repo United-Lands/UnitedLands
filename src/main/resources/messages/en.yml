@@ -139,6 +139,7 @@ chat:
   not-in-channel: <error>You're not in a channel.</error>
   password-set: <success>Channel password set to {1}.</success>
   player-not-in-channel: <error>Player is not in the channel.</error>
+  removed: <success>Removed channel {1}.</success>
   tag-set: <success>Tag set to {1}.</success>
   switch: <body>Now talking in <{1}>{2}</{1}></body>
   unblocked: <success>Unblocked {1} from this channel.</success>

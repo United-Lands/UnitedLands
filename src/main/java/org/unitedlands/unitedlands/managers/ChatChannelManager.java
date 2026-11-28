@@ -3,6 +3,7 @@ package org.unitedlands.unitedlands.managers;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -16,6 +17,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import org.unitedlands.unitedlands.UnitedLands;
 import org.unitedlands.unitedlands.classes.ChatChannel;
@@ -46,9 +48,14 @@ public class ChatChannelManager {
     private final Map<String, ChatChannel> channels = new ConcurrentHashMap<>();
     private final Map<Player, String> playerChannels = new ConcurrentHashMap<>();
 
+    private static final long MAINTENANCE_INTERVAL_SECONDS = 600;
+
+    private BukkitTask maintenanceTask;
+
     public ChatChannelManager() {
         instance = this;
         loadChannels();
+        startMaintenanceTask();
     }
 
     private void loadChannels() {
@@ -145,12 +152,65 @@ public class ChatChannelManager {
     }
 
     private boolean isChannelStale(CustomChatChannelSettings channelSettings) {
-        var timeSinceLastActivity = System.currentTimeMillis() - channelSettings.lastActivity();
+        return isStale(channelSettings.lastActivity());
+    }
+
+    private boolean isStale(long lastActivity) {
+        var timeSinceLastActivity = System.currentTimeMillis() - lastActivity;
         var lifetime = UnitedLandsChatConfig.get().customChannelLifetime() * 1000;
         return timeSinceLastActivity > lifetime;
     }
 
+    private void startMaintenanceTask() {
+        var interval = MAINTENANCE_INTERVAL_SECONDS * 20L;
+        maintenanceTask = Bukkit.getScheduler().runTaskTimer(UnitedLands.instance(), this::runMaintenance,
+                interval, interval);
+    }
+
+    private void runMaintenance() {
+        refreshOccupiedChannels();
+
+        var staleKeys = getCustomChannels().stream()
+                .filter(c -> isStale(c.getLastActivity()))
+                .map(ChatChannel::getKey)
+                .toList();
+
+        if (!staleKeys.isEmpty()) {
+            staleKeys.forEach(channels::remove);
+            removeChannels(staleKeys);
+        }
+
+        saveChannels(getCustomChannels());
+    }
+
+    private void refreshOccupiedChannels() {
+        var now = System.currentTimeMillis();
+        for (var channel : getCustomChannels()) {
+            if (!getPlayersInChannel(channel.getKey()).isEmpty())
+                channel.setLastActivity(now);
+        }
+    }
+
+    private void markActivity(ChatChannel channel) {
+        if (channel.isCustom())
+            channel.setLastActivity(System.currentTimeMillis());
+    }
+
+    public void shutdown() {
+        if (maintenanceTask != null)
+            maintenanceTask.cancel();
+        refreshOccupiedChannels();
+        saveChannels(getCustomChannels());
+    }
+
     public void saveChannel(ChatChannel channel) {
+        saveChannels(List.of(channel));
+    }
+
+    private void saveChannels(Collection<ChatChannel> channelsToSave) {
+
+        if (channelsToSave.isEmpty())
+            return;
 
         File configFile = new File(UnitedLands.instance().getDataFolder(), "chat.yml");
         if (!configFile.exists()) {
@@ -163,27 +223,29 @@ public class ChatChannelManager {
         if (customChannels == null)
             customChannels = config.createSection("custom-channels");
 
-        ConfigurationSection channelConfig = null;
-        if (customChannels.contains(channel.getKey())) {
-            channelConfig = customChannels.getConfigurationSection(channel.getKey());
-        } else {
-            channelConfig = customChannels.createSection(channel.getKey());
-        }
+        for (var channel : channelsToSave) {
+            ConfigurationSection channelConfig = null;
+            if (customChannels.contains(channel.getKey())) {
+                channelConfig = customChannels.getConfigurationSection(channel.getKey());
+            } else {
+                channelConfig = customChannels.createSection(channel.getKey());
+            }
 
-        channelConfig.set("key", channel.getKey());
-        channelConfig.set("color", channel.getColor());
-        channelConfig.set("tag", channel.getTag());
-        channelConfig.set("prefix", channel.getPrefix());
-        channelConfig.set("password", channel.getPassword());
-        channelConfig.set("creator", channel.getCreator().toString());
-        channelConfig.set("notify-activity", channel.notifyActvity());
-        channelConfig.set("last-activity", channel.getLastActivity());
-        channelConfig.set("blocked-players", channel.getBlockedPlayers().stream().map(UUID::toString).toList());
+            channelConfig.set("key", channel.getKey());
+            channelConfig.set("color", channel.getColor());
+            channelConfig.set("tag", channel.getTag());
+            channelConfig.set("prefix", channel.getPrefix());
+            channelConfig.set("password", channel.getPassword());
+            channelConfig.set("creator", channel.getCreator() != null ? channel.getCreator().toString() : null);
+            channelConfig.set("notify-activity", channel.notifyActvity());
+            channelConfig.set("last-activity", channel.getLastActivity());
+            channelConfig.set("blocked-players", channel.getBlockedPlayers().stream().map(UUID::toString).toList());
+        }
 
         try {
             config.save(configFile);
         } catch (IOException e) {
-            United.logger().error("Error while saving channel " + channel.getKey() + ": " + e.getMessage());
+            United.logger().error("Error while saving chat channels: " + e.getMessage());
         }
 
     }
@@ -195,6 +257,14 @@ public class ChatChannelManager {
 
     public List<String> getChannelNames() {
         return channels.keySet().stream().toList();
+    }
+
+    public ChatChannel getChannel(String key) {
+        return channels.get(key);
+    }
+
+    public List<ChatChannel> getCustomChannels() {
+        return channels.values().stream().filter(ChatChannel::isCustom).toList();
     }
 
     public boolean channelExists(String name) {
@@ -352,6 +422,8 @@ public class ChatChannelManager {
             United.messenger().send(player, "chat.no-audience");
         }
 
+        markActivity(channel);
+
         var color = channel.getColor();
         var formattedMessage = getFormattedMessage(channelKey, message, color, player);
 
@@ -446,6 +518,8 @@ public class ChatChannelManager {
         if (receivers.size() <= 1 && UnitedLandsChatConfig.get().showEmptyChannelMessage()) {
             United.messenger().send(player, "chat.no-audience");
         }
+
+        markActivity(channel);
 
         var message = getFormattedMessage(channel.getKey(), text, channel.getColor(), player);
         return new PreparedMessage(receivers, message);

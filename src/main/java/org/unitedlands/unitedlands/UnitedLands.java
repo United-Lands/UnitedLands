@@ -63,6 +63,10 @@ public class UnitedLands extends JavaPlugin {
             if (newDayScheduler != null)
                 newDayScheduler.stopScheduler();
         });
+        runShutdownStep("chat channels", () -> {
+            if (ChatChannelManager.instance() != null)
+                ChatChannelManager.instance().shutdown();
+        });
         runShutdownStep("map renderer", () -> {
             if (IntegrationManager.instance() != null)
                 IntegrationManager.instance().getMapRenderer().shutdown();
