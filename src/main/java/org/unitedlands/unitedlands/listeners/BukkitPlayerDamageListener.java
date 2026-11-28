@@ -77,7 +77,7 @@ public class BukkitPlayerDamageListener implements Listener {
         var settlementChunk = UnitedLandsDataManager.instance().getSettlementChunk(coords);
         if (settlementChunk != null) {
             if (!PermissionManager.instance().checkLocationPermissions(attacker, victim.getLocation(),
-                    PermissionType.INTERACT)) {
+                    PermissionType.INTERACT, victim.getType())) {
                 cancelAttack(event, attacker, DamageType.PVE);
                 return;
             }

@@ -103,8 +103,8 @@ map-rendering:
     width: 2
     dash: "4,4"
   region-default:
-    fill: 1610612736
-    stroke: 0
+    fill: 0
+    stroke: 1610612736
     width: 1
     dash: "0"
   region-in-country:
@@ -117,7 +117,6 @@ map-rendering:
     stroke: -13399809
     width: 3
     dash: "0"
-
 economy:
 
   taxes:
@@ -129,6 +128,9 @@ economy:
       # Min and max percentage for settlement taxation
       min-percent: 0.0
       max-percent: 1.0
+
+  # Only allow settlement and country deposits/withdrawals while standing in a bank plot
+  require-bank-plot: false
 
   costs:
     settlement:
@@ -437,11 +439,235 @@ settlement-chunks:
     map-icon: "+"
     map-icon-color: "§7"
     max-per-settlement: -1
+    required-permission: ""
+    set-cost: 0
+    permissions:
+      break: []
+      place: []
+      container: []
+      switch: []
+      block-use: []
+      interact: []
+    flags:
+      pvp: inherit
+      monsters: inherit
+      animals: inherit
+      fire: inherit
+      explosions: inherit
+    restrictions:
+      exempt: []
+      break:
+        materials: []
+        tags: []
+      place:
+        materials: []
+        tags: []
+      interact-entities: []
+    behaviors: []
   fortress:
     map-icon: "F"
     map-icon-color: "§f"
     max-per-settlement: 1
+    required-permission: ""
+    set-cost: 0
+    permissions:
+      break: []
+      place: []
+      container: []
+      switch: []
+      block-use: []
+      interact: []
+    flags:
+      pvp: inherit
+      monsters: inherit
+      animals: inherit
+      fire: inherit
+      explosions: inherit
+    restrictions:
+      exempt: []
+      break:
+        materials: []
+        tags: []
+      place:
+        materials: []
+        tags: []
+      interact-entities: []
+    behaviors: []
 
+  farm:
+    map-icon: "H"
+    map-icon-color: "§a"
+    max-per-settlement: -1
+    required-permission: ""
+    set-cost: 0
+    permissions:
+      break: [OWNER, TRUSTED, SETTLEMENT_RESIDENT]
+      place: [OWNER, TRUSTED, SETTLEMENT_RESIDENT]
+      container: []
+      switch: []
+      block-use: []
+      interact: [OWNER, TRUSTED, SETTLEMENT_RESIDENT]
+    flags:
+      pvp: inherit
+      monsters: inherit
+      animals: inherit
+      fire: inherit
+      explosions: inherit
+    restrictions:
+      exempt: [OWNER]
+      break:
+        materials: [PUMPKIN, MELON, SUGAR_CANE, CACTUS, BAMBOO, COCOA, NETHER_WART, SWEET_BERRY_BUSH, KELP, KELP_PLANT, HAY_BLOCK]
+        tags: [crops]
+      place:
+        materials: [PUMPKIN, MELON, SUGAR_CANE, CACTUS, BAMBOO_SAPLING, COCOA, NETHER_WART, SWEET_BERRY_BUSH, KELP, HAY_BLOCK]
+        tags: [crops]
+      interact-entities: [COW, PIG, SHEEP, CHICKEN, RABBIT, GOAT, MOOSHROOM]
+    behaviors: []
+  wilds:
+    map-icon: "W"
+    map-icon-color: "§2"
+    max-per-settlement: -1
+    required-permission: ""
+    set-cost: 0
+    permissions:
+      break: [OWNER, TRUSTED, SETTLEMENT_RESIDENT]
+      place: [OWNER, TRUSTED, SETTLEMENT_RESIDENT]
+      container: []
+      switch: []
+      block-use: []
+      interact: []
+    flags:
+      pvp: inherit
+      monsters: inherit
+      animals: inherit
+      fire: inherit
+      explosions: inherit
+    restrictions:
+      exempt: []
+      break:
+        materials: [GRAVEL, CLAY, SHORT_GRASS, TALL_GRASS, FERN, LARGE_FERN]
+        tags: [logs, leaves, base_stone_overworld, dirt, sand, coal_ores, iron_ores, copper_ores, gold_ores, redstone_ores, lapis_ores, diamond_ores, emerald_ores]
+      place:
+        materials: []
+        tags: [saplings]
+      interact-entities: []
+    behaviors: []
+  freehold:
+    map-icon: "O"
+    map-icon-color: "§e"
+    max-per-settlement: -1
+    required-permission: "settlement.plot.settype.freehold"
+    set-cost: 0
+    permissions:
+      break: []
+      place: []
+      container: []
+      switch: []
+      block-use: []
+      interact: []
+    flags:
+      pvp: inherit
+      monsters: inherit
+      animals: inherit
+      fire: inherit
+      explosions: inherit
+    restrictions:
+      exempt: []
+      break:
+        materials: []
+        tags: []
+      place:
+        materials: []
+        tags: []
+      interact-entities: []
+    behaviors: [freehold]
+  inn:
+    map-icon: "I"
+    map-icon-color: "§d"
+    max-per-settlement: -1
+    required-permission: "settlement.plot.settype.inn"
+    set-cost: 0
+    permissions:
+      break: []
+      place: []
+      container: []
+      switch: []
+      block-use: []
+      interact: []
+    flags:
+      pvp: force_off
+      monsters: force_off
+      animals: inherit
+      fire: inherit
+      explosions: inherit
+    restrictions:
+      exempt: []
+      break:
+        materials: []
+        tags: []
+      place:
+        materials: []
+        tags: []
+      interact-entities: []
+    behaviors: [inn]
+  bank:
+    map-icon: "B"
+    map-icon-color: "§6"
+    max-per-settlement: 1
+    required-permission: "settlement.plot.settype.bank"
+    set-cost: 0
+    permissions:
+      break: []
+      place: []
+      container: []
+      switch: []
+      block-use: []
+      interact: []
+    flags:
+      pvp: force_off
+      monsters: inherit
+      animals: inherit
+      fire: inherit
+      explosions: force_off
+    restrictions:
+      exempt: []
+      break:
+        materials: []
+        tags: []
+      place:
+        materials: []
+        tags: []
+      interact-entities: []
+    behaviors: [bank]
+  arena:
+    map-icon: "A"
+    map-icon-color: "§c"
+    max-per-settlement: 1
+    required-permission: "settlement.plot.settype.arena"
+    set-cost: 0
+    permissions:
+      break: []
+      place: []
+      container: []
+      switch: []
+      block-use: []
+      interact: []
+    flags:
+      pvp: force_on
+      monsters: inherit
+      animals: inherit
+      fire: force_off
+      explosions: force_off
+    restrictions:
+      exempt: []
+      break:
+        materials: []
+        tags: []
+      place:
+        materials: []
+        tags: []
+      interact-entities: []
+    behaviors: [keep_inventory]
 
 
 # ---------------------------------------------------------
@@ -450,48 +676,172 @@ settlement-chunks:
 
 map-info-boxes:
   settlement: |
-    <div class="infowindow">
-    <center>
-        <span style="font-size: 140%; font-weight: bold;"> <a class="town" href="https://wiki.unitedlands.net/wiki/%town%">%settlement%</a></span>
-        <br>
-        <span style="font-size: 140%; font-weight: bold;"><a class="nation" href="https://wiki.unitedlands.net/wiki/%country%">%country%</a></span>
-        <hr>
-        <br>
-        <span style="font-weight: bold; font-size: 130%;">Mayor</span>
-        <br>
-        <img src="https://minotar.net/armor/bust/%mayor%/64.png">
-        <br>
-        <br><span style="font-size: 130%;">%mayor%</span>
-        <br>
-        <hr>
-        <span style="font-weight: bold; font-size: 90%;">Population: %citizencount%</span>
-        <br>
-        <span style="font-weight: bold; font-size: 90%;">Founding Date: %founded%</span>
-        <br>
-        <span style="font-weight: bold; font-size: 90%;">Town Bank: %balance%</span>
-        <br>
-        <span style="font-weight: bold; font-size: 90%;">Upkeep: %upkeep%</span>
-        <br>
-        <span style="font-weight: bold; font-size: 90%;">%board%</span>
-    </center>
-    </div>
+    <div class="ul-infowindow">
+      <span class="overline">Settlement</span>
+      <h1>
+        <a href="https://wiki.unitedlands.net/wiki/%settlement%">%settlement%</a>
+      </h1>
+      <span class="country">%status% <strong>%country%</strong></span>
+      <img class="leader-image" src="https://minotar.net/armor/bust/%mayor%/64.png">
+      <span class="leader-link"><a class="nation" href="https://wiki.unitedlands.net/wiki/%mayor%">%mayor%</a></span>
+      <br />
+      <span class="icon-label">Mayor</span>
+      <table class="ul-table">
+        <tr>
+          <td>
+            <span class="icon">
+              <span class="material-symbols-outlined">
+                calendar_month
+              </span>
+              <span class="icon-label">Founded</span> 
+            </span> 
+            %founded%
+          </td>
+          <td>
+            <span class="icon">
+              <span class="material-symbols-outlined">
+                map
+              </span>
+              <span class="icon-label">Size</span> 
+            </span> 
+            %size%
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <span class="icon">
+              <span class="material-symbols-outlined">
+                groups
+              </span>
+              <span class="icon-label">Population</span> 
+            </span> 
+            %citizens%
+          </td>
+          <td>
+            &nbsp;
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <span class="icon">
+              <span class="material-symbols-outlined">
+                money_bag
+              </span>
+              <span class="icon-label">Balance</span> 
+            </span> 
+            %balance%
+          </td>
+          <td>
+            <span class="icon">
+              <span class="material-symbols-outlined">
+                currency_exchange
+              </span>
+              <span class="icon-label">Upkeep</span> 
+            </span> 
+            %upkeep%
+          </td>
+        </tr>
+      </table>
+      <a class="link-button" href="https://wiki.unitedlands.net/wiki/%settlement%" target="_blank">
+        View on the Wiki 
+        <span class="material-symbols-outlined" style="color: white; font-size: 18px">
+          open_in_new
+        </span>
+      </a>
+    </div> 
   country: |
-    <div class="infowindow">
-    <center>
-        <span style="font-size: 140%; font-weight: bold;"><a class="nation" href="https://wiki.unitedlands.net/wiki/%country%">%country%</a></span>
-        <hr>
-        <br>
-        <span style="font-weight: bold; font-size: 130%;">Leader</span>
-        <br>
-        <img src="https://minotar.net/armor/bust/%leader%/64.png">
-        <br>
-        <br><span style="font-size: 130%;">%leader%</span>
-        <br>
-        <hr>
-        <span style="font-weight: bold; font-size: 90%;">Founding Date: %founded%</span>
-        <br>
-        <span style="font-weight: bold; font-size: 90%;">Country Bank: %balance%</span>
-        <br>
-        <span style="font-weight: bold; font-size: 90%;">Upkeep: %upkeep%</span>
-    </center>
+    <div class="ul-infowindow">
+      <span class="overline">Country</span>
+      <h1>
+        <object class="country-icon" data="%icon%" type="image/png">
+          <img src="images/clear.png" />
+        </object>
+        <a href="https://wiki.unitedlands.net/wiki/%country%">%country%</a>
+        <object class="country-icon" data="%icon%" type="image/png">
+          <img src="images/clear.png" />
+        </object>
+      </h1>
+      <img class="leader-image" src="https://minotar.net/armor/bust/%leader%/64.png">
+      <span class="leader-link"><a class="nation" href="https://wiki.unitedlands.net/wiki/%leader%">%leader%</a></span>
+      <br />
+      <span class="icon-label">Leader</span>
+      <table class="ul-table">
+        <tr>
+          <td colspan="2">
+            <span class="icon">
+              <span class="material-symbols-outlined">
+                account_balance
+              </span>
+              <span class="icon-label">Capital</span> 
+            </span> 
+            %capital%
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <span class="icon">
+              <span class="material-symbols-outlined">
+                calendar_month
+              </span>
+              <span class="icon-label">Founded</span> 
+            </span> 
+            %founded%
+          </td>
+          <td>
+            <span class="icon">
+              <span class="material-symbols-outlined">
+                map
+              </span>
+              <span class="icon-label">Regions</span> 
+            </span> 
+            %regions%
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <span class="icon">
+              <span class="material-symbols-outlined">
+                holiday_village
+              </span>
+              <span class="icon-label">Settlements</span> 
+            </span> 
+            %settlements%
+          </td>
+          <td>
+            <span class="icon">
+              <span class="material-symbols-outlined">
+                groups
+              </span>
+              <span class="icon-label">Population</span> 
+            </span> 
+            %citizens%
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <span class="icon">
+              <span class="material-symbols-outlined">
+                money_bag
+              </span>
+              <span class="icon-label">Balance</span> 
+            </span> 
+            %balance%
+          </td>
+          <td>
+            <span class="icon">
+              <span class="material-symbols-outlined">
+                currency_exchange
+              </span>
+              <span class="icon-label">Upkeep</span> 
+            </span> 
+            %upkeep%
+          </td>
+        </tr>
+      </table>
+      <a class="link-button" href="https://wiki.unitedlands.net/wiki/%country%" target="_blank">
+        View on the Wiki 
+        <span class="material-symbols-outlined" style="color: white; font-size: 18px">
+          open_in_new
+        </span>
+      </a>
     </div> 

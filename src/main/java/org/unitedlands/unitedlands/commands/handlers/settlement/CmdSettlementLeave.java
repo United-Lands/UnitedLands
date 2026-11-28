@@ -44,6 +44,7 @@ public class CmdSettlementLeave extends SettlementCommandHandler {
         leave.setRunnable(() -> {
 
             context.settlement().removeCitizen(context.citizen());
+            context.settlement().releaseChunksOwnedBy(context.citizen());
             context.settlement().save();
             
             context.citizen().removeSettlementRanks();

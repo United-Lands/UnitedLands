@@ -69,6 +69,7 @@ public class CmdSettlementKick extends SettlementCommandHandler {
         }
 
         context.settlement().removeCitizen(targetCitizen);
+        context.settlement().releaseChunksOwnedBy(targetCitizen);
         targetCitizen.removeSettlementRanks();
         targetCitizen.removeSettlement();
         targetCitizen.save();

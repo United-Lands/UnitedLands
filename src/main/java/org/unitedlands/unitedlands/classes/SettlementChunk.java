@@ -3,10 +3,13 @@ package org.unitedlands.unitedlands.classes;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.function.ToIntFunction;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.unitedlands.classes.database.Identifiable;
 import org.unitedlands.unitedlands.classes.interfaces.CoordinateHolder;
+import org.unitedlands.unitedlands.managers.PermissionManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.utils.SerializationUtils;
 import org.unitedlands.libs.ormlite.field.DataType;
@@ -269,46 +272,75 @@ public class SettlementChunk implements Identifiable, PermissionHolder, Coordina
     // Special settlement chunk permissions: if UNSET, inherit permissions
     // from the owning settlement.
 
+    public PlotType getPlotType() {
+        return PermissionManager.instance().getPlotType(chunkType);
+    }
+
+    public boolean hasPlotBehavior(PlotTypeBehavior behavior) {
+        var plotType = getPlotType();
+        return plotType != null && plotType.hasBehavior(behavior);
+    }
+
+    private int resolvePermission(int chunkValue, ToIntFunction<PlotType> typeValue,
+            ToIntFunction<Settlement> settlementValue) {
+        if (chunkValue != LocationMembership.UNSET)
+            return chunkValue;
+        var plotType = getPlotType();
+        if (plotType != null) {
+            var typeDefault = typeValue.applyAsInt(plotType);
+            if (typeDefault != LocationMembership.UNSET)
+                return typeDefault;
+        }
+        var parent = getSettlement();
+        return parent != null ? settlementValue.applyAsInt(parent) : LocationMembership.UNSET;
+    }
+
+    private Boolean resolveFlag(Boolean chunkValue, Function<PlotType, PlotTypeFlag> typeValue,
+            Function<Settlement, Boolean> settlementValue) {
+        var plotType = getPlotType();
+        var typeFlag = plotType != null ? typeValue.apply(plotType) : PlotTypeFlag.INHERIT;
+        if (typeFlag == PlotTypeFlag.FORCE_ON)
+            return true;
+        if (typeFlag == PlotTypeFlag.FORCE_OFF)
+            return false;
+        if (chunkValue != null)
+            return chunkValue;
+        if (typeFlag == PlotTypeFlag.ON)
+            return true;
+        if (typeFlag == PlotTypeFlag.OFF)
+            return false;
+        var parent = getSettlement();
+        return parent != null ? settlementValue.apply(parent) : false;
+    }
+
     @Override
     public int getBreakPermissions() {
-        if (breakPermissions == LocationMembership.UNSET)
-            return settlement.getBreakPermissions();
-        return breakPermissions;
+        return resolvePermission(breakPermissions, PlotType::breakPermissions, Settlement::getBreakPermissions);
     }
 
     @Override
     public int getPlacePermissions() {
-        if (placePermissions == LocationMembership.UNSET)
-            return settlement.getPlacePermissions();
-        return placePermissions;
+        return resolvePermission(placePermissions, PlotType::placePermissions, Settlement::getPlacePermissions);
     }
 
     @Override
     public int getContainerPermissions() {
-        if (containerPermissions == LocationMembership.UNSET)
-            return settlement.getContainerPermissions();
-        return containerPermissions;
+        return resolvePermission(containerPermissions, PlotType::containerPermissions, Settlement::getContainerPermissions);
     }
 
     @Override
     public int getSwitchPermissions() {
-        if (switchPermissions == LocationMembership.UNSET)
-            return settlement.getSwitchPermissions();
-        return switchPermissions;
+        return resolvePermission(switchPermissions, PlotType::switchPermissions, Settlement::getSwitchPermissions);
     }
 
     @Override
     public int getBlockUsePermissions() {
-        if (blockUsePermissions == LocationMembership.UNSET)
-            return settlement.getBlockUsePermissions();
-        return blockUsePermissions;
+        return resolvePermission(blockUsePermissions, PlotType::blockUsePermissions, Settlement::getBlockUsePermissions);
     }
 
     @Override
     public int getInteractPermissions() {
-        if (interactPermissions == LocationMembership.UNSET)
-            return settlement.getInteractPermissions();
-        return interactPermissions;
+        return resolvePermission(interactPermissions, PlotType::interactPermissions, Settlement::getInteractPermissions);
     }
 
     public void setBreakPermissions(int breakPermissions) {
@@ -336,14 +368,7 @@ public class SettlementChunk implements Identifiable, PermissionHolder, Coordina
     }
 
     public Boolean allowPvp() {
-        if (allowPvp == null) {
-            if (settlement != null) {
-                return settlement.allowPvp();
-            } else {
-                return false;
-            }
-        }
-        return allowPvp;
+        return resolveFlag(allowPvp, PlotType::pvp, Settlement::allowPvp);
     }
 
     public void setAllowPvp(Boolean allowPvp) {
@@ -351,14 +376,7 @@ public class SettlementChunk implements Identifiable, PermissionHolder, Coordina
     }
 
     public Boolean allowMonsters() {
-        if (allowMonsters == null) {
-            if (settlement != null) {
-                return settlement.allowMonsters();
-            } else {
-                return false;
-            }
-        }
-        return allowMonsters;
+        return resolveFlag(allowMonsters, PlotType::monsters, Settlement::allowMonsters);
     }
 
     public void setAllowMonsters(Boolean allowMonsters) {
@@ -366,14 +384,7 @@ public class SettlementChunk implements Identifiable, PermissionHolder, Coordina
     }
 
     public Boolean allowAnimals() {
-        if (allowAnimals == null) {
-            if (settlement != null) {
-                return settlement.allowAnimals();
-            } else {
-                return false;
-            }
-        }
-        return allowAnimals;
+        return resolveFlag(allowAnimals, PlotType::animals, Settlement::allowAnimals);
     }
 
     public void setAllowAnimals(Boolean allowAnimals) {
@@ -381,14 +392,7 @@ public class SettlementChunk implements Identifiable, PermissionHolder, Coordina
     }
 
     public Boolean allowFire() {
-        if (allowFire == null) {
-            if (settlement != null) {
-                return settlement.allowFire();
-            } else {
-                return false;
-            }
-        }
-        return allowFire;
+        return resolveFlag(allowFire, PlotType::fire, Settlement::allowFire);
     }
 
     public void setAllowFire(Boolean allowFire) {
@@ -396,18 +400,25 @@ public class SettlementChunk implements Identifiable, PermissionHolder, Coordina
     }
 
     public Boolean allowExplosions() {
-        if (allowExplosions == null) {
-            if (settlement != null) {
-                return settlement.allowExplosions();
-            } else {
-                return false;
-            }
-        }
-        return allowExplosions;
+        return resolveFlag(allowExplosions, PlotType::explosions, Settlement::allowExplosions);
     }
 
     public void setAllowExplosions(Boolean allowExplosions) {
         this.allowExplosions = allowExplosions;
+    }
+
+    public void resetOverrides() {
+        breakPermissions = LocationMembership.UNSET;
+        placePermissions = LocationMembership.UNSET;
+        containerPermissions = LocationMembership.UNSET;
+        switchPermissions = LocationMembership.UNSET;
+        blockUsePermissions = LocationMembership.UNSET;
+        interactPermissions = LocationMembership.UNSET;
+        allowPvp = null;
+        allowMonsters = null;
+        allowAnimals = null;
+        allowFire = null;
+        allowExplosions = null;
     }
 
     public void save() {

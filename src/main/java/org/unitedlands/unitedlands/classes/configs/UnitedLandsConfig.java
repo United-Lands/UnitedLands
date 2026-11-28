@@ -2,12 +2,17 @@ package org.unitedlands.unitedlands.classes.configs;
 
 import java.util.List;
 
+import org.bukkit.Material;
+import org.bukkit.entity.EntityType;
+
 import org.unitedlands.annotations.UnitedConfig;
 import org.unitedlands.annotations.UnitedSection;
 import org.unitedlands.annotations.UnitedSetting;
 import org.unitedlands.registrars.config.UnitedConfigHandler;
 import org.unitedlands.registrars.config.UnitedConfigs;
 import org.unitedlands.registrars.config.UnitedDynamicSection;
+import org.unitedlands.unitedlands.classes.PlotTypeBehavior;
+import org.unitedlands.unitedlands.classes.PlotTypeFlag;
 
 @UnitedConfig(file = "config.yml") 
 public interface UnitedLandsConfig extends UnitedConfigHandler {
@@ -91,7 +96,8 @@ public interface UnitedLandsConfig extends UnitedConfigHandler {
 
     record EconomySettings(
         @UnitedSection (key = "taxes") UnitedDynamicSection<TaxSettings> taxes,
-        @UnitedSection (key = "costs") CostSettings                      costs
+        @UnitedSection (key = "costs") CostSettings                      costs,
+        @UnitedSetting (key = "require-bank-plot", def = "false") boolean requireBankPlot
     ) { }
 
     record TaxSettings(
@@ -168,7 +174,42 @@ public interface UnitedLandsConfig extends UnitedConfigHandler {
     public record SettlementChunkSettings(
         @UnitedSetting(key = "map-icon",            def = "+")  String  mapIcon, 
         @UnitedSetting(key = "map-icon-color",      def = "§f") String  mapIconColor, 
-        @UnitedSetting(key = "max-per-settlement",  def = "-1") int     maxPerSettlement
+        @UnitedSetting(key = "max-per-settlement",  def = "-1") int     maxPerSettlement,
+        @UnitedSetting(key = "required-permission", def = "")   String  requiredPermission,
+        @UnitedSetting(key = "set-cost",            def = "0")  int     setCost,
+        @UnitedSection(key = "permissions")                     PlotTypePermissionSettings permissions,
+        @UnitedSection(key = "flags")                           PlotTypeFlagSettings       flags,
+        @UnitedSection(key = "restrictions")                    PlotTypeRestrictionSettings restrictions,
+        @UnitedSetting(key = "behaviors")                       List<PlotTypeBehavior>     behaviors
+    ) {}
+
+    public record PlotTypeRestrictionSettings(
+        @UnitedSetting(key = "exempt")              List<String>        exempt,
+        @UnitedSection(key = "break")               BlockRestrictionSettings breakRestriction,
+        @UnitedSection(key = "place")               BlockRestrictionSettings placeRestriction,
+        @UnitedSetting(key = "interact-entities")   List<EntityType>    interactEntities
+    ) {}
+
+    public record BlockRestrictionSettings(
+        @UnitedSetting(key = "materials")   List<Material>  materials,
+        @UnitedSetting(key = "tags")        List<String>    tags
+    ) {}
+
+    public record PlotTypePermissionSettings(
+        @UnitedSetting(key = "break")       List<String> breakPermissions,
+        @UnitedSetting(key = "place")       List<String> placePermissions,
+        @UnitedSetting(key = "container")   List<String> containerPermissions,
+        @UnitedSetting(key = "switch")      List<String> switchPermissions,
+        @UnitedSetting(key = "block-use")   List<String> blockUsePermissions,
+        @UnitedSetting(key = "interact")    List<String> interactPermissions
+    ) {}
+
+    public record PlotTypeFlagSettings(
+        @UnitedSetting(key = "pvp",         def = "inherit") PlotTypeFlag pvp,
+        @UnitedSetting(key = "monsters",    def = "inherit") PlotTypeFlag monsters,
+        @UnitedSetting(key = "animals",     def = "inherit") PlotTypeFlag animals,
+        @UnitedSetting(key = "fire",        def = "inherit") PlotTypeFlag fire,
+        @UnitedSetting(key = "explosions",  def = "inherit") PlotTypeFlag explosions
     ) {}
 
 

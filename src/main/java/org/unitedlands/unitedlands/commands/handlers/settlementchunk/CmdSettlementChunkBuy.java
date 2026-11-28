@@ -5,6 +5,7 @@ import java.util.List;
 import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
 import org.unitedlands.unitedlands.classes.BankRecordTransactionType;
+import org.unitedlands.unitedlands.classes.PlotTypeBehavior;
 import org.unitedlands.unitedlands.classes.commandhandlers.SettlementChunkCommandHandler;
 import org.unitedlands.unitedlands.classes.events.settlementchunk.SettlementChunkPrePurchaseEvent;
 import org.unitedlands.unitedlands.classes.events.settlementchunk.SettlementChunkPurchaseEvent;
@@ -37,7 +38,17 @@ public class CmdSettlementChunkBuy extends SettlementChunkCommandHandler {
             return;
         }
 
-        // TODO: Check for foreigners?
+        var settlement = context.settlementChunk().getSettlement();
+        if (settlement.isBanished(context.citizen())) {
+            United.messenger().send(context.player(), "player.settlementchunk.buy.banished");
+            return;
+        }
+
+        if (!context.settlementChunk().hasPlotBehavior(PlotTypeBehavior.FREEHOLD)
+                && !settlement.equals(context.citizen().getSettlement())) {
+            United.messenger().send(context.player(), "player.settlementchunk.buy.not-resident");
+            return;
+        }
 
         if (!UnitedLandsEconomyManager.instance().has(context.citizen().getUuid(),
                 new BigDecimal(context.settlementChunk().getSalePrice()))) {

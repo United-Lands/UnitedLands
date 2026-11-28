@@ -228,6 +228,17 @@ public class Settlement extends GeopolObject implements PermissionHolder {
         return getChunks().stream().filter(c -> type.equals(c.getChunkType())).collect(Collectors.toSet());
     }
 
+    public void releaseChunksOwnedBy(Citizen citizen) {
+        for (var chunk : getChunks()) {
+            if (!citizen.getUuid().equals(chunk.getOwnerUuid()))
+                continue;
+            if (chunk.hasPlotBehavior(PlotTypeBehavior.FREEHOLD))
+                continue;
+            chunk.removeOwner();
+            chunk.save();
+        }
+    }
+
     public void setChunks(Set<SettlementChunk> chunks) {
         this.chunks = chunks;
     }

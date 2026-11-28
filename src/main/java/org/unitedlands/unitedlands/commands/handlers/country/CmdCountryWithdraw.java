@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import org.bukkit.command.CommandSender;
 import org.unitedlands.annotations.UnitedSubCommand;
+import org.unitedlands.unitedlands.managers.PermissionManager;
 import org.unitedlands.unitedlands.classes.BankRecordTransactionType;
 import org.unitedlands.unitedlands.classes.commandhandlers.CountryCommandHandler;
 
@@ -35,6 +36,11 @@ public class CmdCountryWithdraw extends CountryCommandHandler {
         var context = validate(sender, "country.withdraw");
         if (context == null)
             return;
+
+        if (!PermissionManager.instance().isInBankPlot(context.player(), context.country())) {
+            United.messenger().send(context.player(), "general-errors.not-in-bank-plot");
+            return;
+        }
 
         BigDecimal amount = new BigDecimal(0);
         try {

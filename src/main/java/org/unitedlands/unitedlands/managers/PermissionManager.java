@@ -12,12 +12,17 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Tag;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.unitedlands.unitedlands.UnitedLands;
 import org.unitedlands.unitedlands.classes.Citizen;
 import org.unitedlands.unitedlands.classes.LocationMembership;
 import org.unitedlands.unitedlands.classes.PermissionHolder;
 import org.unitedlands.unitedlands.classes.PermissionType;
+import org.unitedlands.unitedlands.classes.PlotType;
+import org.unitedlands.unitedlands.classes.PlotTypeBehavior;
+import org.unitedlands.unitedlands.classes.Settlement;
+import org.unitedlands.unitedlands.classes.Country;
 import org.unitedlands.unitedlands.classes.Region;
 import org.unitedlands.unitedlands.classes.SettlementChunk;
 import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
@@ -45,6 +50,8 @@ public class PermissionManager {
 
     private Map<String, Set<String>> rankPermissions = new HashMap<>();
 
+    private Map<String, PlotType> plotTypes = new HashMap<>();
+
     // *************************************************************
     // Global admin overrides
     // *************************************************************
@@ -62,6 +69,8 @@ public class PermissionManager {
     public void loadSettings() {
 
         rankPermissions = new HashMap<>();
+        settlementRanks = new ArrayList<>();
+        countryRanks = new ArrayList<>();
         var config = UnitedLands.instance().getPermissionConfig().get();
 
         var settlementRankSection = config.getConfigurationSection("settlement");
@@ -94,6 +103,11 @@ public class PermissionManager {
                 United.logger().warning("Unknown block tag: " + strTag, "UnitedLands");
             }
         }
+
+        var newPlotTypes = new HashMap<String, PlotType>();
+        UnitedLandsConfig.get().settlementChunks().toMap()
+                .forEach((name, settings) -> newPlotTypes.put(name, PlotType.fromSettings(name, settings)));
+        plotTypes = newPlotTypes;
 
         United.logger().info("Permissions config loaded.", "UnitedLands");
     }
@@ -136,19 +150,37 @@ public class PermissionManager {
     // *************************************************************
 
     public boolean checkLocationPermissions(Player player, Location eventLocation, PermissionType type) {
+        return checkLocationPermissions(player, eventLocation, type, false, null, null);
+    }
+
+    public boolean checkLocationPermissions(Player player, Location eventLocation, PermissionType type,
+            Material material) {
+        return checkLocationPermissions(player, eventLocation, type, true, material, null);
+    }
+
+    public boolean checkLocationPermissions(Player player, Location eventLocation, PermissionType type,
+            EntityType entityType) {
+        return checkLocationPermissions(player, eventLocation, type, true, null, entityType);
+    }
+
+    private boolean checkLocationPermissions(Player player, Location eventLocation, PermissionType type,
+            boolean applyRestrictions, Material material, EntityType entityType) {
 
         var chunkCoordinates = CoordinateUtils.locationToChunkCoordinates(eventLocation);
         var settlementChunk = UnitedLandsDataManager.instance().getSettlementChunk(chunkCoordinates);
         if (settlementChunk != null) {
             var playerCache = PlayerCacheManager.instance().getPlayerCache(player);
-            boolean hasSettlementChunkPermission = false;
+            int membership;
             if (settlementChunk.equals(playerCache.getCachedSettlementChunk())) {
-                hasSettlementChunkPermission = hasLocationPermissions(settlementChunk, playerCache.getChunkMembership(),
-                        type);
+                membership = playerCache.getChunkMembership();
             } else {
-                var eventLocationMembership = calculateChunkMembership(settlementChunk, player);
-                hasSettlementChunkPermission = hasLocationPermissions(settlementChunk, eventLocationMembership, type);
+                membership = calculateChunkMembership(settlementChunk, player);
             }
+
+            boolean hasSettlementChunkPermission = hasLocationPermissions(settlementChunk, membership, type);
+            if (hasSettlementChunkPermission && applyRestrictions)
+                hasSettlementChunkPermission = passesPlotTypeRestrictions(settlementChunk, membership, type, material,
+                        entityType);
 
             PermissablePlayerActionEvent event = new PermissablePlayerActionEvent(player, eventLocation, type);
             event.setCancelled(!hasSettlementChunkPermission);
@@ -172,6 +204,16 @@ public class PermissionManager {
             }
         }
         return UnitedLandsConfig.get().general().protectUnclaimedLand();
+    }
+
+    private boolean passesPlotTypeRestrictions(SettlementChunk settlementChunk, int membership, PermissionType type,
+            Material material, EntityType entityType) {
+        var plotType = settlementChunk.getPlotType();
+        if (plotType == null)
+            return true;
+        if (entityType != null)
+            return plotType.allowsEntity(type, entityType, membership);
+        return plotType.allowsMaterial(type, material, membership);
     }
 
     public boolean hasLocationPermissions(PermissionHolder holder, int membership, PermissionType type) {
@@ -285,6 +327,38 @@ public class PermissionManager {
 
     public List<Tag<Material>> getProtectedSwitchTags() {
         return protectedSwitchTags;
+    }
+
+    public boolean hasPlotBehavior(Location location, PlotTypeBehavior behavior) {
+        var chunk = UnitedLandsDataManager.instance()
+                .getSettlementChunk(CoordinateUtils.locationToChunkCoordinates(location));
+        return chunk != null && chunk.hasPlotBehavior(behavior);
+    }
+
+    public boolean isInBankPlot(Player player, Settlement settlement) {
+        if (!UnitedLandsConfig.get().economy().requireBankPlot())
+            return true;
+        var chunk = UnitedLandsDataManager.instance()
+                .getSettlementChunk(CoordinateUtils.locationToChunkCoordinates(player.getLocation()));
+        return chunk != null && chunk.hasPlotBehavior(PlotTypeBehavior.BANK)
+                && settlement.equals(chunk.getSettlement());
+    }
+
+    public boolean isInBankPlot(Player player, Country country) {
+        if (!UnitedLandsConfig.get().economy().requireBankPlot())
+            return true;
+        var chunk = UnitedLandsDataManager.instance()
+                .getSettlementChunk(CoordinateUtils.locationToChunkCoordinates(player.getLocation()));
+        if (chunk == null || !chunk.hasPlotBehavior(PlotTypeBehavior.BANK))
+            return false;
+        var chunkSettlement = chunk.getSettlement();
+        return chunkSettlement != null && chunkSettlement.hasCountry() && country.equals(chunkSettlement.getCountry());
+    }
+
+    public PlotType getPlotType(String name) {
+        if (name == null)
+            return null;
+        return plotTypes.get(name);
     }
 
 }

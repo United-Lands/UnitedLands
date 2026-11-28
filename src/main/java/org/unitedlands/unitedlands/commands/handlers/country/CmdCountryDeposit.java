@@ -5,6 +5,7 @@ import java.util.List;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.unitedlands.annotations.UnitedSubCommand;
+import org.unitedlands.unitedlands.managers.PermissionManager;
 import org.unitedlands.unitedlands.classes.BankRecordTransactionType;
 import org.unitedlands.unitedlands.classes.commandhandlers.CountryCommandHandler;
 import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
@@ -44,6 +45,11 @@ public class CmdCountryDeposit extends CountryCommandHandler {
         var country = getCitizenCountry(citizen);
         if (country == null)
             return;
+
+        if (!PermissionManager.instance().isInBankPlot(player, country)) {
+            United.messenger().send(player, "general-errors.not-in-bank-plot");
+            return;
+        }
 
         BigDecimal amount = new BigDecimal(0);
         try {

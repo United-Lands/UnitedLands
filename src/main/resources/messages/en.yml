@@ -163,6 +163,7 @@ general-errors:
   no-region-permission: <error>You don't have permissions in this region.</error>
   no-settlement-permission: <error>You don't have the necessary settlement rank do this ({1}).</error>
   not-allowed: <error>Sorry, you're not allowed to do that here, this area is protected.</error>
+  not-in-bank-plot: <error>You need to stand in a bank plot to do this.</error>
   not-in-claim: <error>You're not inside of a claimed area.</error>
   not-in-country: <error>You're not part of a country.</error>
   not-in-settlement: <error>You are not member of a settlement.</error>
@@ -501,7 +502,9 @@ player:
       not-owner: <error>You are not the owner of this plot.</error>
       success: <success>You abandoned this plot.</success>
     buy:
+      banished: <error>You are banished from this settlement and cannot buy plots here.</error>
       not-for-sale: <error>This plot is not for sale.</error>
+      not-resident: <error>Only residents of this settlement can buy this plot.</error>
       success: <success>You successfully bought the plot for {1}.</success>
     evict:
       not-owner: <error>This plot is not owned by anyone.</error>
@@ -513,7 +516,9 @@ player:
     permission:
       success: <success>Plot permission {1} for {2} set to {3}</success>
     settype:
+      already-type: <error>This plot is already of type {1}.</error>
       success: <success>Set plot to {1}.</success>
+      success-cost: <success>Set plot to {1} for {2}.</success>
       too-many-of-type: <error>The settlement can only have {1} plots of type {2}.</error>
       unknown-type: '<error>Unknown type: {1}.</error>'
     toggle:

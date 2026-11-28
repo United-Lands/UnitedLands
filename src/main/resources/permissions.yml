@@ -20,6 +20,10 @@ settlement:
     - settlement.plot.sell
     - settlement.plot.evict
     - settlement.plot.settype
+    - settlement.plot.settype.freehold
+    - settlement.plot.settype.inn
+    - settlement.plot.settype.bank
+    - settlement.plot.settype.arena
     - settlement.plot.toggle
     - settlement.withdraw
     - settlement.joincountry
@@ -52,12 +56,6 @@ settlement:
     - foo.bar
   noble:
     - foo.bar
-  militia:
-    - foo.bar
-  soldier:
-    - foo.bar
-  officer:
-    - foo.bar
 
 country:
   leader:
@@ -67,6 +65,7 @@ country:
     - country.releasesettlement
     - country.manage.ranks.leader
     - country.manage.ranks.other
+    - country.manage.military-ranks
     - country.setname
     - country.setcolor
     - country.settaxes

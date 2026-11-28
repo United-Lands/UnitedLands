@@ -2,7 +2,9 @@ package org.unitedlands.unitedlands.listeners;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.Cancellable;
@@ -22,6 +24,7 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.unitedlands.annotations.UnitedListener;
 import org.unitedlands.unitedlands.classes.PermissionType;
+import org.unitedlands.unitedlands.classes.PlotTypeBehavior;
 import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.managers.PermissionManager;
 import org.unitedlands.utils.United;
@@ -38,41 +41,41 @@ public class BukkitBlockListener implements Listener {
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
-        handleBreak(event.getPlayer(), event.getBlock().getLocation(), event);
+        handleBreak(event.getPlayer(), event.getBlock().getLocation(), event.getBlock().getType(), event);
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onItemFrameRemove(PlayerItemFrameChangeEvent event) {
         if (event.getAction() == PlayerItemFrameChangeEvent.ItemFrameChangeAction.REMOVE) {
-            handleBreak(event.getPlayer(), event.getItemFrame().getLocation(), event);
+            handleBreak(event.getPlayer(), event.getItemFrame().getLocation(), materialOf(event.getItemFrame()), event);
         }
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onBucketFill(PlayerBucketFillEvent event) {
-        handleBreak(event.getPlayer(), event.getBlock().getLocation(), event);
+        handleBreak(event.getPlayer(), event.getBlock().getLocation(), event.getBlock().getType(), event);
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onHangingBreak(HangingBreakByEntityEvent event) {
         if (event.getRemover() instanceof Player player) {
-            handleBreak(player, event.getEntity().getLocation(), event);
+            handleBreak(player, event.getEntity().getLocation(), materialOf(event.getEntity()), event);
         } else {
             if (event.getRemover() instanceof Projectile) {
                 if (((Projectile) event.getRemover()).getShooter() instanceof Player player) {
-                    handleBreak(player, event.getEntity().getLocation(), event);
+                    handleBreak(player, event.getEntity().getLocation(), materialOf(event.getEntity()), event);
                 }
             }
         }
     }
 
-    private void handleBreak(Player player, Location location, Cancellable event) {
+    private void handleBreak(Player player, Location location, Material material, Cancellable event) {
 
         if (PermissionManager.instance().hasGlobalOverrides(player))
             return;
 
         if (!PermissionManager.instance().checkLocationPermissions(player, location,
-                PermissionType.BREAK)) {
+                PermissionType.BREAK, material)) {
             event.setCancelled(true);
             United.messenger().send(player, "general-errors.not-allowed");
         }
@@ -82,38 +85,38 @@ public class BukkitBlockListener implements Listener {
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
-        handlePlace(event.getPlayer(), event.getBlock().getLocation(), event);
+        handlePlace(event.getPlayer(), event.getBlock().getLocation(), event.getBlock().getType(), event);
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onItemFramePlace(PlayerItemFrameChangeEvent event) {
         if (event.getAction() == PlayerItemFrameChangeEvent.ItemFrameChangeAction.PLACE) {
-            handlePlace(event.getPlayer(), event.getItemFrame().getLocation(), event);
+            handlePlace(event.getPlayer(), event.getItemFrame().getLocation(), materialOf(event.getItemFrame()), event);
         }
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onHangingPlace(HangingPlaceEvent event) {
-        handlePlace(event.getPlayer(), event.getBlock().getLocation(), event);
+        handlePlace(event.getPlayer(), event.getBlock().getLocation(), materialOf(event.getEntity()), event);
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onEntityPlace(EntityPlaceEvent event) {
-        handlePlace(event.getPlayer(), event.getBlock().getLocation(), event);
+        handlePlace(event.getPlayer(), event.getBlock().getLocation(), materialOf(event.getEntity()), event);
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onBucketEmpty(PlayerBucketEmptyEvent event) {
-        handlePlace(event.getPlayer(), event.getBlock().getLocation(), event);
+        handlePlace(event.getPlayer(), event.getBlock().getLocation(), event.getBucket(), event);
     }
 
-    private void handlePlace(Player player, Location location, Cancellable event) {
+    private void handlePlace(Player player, Location location, Material material, Cancellable event) {
 
         if (PermissionManager.instance().hasGlobalOverrides(player))
             return;
 
         if (!PermissionManager.instance().checkLocationPermissions(player, location,
-                PermissionType.PLACE)) {
+                PermissionType.PLACE, material)) {
 
             event.setCancelled(true);
             United.messenger().send(player, "general-errors.not-allowed");
@@ -133,6 +136,10 @@ public class BukkitBlockListener implements Listener {
 
         var block = event.getClickedBlock();
         if (block == null || block.isEmpty() || block.getType() == Material.AIR)
+            return;
+
+        if (Tag.BEDS.isTagged(block.getType())
+                && PermissionManager.instance().hasPlotBehavior(block.getLocation(), PlotTypeBehavior.INN))
             return;
 
         var blockType = block.getType().toString();
@@ -175,7 +182,7 @@ public class BukkitBlockListener implements Listener {
         var entity = event.getRightClicked();
         var entityType = entity.getType().toString();
         if (UnitedLandsConfig.get().protection().interact().contains(entityType)) {
-            handleInteract(player, entity.getLocation(), event);
+            handleInteract(player, entity.getLocation(), entity.getType(), event);
         }
 
     }
@@ -187,7 +194,7 @@ public class BukkitBlockListener implements Listener {
             Entity caughtEntity = event.getCaught();
 
             if (caughtEntity != null) {
-                handleInteract(player, caughtEntity.getLocation(), event);
+                handleInteract(player, caughtEntity.getLocation(), caughtEntity.getType(), event);
             }
         }
     }
@@ -198,22 +205,28 @@ public class BukkitBlockListener implements Listener {
         if (PermissionManager.instance().hasGlobalOverrides(player))
             return;
 
-        handleInteract(player, event.getBlock().getLocation(), event);
+        handleInteract(player, event.getBlock().getLocation(), null, event);
     }
 
-    private void handleInteract(Player player, Location location, Cancellable event) {
+    private void handleInteract(Player player, Location location, EntityType entityType, Cancellable event) {
 
         if (PermissionManager.instance().hasGlobalOverrides(player))
             return;
 
-        if (!PermissionManager.instance().checkLocationPermissions(player, location,
-                PermissionType.INTERACT)) {
+        var allowed = entityType != null
+                ? PermissionManager.instance().checkLocationPermissions(player, location, PermissionType.INTERACT, entityType)
+                : PermissionManager.instance().checkLocationPermissions(player, location, PermissionType.INTERACT);
+        if (!allowed) {
             event.setCancelled(true);
             United.messenger().send(player, "general-errors.not-allowed");
         }
     }
 
     // Helpers
+
+    private Material materialOf(Entity entity) {
+        return Material.matchMaterial(entity.getType().name());
+    }
 
     private boolean isSwitchMaterialTagProtected(Material type) {
 

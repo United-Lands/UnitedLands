@@ -5,6 +5,7 @@ import java.util.List;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.unitedlands.annotations.UnitedSubCommand;
+import org.unitedlands.unitedlands.managers.PermissionManager;
 import org.unitedlands.unitedlands.classes.BankRecordTransactionType;
 import org.unitedlands.unitedlands.classes.commandhandlers.SettlementCommandHandler;
 import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
@@ -38,6 +39,11 @@ public class CmdSettlementDeposit extends SettlementCommandHandler {
         var settlement = getCitizenSettlement(citizen);
         if (settlement == null)
             return;
+
+        if (!PermissionManager.instance().isInBankPlot(player, settlement)) {
+            United.messenger().send(player, "general-errors.not-in-bank-plot");
+            return;
+        }
 
         BigDecimal amount = new BigDecimal(0);
         try {

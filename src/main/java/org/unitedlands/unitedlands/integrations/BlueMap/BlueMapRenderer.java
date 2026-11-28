@@ -222,6 +222,7 @@ public class BlueMapRenderer implements MapRenderer {
         }
 
         try {
+            @SuppressWarnings("removal")
             var address = api.getWebApp().createImage(img, ICON_PATH + key);
             iconAddresses.put(key, address);
             iconAnchors.put(key, new Vector2i(img.getWidth() / 2, img.getHeight() / 2));
@@ -231,6 +232,7 @@ public class BlueMapRenderer implements MapRenderer {
         }
     }
 
+    @SuppressWarnings("removal")
     private void createClearIcon(BlueMapAPI api) {
         try {
             var img = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);

@@ -45,6 +45,7 @@ public class CmdAdminSettlementCitizenRemove extends AdminCommandHandler {
         }
 
         settlement.removeCitizen(citizen);
+        settlement.releaseChunksOwnedBy(citizen);
         settlement.saveAndRender();
 
         citizen.removeCountryRanks();

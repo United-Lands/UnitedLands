@@ -1,7 +1,9 @@
 package org.unitedlands.unitedlands.commands.handlers.admin.towny;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -25,12 +27,14 @@ import org.unitedlands.unitedlands.classes.metadata.LongMetaDataField;
 import org.unitedlands.unitedlands.classes.metadata.StringMetaDataField;
 import org.unitedlands.unitedlands.managers.UnitedLandsEconomyManager;
 import org.unitedlands.unitedlands.managers.IntegrationManager;
+import org.unitedlands.unitedlands.managers.PermissionManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.utils.CoordinateUtils;
 import org.unitedlands.utils.United;
 
 import com.palmergames.bukkit.towny.TownyAPI;
 import com.palmergames.bukkit.towny.object.Nation;
+import com.palmergames.bukkit.towny.object.Resident;
 import com.palmergames.bukkit.towny.object.Town;
 import com.palmergames.bukkit.towny.object.TownBlock;
 import com.palmergames.bukkit.towny.object.TownyPermission;
@@ -64,24 +68,28 @@ public class CmdAdminTownyImport implements UnitedCommandExecutor {
             if (town == null)
                 return;
 
-            importTown(sender, town);
-
-            United.messenger().send(sender, "admin.towny.import.finished");
+            List<PendingOwner> deferredOwners = Collections.synchronizedList(new ArrayList<>());
+            importTown(sender, town, deferredOwners)
+                    .thenRun(() -> resolveDeferredOwners(deferredOwners))
+                    .thenRun(() -> United.messenger().send(sender, "admin.towny.import.finished"));
 
         } else {
 
             // Import everything
 
             var towns = IntegrationManager.instance().getTownyProvider().getTowns();
+            List<PendingOwner> deferredOwners = Collections.synchronizedList(new ArrayList<>());
             List<CompletableFuture<Void>> settlementFutures = new ArrayList<>();
             for (Town town : towns) {
                 var spawnLocation = town.getSpawnOrNull();
                 if (spawnLocation == null)
                     continue;
-                settlementFutures.add(importTown(sender, town));
+                settlementFutures.add(importTown(sender, town, deferredOwners));
             }
 
             CompletableFuture.allOf(settlementFutures.toArray(new CompletableFuture[0])).join();
+
+            resolveDeferredOwners(deferredOwners);
 
             United.logger().info(
                     "---------------------------------------------------------------------- Finished town import, proceeding to nations...");
@@ -199,7 +207,7 @@ public class CmdAdminTownyImport implements UnitedCommandExecutor {
 
     }
 
-    private CompletableFuture<Void> importTown(CommandSender sender, Town town) {
+    private CompletableFuture<Void> importTown(CommandSender sender, Town town, List<PendingOwner> deferredOwners) {
 
         var plots = town.getTownBlocks();
 
@@ -229,11 +237,16 @@ public class CmdAdminTownyImport implements UnitedCommandExecutor {
                 settlement.setRegion(region);
             }
 
+            List<PendingOwner> townOwners = new ArrayList<>();
             for (var plot : plots) {
                 var chunk = convertTownBlockToSettlementChunk(town, plot);
 
                 chunk.setSettlement(settlement);
+                chunk.setChunkType(convertTownBlockType(settlement, plot));
                 settlement.addChunk(chunk);
+
+                if (plot.hasResident())
+                    townOwners.add(new PendingOwner(chunk, plot.getResidentOrNull(), plot));
             }
 
             var townPerms = town.getPermissions();
@@ -349,6 +362,11 @@ public class CmdAdminTownyImport implements UnitedCommandExecutor {
                     }
                 }
 
+                for (var pendingOwner : townOwners) {
+                    if (!assignOwner(pendingOwner, false))
+                        deferredOwners.add(pendingOwner);
+                }
+
                 UnitedLandsDataManager.instance().registerSettlement(settlement);
 
                 United.messenger().send(sender, "admin.towny.import.success-settlement", settlement.getName(),
@@ -451,6 +469,9 @@ public class CmdAdminTownyImport implements UnitedCommandExecutor {
         if (townPerms.pvp != blockPerms.pvp)
             chunk.setAllowPvp(blockPerms.pvp);
 
+        if (!block.hasResident() && block.isForSale())
+            chunk.setSalePrice((int) Math.round(block.getPlotPrice()));
+
         var placePerms = getPlotMembershipFlags(townPerms, blockPerms, ActionType.BUILD);
         var breakPerms = getPlotMembershipFlags(townPerms, blockPerms, ActionType.DESTROY);
         var switchPerms = getPlotMembershipFlags(townPerms, blockPerms, ActionType.SWITCH);
@@ -464,6 +485,83 @@ public class CmdAdminTownyImport implements UnitedCommandExecutor {
         chunk.setBlockUsePermissions(blockUsePerms);
 
         return chunk;
+    }
+
+    private record PendingOwner(SettlementChunk chunk, Resident resident, TownBlock block) {
+    }
+
+    private boolean assignOwner(PendingOwner pendingOwner, boolean createTownlessCitizen) {
+        var resident = pendingOwner.resident();
+        if (resident == null)
+            return true;
+
+        var citizen = UnitedLandsDataManager.instance().getCitizen(resident.getUUID());
+        if (citizen == null && createTownlessCitizen && !resident.hasTown()) {
+            citizen = new Citizen();
+            citizen.setUuid(resident.getUUID());
+            citizen.setName(resident.getName());
+            citizen.setJoined(resident.getRegistered());
+            citizen.setLastLogon(resident.getLastOnline());
+            UnitedLandsDataManager.instance().createCitizenDbData(citizen);
+        }
+        if (citizen == null)
+            return false;
+
+        pendingOwner.chunk().setOwner(citizen);
+        UnitedLandsDataManager.instance().getDatabaseManager().getSettlementChunkService()
+                .updateAsync(pendingOwner.chunk());
+        return true;
+    }
+
+    private void resolveDeferredOwners(List<PendingOwner> deferredOwners) {
+        synchronized (deferredOwners) {
+            for (var pendingOwner : deferredOwners) {
+                if (assignOwner(pendingOwner, true))
+                    continue;
+                var block = pendingOwner.block();
+                var ownerTown = pendingOwner.resident().getTownOrNull();
+                United.logger().warning("Could not import owner " + pendingOwner.resident().getName() + " of plot "
+                        + block.getX() + "/" + block.getZ() + " in " + pendingOwner.chunk().getSettlement().getName()
+                        + ": their town " + (ownerTown != null ? ownerTown.getName() : "?")
+                        + " has not been imported. The plot was left without owner.");
+            }
+            deferredOwners.clear();
+        }
+    }
+
+    private static final String DEFAULT_PLOT_TYPE = "none";
+
+    private static final Map<String, String> TOWNY_PLOT_TYPE_MAPPING = Map.of(
+            "default", DEFAULT_PLOT_TYPE,
+            "residential", DEFAULT_PLOT_TYPE,
+            "shop", DEFAULT_PLOT_TYPE,
+            "commercial", DEFAULT_PLOT_TYPE,
+            "jail", DEFAULT_PLOT_TYPE,
+            "embassy", "freehold");
+
+    private String convertTownBlockType(Settlement settlement, TownBlock block) {
+        var townyType = block.getTypeName() != null ? block.getTypeName().toLowerCase() : "default";
+        var type = TOWNY_PLOT_TYPE_MAPPING.getOrDefault(townyType, townyType);
+        if (type.equals(DEFAULT_PLOT_TYPE))
+            return DEFAULT_PLOT_TYPE;
+
+        var plotType = PermissionManager.instance().getPlotType(type);
+        if (plotType == null) {
+            United.logger().warning("Towny plot type '" + townyType + "' at " + block.getX() + "/" + block.getZ()
+                    + " in " + settlement.getName() + " has no matching plot type, using '" + DEFAULT_PLOT_TYPE
+                    + "'.");
+            return DEFAULT_PLOT_TYPE;
+        }
+
+        if (plotType.maxPerSettlement() != -1
+                && settlement.getChunksOfType(type).size() >= plotType.maxPerSettlement()) {
+            United.logger().warning("Towny plot type '" + townyType + "' at " + block.getX() + "/" + block.getZ()
+                    + " in " + settlement.getName() + " exceeds the limit of " + plotType.maxPerSettlement()
+                    + ", using '" + DEFAULT_PLOT_TYPE + "'.");
+            return DEFAULT_PLOT_TYPE;
+        }
+
+        return type;
     }
 
     private int getPlotMembershipFlags(TownyPermission townPerms, TownyPermission plotPerms, ActionType action) {

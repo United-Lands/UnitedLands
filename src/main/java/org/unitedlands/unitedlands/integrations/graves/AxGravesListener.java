@@ -4,6 +4,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.unitedlands.annotations.UnitedListener;
+import org.unitedlands.unitedlands.classes.PlotTypeBehavior;
+import org.unitedlands.unitedlands.managers.PermissionManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.utils.United;
 
@@ -19,6 +21,11 @@ public class AxGravesListener implements Listener {
         
         var location = event.getLocation();
         var player = event.getPlayer();
+
+        if (PermissionManager.instance().hasPlotBehavior(location, PlotTypeBehavior.KEEP_INVENTORY)) {
+            event.setCancelled(true);
+            return;
+        }
 
         var settlement = UnitedLandsDataManager.instance().getSettlement(location);
         if (settlement == null)
