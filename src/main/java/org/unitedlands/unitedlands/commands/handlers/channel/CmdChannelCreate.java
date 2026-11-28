@@ -27,8 +27,24 @@ public class CmdChannelCreate implements UnitedCommandExecutor {
             return ;
         }
 
-        if (ChatChannelManager.instance().getChannelNames().contains(args[0])) {
+        var player = (Player) sender;
+        var config = UnitedLandsChatConfig.get();
+
+        var maxLength = config.customChannelMaxNameLength();
+        if (!args[0].matches("[A-Za-z0-9_-]{1," + maxLength + "}")) {
+            United.messenger().send(sender, "chat.create.invalid-name", String.valueOf(maxLength));
+            return;
+        }
+
+        if (ChatChannelManager.instance().channelExists(args[0])) {
             United.messenger().send(sender, "chat.create.channel-exists");
+            return;
+        }
+
+        var maxChannels = config.customChannelMaxPerPlayer();
+        if (!player.hasPermission("united.lands.admin")
+                && ChatChannelManager.instance().getChannelCountByCreator(player.getUniqueId()) >= maxChannels) {
+            United.messenger().send(sender, "chat.create.limit-reached", String.valueOf(maxChannels));
             return;
         }
 

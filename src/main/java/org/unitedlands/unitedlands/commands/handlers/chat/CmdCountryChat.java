@@ -7,7 +7,7 @@ import org.unitedlands.registrars.command.UnitedCommandExecutor;
 import org.unitedlands.unitedlands.managers.ChatChannelManager;
 
 @UnitedCommand(
-    name = "coutrychat", 
+    name = "countrychat",
     aliases = { "cc" }, 
     playerOnly = true)
 public class CmdCountryChat implements UnitedCommandExecutor {

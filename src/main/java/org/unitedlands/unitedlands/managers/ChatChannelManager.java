@@ -3,13 +3,14 @@ package org.unitedlands.unitedlands.managers;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.Map.Entry;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -39,10 +40,10 @@ public class ChatChannelManager {
         return instance;
     }
 
-    private Set<Citizen> viewers = new HashSet<>();
+    private final Set<Citizen> viewers = ConcurrentHashMap.newKeySet();
 
-    private Map<String, ChatChannel> channels = new HashMap<>();
-    private Map<Player, String> playerChannels = new HashMap<>();
+    private final Map<String, ChatChannel> channels = new ConcurrentHashMap<>();
+    private final Map<Player, String> playerChannels = new ConcurrentHashMap<>();
 
     public ChatChannelManager() {
         instance = this;
@@ -111,6 +112,7 @@ public class ChatChannelManager {
         for (var player : playersInChannel)
             switchChannel(player, "GLOBAL", null);
 
+        channels.remove(key);
         removeChannels(List.of(key));
     }
 
@@ -194,12 +196,23 @@ public class ChatChannelManager {
         return channels.keySet().stream().toList();
     }
 
+    public boolean channelExists(String name) {
+        return channels.keySet().stream().anyMatch(k -> k.equalsIgnoreCase(name));
+    }
+
+    public long getChannelCountByCreator(UUID creator) {
+        return channels.values().stream().filter(c -> creator.equals(c.getCreator())).count();
+    }
+
     public List<String> getPublicChannelNames() {
         return channels.entrySet().stream().filter(c -> !c.getValue().hasPassword()).map(Entry::getKey).toList();
     }
 
     public ChatChannel getPlayerChannel(Player player) {
-        return channels.get(playerChannels.get(player));
+        if (player == null)
+            return null;
+        var key = playerChannels.get(player);
+        return key != null ? channels.get(key) : null;
     }
 
     public List<Player> getPlayersInChannel(String channelKey) {
@@ -208,7 +221,9 @@ public class ChatChannelManager {
     }
 
     public boolean isInChannel(Player player, String key) {
-        return playerChannels.get(player).equals(key);
+        if (player == null)
+            return false;
+        return key.equals(playerChannels.get(player));
     }
 
     public void switchChannel(Player player, String key, String password) {
@@ -239,11 +254,13 @@ public class ChatChannelManager {
                     United.messenger().send(player, "general-errors.not-in-settlement");
                     return;
                 }
+                break;
             case "STAFF":
                 if (!player.hasPermission("united.lands.admin")) {
                     United.messenger().send(player, "general-errors.no-permission");
                     return;
                 }
+                break;
             default:
                 break;
 
@@ -324,6 +341,11 @@ public class ChatChannelManager {
             return;
         }
 
+        if (channelKey.equals("STAFF") && !player.hasPermission("united.lands.admin")) {
+            United.messenger().send(player, "general-errors.no-permission");
+            return;
+        }
+
         List<Player> receivers = filterViewers(senderViewer, channelKey);
 
         if (receivers.size() <= 1 && UnitedLandsChatConfig.get().showEmptyChannelMessage()) {
@@ -342,10 +364,12 @@ public class ChatChannelManager {
             case "GLOBAL":
                 return viewers.stream().map(c -> c.getPlayer()).toList();
             case "LOCAL":
+                var origin = citizen.getPlayer().getLocation();
                 return viewers.stream()
-                        .filter(c -> c.getPlayer().getLocation()
-                                .distanceSquared(citizen.getPlayer().getLocation()) <= 100 * 100)
-                        .map(c -> c.getPlayer()).toList();
+                        .map(c -> c.getPlayer())
+                        .filter(p -> p.getWorld().equals(origin.getWorld())
+                                && p.getLocation().distanceSquared(origin) <= 100 * 100)
+                        .toList();
             case "SETTLEMENT":
                 return viewers.stream()
                         .filter(c -> c.hasSettlement() && c.getSettlement().equals(citizen.getSettlement()))
@@ -365,31 +389,57 @@ public class ChatChannelManager {
 
     public void handleMessage(AsyncChatEvent event) {
 
-        var channel = channels.get(playerChannels.get(event.getPlayer()));
-        if (channel == null) {
-            United.logger().error("Could not find chat channel of player " + event.getPlayer().getName());
+        var player = event.getPlayer();
+        var text = PlainTextComponentSerializer.plainText().serialize(event.message());
+
+        PreparedMessage prepared;
+        try {
+            prepared = callOnMainThread(() -> prepareMessage(player, text));
+        } catch (Exception e) {
+            United.logger().error("Error while processing chat message of player " + player.getName() + ": " + e);
+            event.setCancelled(true);
             return;
         }
 
-        var senderViewer = viewers.stream().filter(c -> c.getUuid().equals(event.getPlayer().getUniqueId())).findFirst()
+        if (prepared == null)
+            return;
+
+        event.viewers().clear();
+        event.viewers().addAll(prepared.receivers());
+        event.renderer((source, sourceDisplayName, message, viewer) -> prepared.message());
+    }
+
+    private PreparedMessage prepareMessage(Player player, String text) {
+
+        var channel = getPlayerChannel(player);
+        if (channel == null) {
+            United.logger().error("Could not find chat channel of player " + player.getName());
+            return null;
+        }
+
+        var senderViewer = viewers.stream().filter(c -> c.getUuid().equals(player.getUniqueId())).findFirst()
                 .orElse(null);
         if (senderViewer == null) {
-            return;
+            return null;
         }
 
         var receivers = filterViewers(senderViewer, channel.getKey());
-        event.viewers().clear();
-        event.viewers().addAll(receivers);
 
         if (receivers.size() <= 1 && UnitedLandsChatConfig.get().showEmptyChannelMessage()) {
-            United.messenger().send(event.getPlayer(), "chat.no-audience");
+            United.messenger().send(player, "chat.no-audience");
         }
 
-        var text = PlainTextComponentSerializer.plainText().serialize(event.message());
-        var color = channel.getColor();
+        var message = getFormattedMessage(channel.getKey(), text, channel.getColor(), player);
+        return new PreparedMessage(receivers, message);
+    }
 
-        event.renderer((source, sourceDisplayName, message, viewer) -> getFormattedMessage(channel.getKey(), text,
-                color, source));
+    private <T> T callOnMainThread(Callable<T> task) throws Exception {
+        if (Bukkit.isPrimaryThread())
+            return task.call();
+        return Bukkit.getScheduler().callSyncMethod(UnitedLands.instance(), task).get(5, TimeUnit.SECONDS);
+    }
+
+    private record PreparedMessage(List<Player> receivers, Component message) {
     }
 
     public void sendChannelNotification(String channelKey, String message) {

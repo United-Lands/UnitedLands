@@ -21,6 +21,8 @@ public interface UnitedLandsChatConfig extends UnitedConfigHandler {
     @UnitedSetting(key = "player-name-placeholder") String playerNamePlaceholder();
     @UnitedSetting(key = "custom-channel-color", def = "white") String customChannelColor();
     @UnitedSetting(key = "custom-channel-lifetime", def = "259200") Long customChannelLifetime();
+    @UnitedSetting(key = "custom-channel-max-name-length", def = "16") int customChannelMaxNameLength();
+    @UnitedSetting(key = "custom-channel-max-per-player", def = "1") int customChannelMaxPerPlayer();
     @UnitedSection(key = "default-channels") UnitedDynamicSection<DefaultChatChannelSettings> defaultChannels();    
     @UnitedSection(key = "custom-channels") UnitedDynamicSection<CustomChatChannelSettings> customChannels();    
 

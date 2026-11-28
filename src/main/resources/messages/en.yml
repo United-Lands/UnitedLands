@@ -121,6 +121,8 @@ admin:
 chat:
   create:
     channel-exists: <error>This channel already exists.</error>
+    invalid-name: '<error>Invalid channel name. Use up to {1} letters, digits, underscores or hyphens.</error>'
+    limit-reached: <error>You already own the maximum number of channels ({1}).</error>
     success: <body>Created chat channel <b>{1}</b>. Please remember that custom chat channels are also subject to rules and moderation.</body>
     success-private: <body>Created chat channel <b>{1}</b> with password <i>{2}</i>. Please remember that custom chat channels are also subject to rules and moderation.</body>
   blocked: <success>Blocked {1} from this channel.</success>

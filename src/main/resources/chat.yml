@@ -10,6 +10,12 @@ custom-channel-color: '#CCCCCC'
 # How long a custom channel will be kept in the config after the
 # last recorded activity (in seconds)
 custom-channel-lifetime: 259200
+# Maximum length of custom channel names. Names may only contain
+# letters, digits, underscores and hyphens.
+custom-channel-max-name-length: 16
+# How many custom channels a single player may own at the same time.
+# Admins are exempt.
+custom-channel-max-per-player: 1
 
 # The custom player name placeholder. If empty or missing, will
 # use player.getName()
