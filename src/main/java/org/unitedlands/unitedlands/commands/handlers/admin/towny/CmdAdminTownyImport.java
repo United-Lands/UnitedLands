@@ -1,6 +1,7 @@
 package org.unitedlands.unitedlands.commands.handlers.admin.towny;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +19,7 @@ import org.unitedlands.unitedlands.classes.Country;
 import org.unitedlands.unitedlands.classes.LocationMembership;
 import org.unitedlands.unitedlands.classes.Settlement;
 import org.unitedlands.unitedlands.classes.SettlementChunk;
-
+import org.unitedlands.unitedlands.classes.interfaces.MetadataHolder;
 import org.unitedlands.unitedlands.classes.metadata.BooleanMetaDataField;
 import org.unitedlands.unitedlands.classes.metadata.DoubleMetaDataField;
 import org.unitedlands.unitedlands.classes.metadata.IntegerMetaDataField;
@@ -40,6 +41,7 @@ import com.palmergames.bukkit.towny.object.TownBlock;
 import com.palmergames.bukkit.towny.object.TownyPermission;
 import com.palmergames.bukkit.towny.object.TownyPermission.ActionType;
 import com.palmergames.bukkit.towny.object.metadata.BooleanDataField;
+import com.palmergames.bukkit.towny.object.metadata.CustomDataField;
 import com.palmergames.bukkit.towny.object.metadata.DecimalDataField;
 import com.palmergames.bukkit.towny.object.metadata.IntegerDataField;
 import com.palmergames.bukkit.towny.object.metadata.LocationDataField;
@@ -107,14 +109,15 @@ public class CmdAdminTownyImport implements UnitedCommandExecutor {
 
             var regions = UnitedLandsDataManager.instance().getRegions();
 
-            // Assign regions to countries based on the oldest Towny nation town in each region
-            for (var region: regions) {
+            // Assign regions to countries based on the oldest Towny nation town in each
+            // region
+            for (var region : regions) {
 
                 if (region.getSettlements().size() == 0) {
                     United.logger().info("Region " + region.getName() + " has no settlements, skipping.");
                     continue;
                 }
-            
+
                 Town oldestTownyNationTown = null;
                 for (var settlement : region.getSettlements()) {
                     var townyTown = TownyAPI.getInstance().getTown(settlement.getUuid());
@@ -136,9 +139,11 @@ public class CmdAdminTownyImport implements UnitedCommandExecutor {
                     continue;
                 }
 
-                var country = UnitedLandsDataManager.instance().getCountry(oldestTownyNationTown.getNationOrNull().getUUID());
+                var country = UnitedLandsDataManager.instance()
+                        .getCountry(oldestTownyNationTown.getNationOrNull().getUUID());
                 if (country == null) {
-                    United.logger().error("Found unimported nation UUID for " + oldestTownyNationTown.getName() + " (country UUID " + oldestTownyNationTown.getNationOrNull().getUUID() + "), skipping.");
+                    United.logger().error("Found unimported nation UUID for " + oldestTownyNationTown.getName()
+                            + " (country UUID " + oldestTownyNationTown.getNationOrNull().getUUID() + "), skipping.");
                     continue;
                 }
 
@@ -147,12 +152,13 @@ public class CmdAdminTownyImport implements UnitedCommandExecutor {
                 country.addRegion(region);
                 country.save();
 
-                United.logger().info("Assigned region " + region.getName() + " to country " + country.getName() + " based on age of " + oldestTownyNationTown.getName() + ".");
+                United.logger().info("Assigned region " + region.getName() + " to country " + country.getName()
+                        + " based on age of " + oldestTownyNationTown.getName() + ".");
 
             }
 
             United.logger().info(
-            "---------------------------------------------------------------------- Finished region asssigments, setting settlement countries...");
+                    "---------------------------------------------------------------------- Finished region asssigments, setting settlement countries...");
 
             for (var settlement : UnitedLandsDataManager.instance().getSettlements()) {
 
@@ -175,7 +181,6 @@ public class CmdAdminTownyImport implements UnitedCommandExecutor {
                 if (!townyTown.hasNation())
                     continue;
 
-
                 if (townyTown.getNationOrNull().getUUID().equals(country.getUuid())) {
 
                     settlement.setCountry(country);
@@ -187,14 +192,15 @@ public class CmdAdminTownyImport implements UnitedCommandExecutor {
                     }
                     country.save();
 
-                    United.logger().info("Assigned settlement " + settlement.getName() + " to country " + country.getName() + (townyTown.isCapital() ? " as capital " : "") + ".");
+                    United.logger().info("Assigned settlement " + settlement.getName() + " to country "
+                            + country.getName() + (townyTown.isCapital() ? " as capital " : "") + ".");
 
                 }
 
             }
 
             United.logger().info(
-            "---------------------------------------------------------------------- Finished setting settlement countries, starting rendering...");
+                    "---------------------------------------------------------------------- Finished setting settlement countries, starting rendering...");
 
             var renderer = IntegrationManager.instance().getMapRenderer();
             renderer.setDebugMode(false);
@@ -263,71 +269,26 @@ public class CmdAdminTownyImport implements UnitedCommandExecutor {
             settlement.setBlockUsePermissions(blockUsePerms);
 
             // Metadata
-
-            var townyMeta = town.getMetadata();
-            for (var tmf : townyMeta) {
-                var type = tmf.getTypeID();
-                switch (type) {
-                    case "towny_booldf":
-                        var boolMeta = new BooleanMetaDataField(tmf.getKey());
-                        boolMeta.setLabel(tmf.getLabel());
-                        boolMeta.setShowInScreens(tmf.shouldDisplayInStatus());
-                        boolMeta.setValue(((BooleanDataField) tmf).getValue());
-                        settlement.addMetadata(boolMeta);
-                        break;
-                    case "towny_decdf":
-                        var doubleMeta = new DoubleMetaDataField(tmf.getKey());
-                        doubleMeta.setLabel(tmf.getLabel());
-                        doubleMeta.setShowInScreens(tmf.shouldDisplayInStatus());
-                        doubleMeta.setValue(((DecimalDataField) tmf).getValue());
-                        settlement.addMetadata(doubleMeta);
-                        break;
-                    case "towny_intdf":
-                        var intMeta = new IntegerMetaDataField(tmf.getKey());
-                        intMeta.setLabel(tmf.getLabel());
-                        intMeta.setShowInScreens(tmf.shouldDisplayInStatus());
-                        intMeta.setValue(((IntegerDataField) tmf).getValue());
-                        settlement.addMetadata(intMeta);
-                        break;
-                    case "towny_locationdf":
-                        var locMeta = new LocationMetaDataField(tmf.getKey());
-                        locMeta.setLabel(tmf.getLabel());
-                        locMeta.setShowInScreens(tmf.shouldDisplayInStatus());
-                        locMeta.setValue(((LocationDataField) tmf).getValue());
-                        settlement.addMetadata(locMeta);
-                        break;
-                    case "towny_longdf":
-                        var longMeta = new LongMetaDataField(tmf.getKey());
-                        longMeta.setLabel(tmf.getLabel());
-                        longMeta.setShowInScreens(tmf.shouldDisplayInStatus());
-                        longMeta.setValue(((LongDataField) tmf).getValue());
-                        settlement.addMetadata(longMeta);
-                        break;
-                    default:
-                        var stringMeta = new StringMetaDataField(tmf.getKey());
-                        stringMeta.setLabel(tmf.getLabel());
-                        stringMeta.setShowInScreens(tmf.shouldDisplayInStatus());
-                        stringMeta.setValue(String.valueOf(tmf.getValue()));
-                        settlement.addMetadata(stringMeta);
-                        break;
-                }
-
-            }
-
+            convertTownyMetaData(town.getMetadata(), settlement);
+            
             // Workaround for CMI UUID chaos
             // Check if there is an imported account for the settlement
             var accountHolder = BankAccountManager.instance().getBankAccountHolder(town.getUUID());
             if (accountHolder == null) {
-                United.logger().warning("No imported bank account found for " + settlement.getName() + ", attempting fix...");
+                United.logger()
+                        .warning("No imported bank account found for " + settlement.getName() + ", attempting fix...");
 
                 accountHolder = BankAccountManager.instance().getBankAccountHolder(settlement.getName());
                 if (accountHolder == null) {
-                    United.logger().warning("Could not find named account for " + settlement.getName() + ", fix impossible.");
+                    United.logger()
+                            .warning("Could not find named account for " + settlement.getName() + ", fix impossible.");
                 } else {
                     var balance = accountHolder.getAccount().getBalance();
                     BankAccountManager.instance().remove(accountHolder.getUuid());
-                    United.logger().warning("Removed faulty bank account of " + settlement.getName() + ", adding new account...");
-                    BankAccountManager.instance().deposit(settlement.getUuid(), settlement.getName(), balance, null, null);
+                    United.logger().warning(
+                            "Removed faulty bank account of " + settlement.getName() + ", adding new account...");
+                    BankAccountManager.instance().deposit(settlement.getUuid(), settlement.getName(), balance, null,
+                            null);
                     United.logger().warning("New account created for " + settlement.getName() + ".");
                 }
 
@@ -352,6 +313,8 @@ public class CmdAdminTownyImport implements UnitedCommandExecutor {
                         citizen.setLastLogon(resident.getLastOnline());
                         citizen.setSettlement(settlement);
                         settlement.addCitizen(citizen);
+
+                        convertTownyMetaData(resident.getMetadata(), citizen);
 
                         UnitedLandsDataManager.instance().createCitizenDbData(citizen);
                     }
@@ -394,9 +357,11 @@ public class CmdAdminTownyImport implements UnitedCommandExecutor {
                 United.logger().info("Country " + nation.getName() + " does not have a spawn or any towns, skipping.");
                 return CompletableFuture.completedFuture(null);
             }
-            var anyTownWithHomeBlock = nation.getTowns().stream().filter(t -> t.getHomeBlockOrNull() != null).findAny().orElse(null);
+            var anyTownWithHomeBlock = nation.getTowns().stream().filter(t -> t.getHomeBlockOrNull() != null).findAny()
+                    .orElse(null);
             if (anyTownWithHomeBlock == null) {
-                United.logger().info("Country " + nation.getName() + " does not have a town with a home block, skipping.");
+                United.logger()
+                        .info("Country " + nation.getName() + " does not have a town with a home block, skipping.");
                 return CompletableFuture.completedFuture(null);
             }
             nationWorld = anyTownWithHomeBlock.getHomeBlockOrNull().getWorld().getBukkitWorld();
@@ -411,16 +376,16 @@ public class CmdAdminTownyImport implements UnitedCommandExecutor {
         country.setWorld(nationWorld);
 
         country.setStrokeColor(nation.getMapColorHexCode());
-        country.setFillColor(nation.getMapColorHexCode() + "10");
+        country.setFillColor(nation.getMapColorHexCode() + "20");
+
+        convertTownyMetaData(nation.getMetadata(), country);
 
         var leaderResident = UnitedLandsDataManager.instance().getCitizen(nation.getKing().getUUID());
         if (leaderResident != null) {
             leaderResident.addCountryRank("leader");
             leaderResident.save();
         }
-
-        // UnitedLandsEconomyManager.instance().createAccount(country.getUuid(), country.getName());
-
+        
         // Workaround for CMI UUID chaos
         // Check if there is an imported account for the country
         var accountHolder = BankAccountManager.instance().getBankAccountHolder(nation.getUUID());
@@ -433,7 +398,8 @@ public class CmdAdminTownyImport implements UnitedCommandExecutor {
             } else {
                 var balance = accountHolder.getAccount().getBalance();
                 BankAccountManager.instance().remove(accountHolder.getUuid());
-                United.logger().warning("Removed faulty bank account of " + country.getName() + ", adding new account...");
+                United.logger()
+                        .warning("Removed faulty bank account of " + country.getName() + ", adding new account...");
                 BankAccountManager.instance().deposit(country.getUuid(), country.getName(), balance, null, null);
                 United.logger().warning("New account created for " + country.getName() + ".");
             }
@@ -609,6 +575,56 @@ public class CmdAdminTownyImport implements UnitedCommandExecutor {
             membership |= LocationMembership.FOREIGNER;
         }
         return membership;
+    }
+
+    private void convertTownyMetaData(Collection<CustomDataField<?>> townyMeta, MetadataHolder holder) {
+        for (var tmf : townyMeta) {
+            var type = tmf.getTypeID();
+            switch (type) {
+                case "towny_booldf":
+                    var boolMeta = new BooleanMetaDataField(tmf.getKey());
+                    boolMeta.setLabel(tmf.getLabel());
+                    boolMeta.setShowInScreens(tmf.shouldDisplayInStatus());
+                    boolMeta.setValue(((BooleanDataField) tmf).getValue());
+                    holder.addMetadata(boolMeta);
+                    break;
+                case "towny_decdf":
+                    var doubleMeta = new DoubleMetaDataField(tmf.getKey());
+                    doubleMeta.setLabel(tmf.getLabel());
+                    doubleMeta.setShowInScreens(tmf.shouldDisplayInStatus());
+                    doubleMeta.setValue(((DecimalDataField) tmf).getValue());
+                    holder.addMetadata(doubleMeta);
+                    break;
+                case "towny_intdf":
+                    var intMeta = new IntegerMetaDataField(tmf.getKey());
+                    intMeta.setLabel(tmf.getLabel());
+                    intMeta.setShowInScreens(tmf.shouldDisplayInStatus());
+                    intMeta.setValue(((IntegerDataField) tmf).getValue());
+                    holder.addMetadata(intMeta);
+                    break;
+                case "towny_locationdf":
+                    var locMeta = new LocationMetaDataField(tmf.getKey());
+                    locMeta.setLabel(tmf.getLabel());
+                    locMeta.setShowInScreens(tmf.shouldDisplayInStatus());
+                    locMeta.setValue(((LocationDataField) tmf).getValue());
+                    holder.addMetadata(locMeta);
+                    break;
+                case "towny_longdf":
+                    var longMeta = new LongMetaDataField(tmf.getKey());
+                    longMeta.setLabel(tmf.getLabel());
+                    longMeta.setShowInScreens(tmf.shouldDisplayInStatus());
+                    longMeta.setValue(((LongDataField) tmf).getValue());
+                    holder.addMetadata(longMeta);
+                    break;
+                default:
+                    var stringMeta = new StringMetaDataField(tmf.getKey());
+                    stringMeta.setLabel(tmf.getLabel());
+                    stringMeta.setShowInScreens(tmf.shouldDisplayInStatus());
+                    stringMeta.setValue(String.valueOf(tmf.getValue()));
+                    holder.addMetadata(stringMeta);
+                    break;
+            }
+        }
     }
 
 }
