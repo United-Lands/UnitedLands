@@ -1,7 +1,5 @@
 package org.unitedlands.unitedlands.classes.configs;
 
-import java.util.List;
-
 import org.unitedlands.annotations.UnitedConfig;
 import org.unitedlands.annotations.UnitedSection;
 import org.unitedlands.annotations.UnitedSetting;
@@ -24,7 +22,6 @@ public interface UnitedLandsChatConfig extends UnitedConfigHandler {
     @UnitedSetting(key = "custom-channel-max-name-length", def = "16") int customChannelMaxNameLength();
     @UnitedSetting(key = "custom-channel-max-per-player", def = "1") int customChannelMaxPerPlayer();
     @UnitedSection(key = "default-channels") UnitedDynamicSection<DefaultChatChannelSettings> defaultChannels();    
-    @UnitedSection(key = "custom-channels") UnitedDynamicSection<CustomChatChannelSettings> customChannels();    
 
     public record DefaultChatChannelSettings(
             @UnitedSetting(key = "key") String key,
@@ -32,18 +29,6 @@ public interface UnitedLandsChatConfig extends UnitedConfigHandler {
             @UnitedSetting(key = "tag") String tag,
             @UnitedSetting(key = "prefix") String prefix,
             @UnitedSetting(key = "notify-activity", def = "false") boolean notifyActivity
-    ) {}
-
-    public record CustomChatChannelSettings(
-            @UnitedSetting(key = "key") String key,
-            @UnitedSetting(key = "color", def = "white") String color,
-            @UnitedSetting(key = "tag") String tag,
-            @UnitedSetting(key = "prefix") String prefix,
-            @UnitedSetting(key = "password") String password,
-            @UnitedSetting(key = "notify-activity", def = "false") boolean notifyActvity,
-            @UnitedSetting(key = "creator") String creator,
-            @UnitedSetting(key = "last-activity") long lastActivity,
-            @UnitedSetting(key = "blocked-players") List<String> blockedPlayers
     ) {}
 
 }

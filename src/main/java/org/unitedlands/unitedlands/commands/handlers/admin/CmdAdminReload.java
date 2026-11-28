@@ -8,6 +8,7 @@ import org.unitedlands.unitedlands.UnitedLands;
 import org.unitedlands.unitedlands.classes.configs.UnitedLandsChatConfig;
 import org.unitedlands.unitedlands.classes.configs.UnitedLandsConfig;
 import org.unitedlands.unitedlands.classes.configs.UnitedLandsTitlesConfig;
+import org.unitedlands.unitedlands.managers.ChatChannelManager;
 import org.unitedlands.unitedlands.managers.IntegrationManager;
 import org.unitedlands.unitedlands.managers.PermissionManager;
 import org.unitedlands.unitedlands.managers.TitleManager;
@@ -27,6 +28,8 @@ public class CmdAdminReload implements UnitedCommandExecutor {
         UnitedLandsConfig.get().reload();
         UnitedLandsChatConfig.get().reload();
         UnitedLandsTitlesConfig.get().reload();
+
+        ChatChannelManager.instance().reloadDefaultChannels();
 
         UnitedMessagesRegistrar.reload(UnitedLands.instance());
         IntegrationManager.instance().getMapRenderer().loadMessages();

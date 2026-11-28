@@ -2,8 +2,10 @@ package org.unitedlands.unitedlands.managers;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -11,6 +13,8 @@ import java.util.UUID;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.bukkit.Bukkit;
@@ -23,7 +27,6 @@ import org.unitedlands.unitedlands.UnitedLands;
 import org.unitedlands.unitedlands.classes.ChatChannel;
 import org.unitedlands.unitedlands.classes.Citizen;
 import org.unitedlands.unitedlands.classes.configs.UnitedLandsChatConfig;
-import org.unitedlands.unitedlands.classes.configs.UnitedLandsChatConfig.CustomChatChannelSettings;
 import org.unitedlands.unitedlands.integrations.papi.PlaceholderAPIIntegration;
 import org.unitedlands.utils.United;
 
@@ -49,65 +52,141 @@ public class ChatChannelManager {
     private final Map<Player, String> playerChannels = new ConcurrentHashMap<>();
 
     private static final long MAINTENANCE_INTERVAL_SECONDS = 600;
+    private static final String CHANNEL_DATA_FILE = "chat-channels.yml";
 
     private BukkitTask maintenanceTask;
+    private final ExecutorService saveExecutor = Executors.newSingleThreadExecutor(runnable -> {
+        var thread = new Thread(runnable, "UnitedLands-ChatChannelSaver");
+        thread.setDaemon(true);
+        return thread;
+    });
 
     public ChatChannelManager() {
         instance = this;
-        loadChannels();
+        loadDefaultChannels();
+        loadCustomChannels();
         startMaintenanceTask();
     }
 
-    private void loadChannels() {
+    private void loadDefaultChannels() {
 
         // Default channels
         for (var key : UnitedLandsChatConfig.get().defaultChannels().keys()) {
             var channelSettings = UnitedLandsChatConfig.get().defaultChannels().get(key);
 
             ChatChannel channel = new ChatChannel(
-                channelSettings.key(), 
+                channelSettings.key(),
                 channelSettings.tag(),
-                channelSettings.color(), 
-                channelSettings.prefix(), 
-                channelSettings.notifyActivity(), 
+                channelSettings.color(),
+                channelSettings.prefix(),
+                channelSettings.notifyActivity(),
                 false);
 
             channels.put(channelSettings.key(), channel);
         }
+    }
+
+    public void reloadDefaultChannels() {
+
+        var defaultKeys = channels.values().stream().filter(c -> !c.isCustom()).map(ChatChannel::getKey).toList();
+        defaultKeys.forEach(channels::remove);
+        loadDefaultChannels();
+
+        for (var entry : playerChannels.entrySet()) {
+            if (!channels.containsKey(entry.getValue()))
+                switchChannel(entry.getKey(), "GLOBAL", null);
+        }
+    }
+
+    private void loadCustomChannels() {
+
+        var dataFile = getDataFile();
+        var data = dataFile.exists() ? YamlConfiguration.loadConfiguration(dataFile) : new YamlConfiguration();
+        var changed = migrateLegacyChannels(data);
 
         // Custom channels
-        List<String> staleChannelKeys = new ArrayList<>();
-        for (var key : UnitedLandsChatConfig.get().customChannels().keys()) {
+        var section = data.getConfigurationSection("channels");
+        if (section != null) {
+            for (var key : section.getKeys(false)) {
+                var channelConfig = section.getConfigurationSection(key);
+                if (channelConfig == null)
+                    continue;
 
-            var channelSettings = UnitedLandsChatConfig.get().customChannels().get(key);
-            if (isChannelStale(channelSettings)) {
-                staleChannelKeys.add(key);
-                continue;
+                if (isStale(channelConfig.getLong("last-activity"))) {
+                    United.logger().info("Removing stale chat channel " + key);
+                    changed = true;
+                    continue;
+                }
+
+                try {
+                    var channel = readChannel(key, channelConfig);
+                    channels.put(channel.getKey(), channel);
+                } catch (IllegalArgumentException e) {
+                    United.logger().error("Skipping invalid chat channel " + key + ": " + e.getMessage());
+                }
             }
-
-            ChatChannel channel = new ChatChannel(
-                    channelSettings.key(),
-                    channelSettings.tag(),
-                    channelSettings.color(),
-                    channelSettings.prefix(),
-                    channelSettings.notifyActvity(),
-                    true);
-
-            channel.setLastActivity(channelSettings.lastActivity());
-
-            if (channelSettings.password() != null && !channelSettings.password().isEmpty())
-                channel.setPassword(channelSettings.password());
-
-            if (channelSettings.creator() != null && !channelSettings.creator().isEmpty())
-                channel.setCreator(UUID.fromString(channelSettings.creator()));
-
-            if (channelSettings.blockedPlayers() != null) {
-                for (var uuid : channelSettings.blockedPlayers())
-                    channel.addBlockedPlayer(UUID.fromString(uuid));
-            }
-            channels.put(channelSettings.key(), channel);
         }
-        removeChannels(staleChannelKeys);
+
+        if (changed)
+            persistSync();
+    }
+
+    private boolean migrateLegacyChannels(YamlConfiguration data) {
+
+        File configFile = new File(UnitedLands.instance().getDataFolder(), "chat.yml");
+        if (!configFile.exists())
+            return false;
+
+        var config = YamlConfiguration.loadConfiguration(configFile);
+        var legacyChannels = config.getConfigurationSection("custom-channels");
+        if (legacyChannels == null)
+            return false;
+
+        var target = data.getConfigurationSection("channels");
+        if (target == null)
+            target = data.createSection("channels");
+
+        for (var key : legacyChannels.getKeys(false)) {
+            var legacyChannel = legacyChannels.getConfigurationSection(key);
+            if (legacyChannel != null && !target.contains(key))
+                target.createSection(key, legacyChannel.getValues(false));
+        }
+
+        config.set("custom-channels", null);
+        try {
+            config.save(configFile);
+            United.logger().info("Moved custom chat channels from chat.yml to " + CHANNEL_DATA_FILE + ".");
+        } catch (IOException e) {
+            United.logger().error("Error while removing custom channels from chat.yml: " + e.getMessage());
+        }
+        return true;
+    }
+
+    private ChatChannel readChannel(String sectionKey, ConfigurationSection channelConfig) {
+
+        var key = channelConfig.getString("key", sectionKey);
+        var channel = new ChatChannel(
+                key,
+                channelConfig.getString("tag", key),
+                channelConfig.getString("color", UnitedLandsChatConfig.get().customChannelColor()),
+                channelConfig.getString("prefix"),
+                channelConfig.getBoolean("notify-activity"),
+                true);
+
+        channel.setLastActivity(channelConfig.getLong("last-activity"));
+
+        var password = channelConfig.getString("password");
+        if (password != null && !password.isEmpty())
+            channel.setPassword(password);
+
+        var creator = channelConfig.getString("creator");
+        if (creator != null && !creator.isEmpty())
+            channel.setCreator(UUID.fromString(creator));
+
+        for (var uuid : channelConfig.getStringList("blocked-players"))
+            channel.addBlockedPlayer(UUID.fromString(uuid));
+
+        return channel;
     }
 
     public boolean isCustomChannel(String key) {
@@ -121,38 +200,7 @@ public class ChatChannelManager {
             switchChannel(player, "GLOBAL", null);
 
         channels.remove(key);
-        removeChannels(List.of(key));
-    }
-
-    private void removeChannels(List<String> keys) {
-
-        File configFile = new File(UnitedLands.instance().getDataFolder(), "chat.yml");
-        if (!configFile.exists()) {
-            United.logger().error("Chat config file not found.");
-            return;
-        }
-
-        var config = YamlConfiguration.loadConfiguration(configFile);
-        var customChannels = config.getConfigurationSection("custom-channels");
-        if (customChannels == null)
-            return;
-
-        for (var key : keys) {
-            if (customChannels.contains(key)) {
-                United.logger().info("Removing stale chat channel " + key);
-                customChannels.set(key, null);
-            }
-        }
-
-        try {
-            config.save(configFile);
-        } catch (IOException e) {
-            United.logger().error("Error while removing channels: " + e.getMessage());
-        }
-    }
-
-    private boolean isChannelStale(CustomChatChannelSettings channelSettings) {
-        return isStale(channelSettings.lastActivity());
+        persist();
     }
 
     private boolean isStale(long lastActivity) {
@@ -175,12 +223,12 @@ public class ChatChannelManager {
                 .map(ChatChannel::getKey)
                 .toList();
 
-        if (!staleKeys.isEmpty()) {
-            staleKeys.forEach(channels::remove);
-            removeChannels(staleKeys);
+        for (var key : staleKeys) {
+            United.logger().info("Removing stale chat channel " + key);
+            channels.remove(key);
         }
 
-        saveChannels(getCustomChannels());
+        persist();
     }
 
     private void refreshOccupiedChannels() {
@@ -200,37 +248,42 @@ public class ChatChannelManager {
         if (maintenanceTask != null)
             maintenanceTask.cancel();
         refreshOccupiedChannels();
-        saveChannels(getCustomChannels());
+
+        saveExecutor.shutdown();
+        try {
+            if (!saveExecutor.awaitTermination(5, TimeUnit.SECONDS))
+                United.logger().error("Timed out while waiting for pending chat channel saves.");
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        persistSync();
     }
 
     public void saveChannel(ChatChannel channel) {
-        saveChannels(List.of(channel));
+        persist();
     }
 
-    private void saveChannels(Collection<ChatChannel> channelsToSave) {
-
-        if (channelsToSave.isEmpty())
-            return;
-
-        File configFile = new File(UnitedLands.instance().getDataFolder(), "chat.yml");
-        if (!configFile.exists()) {
-            United.logger().error("Chat config file not found.");
+    private void persist() {
+        var content = serializeChannels();
+        if (saveExecutor.isShutdown()) {
+            writeDataFile(content);
             return;
         }
+        saveExecutor.execute(() -> writeDataFile(content));
+    }
 
-        var config = YamlConfiguration.loadConfiguration(configFile);
-        var customChannels = config.getConfigurationSection("custom-channels");
-        if (customChannels == null)
-            customChannels = config.createSection("custom-channels");
+    private void persistSync() {
+        writeDataFile(serializeChannels());
+    }
 
-        for (var channel : channelsToSave) {
-            ConfigurationSection channelConfig = null;
-            if (customChannels.contains(channel.getKey())) {
-                channelConfig = customChannels.getConfigurationSection(channel.getKey());
-            } else {
-                channelConfig = customChannels.createSection(channel.getKey());
-            }
+    private String serializeChannels() {
 
+        var data = new YamlConfiguration();
+        var section = data.createSection("channels");
+
+        for (var channel : getCustomChannels()) {
+            var channelConfig = section.createSection(channel.getKey());
             channelConfig.set("key", channel.getKey());
             channelConfig.set("color", channel.getColor());
             channelConfig.set("tag", channel.getTag());
@@ -242,12 +295,29 @@ public class ChatChannelManager {
             channelConfig.set("blocked-players", channel.getBlockedPlayers().stream().map(UUID::toString).toList());
         }
 
+        return data.saveToString();
+    }
+
+    private void writeDataFile(String content) {
+
+        var target = getDataFile().toPath();
+        var temp = target.resolveSibling(CHANNEL_DATA_FILE + ".tmp");
+
         try {
-            config.save(configFile);
+            Files.createDirectories(target.getParent());
+            Files.writeString(temp, content, StandardCharsets.UTF_8);
+            try {
+                Files.move(temp, target, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            } catch (AtomicMoveNotSupportedException e) {
+                Files.move(temp, target, StandardCopyOption.REPLACE_EXISTING);
+            }
         } catch (IOException e) {
             United.logger().error("Error while saving chat channels: " + e.getMessage());
         }
+    }
 
+    private File getDataFile() {
+        return new File(UnitedLands.instance().getDataFolder(), CHANNEL_DATA_FILE);
     }
 
     public void registerChannel(ChatChannel channel) {
