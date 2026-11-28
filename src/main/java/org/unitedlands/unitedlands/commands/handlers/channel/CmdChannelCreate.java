@@ -70,10 +70,10 @@ public class CmdChannelCreate implements UnitedCommandExecutor {
             United.messenger().send(sender, "chat.create.success", chatChannel.getKey());
         }
         else {
-            United.messenger().send(sender, "chat.create.success-private", chatChannel.getKey(), chatChannel.getPassword());
+            United.messenger().send(sender, "chat.create.success-private", chatChannel.getKey());
         }
 
-        ChatChannelManager.instance().switchChannel((Player) sender, args[0], chatChannel.getPassword());
+        ChatChannelManager.instance().switchChannel((Player) sender, args[0], args.length == 2 ? args[1] : null);
     }
 
 }

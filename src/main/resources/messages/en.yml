@@ -124,7 +124,7 @@ chat:
     invalid-name: '<error>Invalid channel name. Use up to {1} letters, digits, underscores or hyphens.</error>'
     limit-reached: <error>You already own the maximum number of channels ({1}).</error>
     success: <body>Created chat channel <b>{1}</b>. Please remember that custom chat channels are also subject to rules and moderation.</body>
-    success-private: <body>Created chat channel <b>{1}</b> with password <i>{2}</i>. Please remember that custom chat channels are also subject to rules and moderation.</body>
+    success-private: <body>Created chat channel <b>{1}</b> with a password. Please remember that custom chat channels are also subject to rules and moderation.</body>
   blocked: <success>Blocked {1} from this channel.</success>
   color-set: <success>Channel color set to {1}.</success>
   got-blocked: <error>You're blocked from joining channel {1}.</error>
@@ -137,7 +137,9 @@ chat:
   not-blocked: <error>The player isn't blocked.</error>
   not-creator: <error>This command can only be used by the creator of the channel.</error>
   not-in-channel: <error>You're not in a channel.</error>
-  password-set: <success>Channel password set to {1}.</success>
+  no-password: <error>This channel has no password.</error>
+  password-removed: <success>Channel password removed. The channel is now public.</success>
+  password-set: <success>Channel password updated.</success>
   player-not-in-channel: <error>Player is not in the channel.</error>
   removed: <success>Removed channel {1}.</success>
   tag-set: <success>Tag set to {1}.</success>

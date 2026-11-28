@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.unitedlands.unitedlands.managers.ChatChannelManager;
+import org.unitedlands.unitedlands.utils.PasswordUtils;
 
 public class ChatChannel {
 
@@ -16,7 +17,7 @@ public class ChatChannel {
     private String tag;
     private UUID creator;
     private String color;
-    private String password;
+    private String passwordHash;
     private long lastActivity;
 
     private Set<UUID> blockedPlayers = new HashSet<>();
@@ -70,16 +71,28 @@ public class ChatChannel {
         this.color = color;
     }
 
-    public String getPassword() {
-        return password;
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
 
     public void setPassword(String password) {
-        this.password = password;
+        this.passwordHash = password != null ? PasswordUtils.hash(password) : null;
+    }
+
+    public void removePassword() {
+        this.passwordHash = null;
     }
 
     public boolean hasPassword() {
-        return password != null;
+        return passwordHash != null;
+    }
+
+    public boolean checkPassword(String password) {
+        return !hasPassword() || PasswordUtils.verify(password, passwordHash);
     }
 
     public long getLastActivity() {

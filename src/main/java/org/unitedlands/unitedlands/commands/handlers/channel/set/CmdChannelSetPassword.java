@@ -10,8 +10,8 @@ import org.unitedlands.utils.United;
 @UnitedSubCommand(
     parent = CmdChannelSet.class,
     name            = "password",
-    description     = "Sets a channel password",
-    usage           = "/channel set password <password>",
+    description     = "Sets or removes a channel password",
+    usage           = "/channel set password [password]",
     playerOnly      = true
 )
 public class CmdChannelSetPassword implements UnitedCommandExecutor {
@@ -19,7 +19,7 @@ public class CmdChannelSetPassword implements UnitedCommandExecutor {
     @Override
     public void handleCommand(CommandSender sender, String[] args) {
         
-        if (args.length != 1) {
+        if (args.length > 1) {
             sendUsage(sender);
             return;
         }
@@ -37,10 +37,21 @@ public class CmdChannelSetPassword implements UnitedCommandExecutor {
             return;
         }
 
+        if (args.length == 0) {
+            if (!channel.hasPassword()) {
+                United.messenger().send(player, "chat.no-password");
+                return;
+            }
+            channel.removePassword();
+            channel.save();
+            United.messenger().send(player, "chat.password-removed");
+            return;
+        }
+
         channel.setPassword(args[0]);
         channel.save();
 
-        United.messenger().send(player, "chat.password-set", args[0]);
+        United.messenger().send(player, "chat.password-set");
 
     }
 

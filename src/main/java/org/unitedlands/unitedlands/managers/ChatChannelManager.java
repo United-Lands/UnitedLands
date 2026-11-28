@@ -28,6 +28,7 @@ import org.unitedlands.unitedlands.classes.ChatChannel;
 import org.unitedlands.unitedlands.classes.Citizen;
 import org.unitedlands.unitedlands.classes.configs.UnitedLandsChatConfig;
 import org.unitedlands.unitedlands.integrations.papi.PlaceholderAPIIntegration;
+import org.unitedlands.unitedlands.utils.PasswordUtils;
 import org.unitedlands.utils.United;
 
 import io.papermc.paper.event.player.AsyncChatEvent;
@@ -118,6 +119,10 @@ public class ChatChannelManager {
                     continue;
                 }
 
+                var storedPassword = channelConfig.getString("password");
+                if (storedPassword != null && !storedPassword.isEmpty() && !PasswordUtils.isHash(storedPassword))
+                    changed = true;
+
                 try {
                     var channel = readChannel(key, channelConfig);
                     channels.put(channel.getKey(), channel);
@@ -176,8 +181,12 @@ public class ChatChannelManager {
         channel.setLastActivity(channelConfig.getLong("last-activity"));
 
         var password = channelConfig.getString("password");
-        if (password != null && !password.isEmpty())
-            channel.setPassword(password);
+        if (password != null && !password.isEmpty()) {
+            if (PasswordUtils.isHash(password))
+                channel.setPasswordHash(password);
+            else
+                channel.setPassword(password);
+        }
 
         var creator = channelConfig.getString("creator");
         if (creator != null && !creator.isEmpty())
@@ -288,7 +297,7 @@ public class ChatChannelManager {
             channelConfig.set("color", channel.getColor());
             channelConfig.set("tag", channel.getTag());
             channelConfig.set("prefix", channel.getPrefix());
-            channelConfig.set("password", channel.getPassword());
+            channelConfig.set("password", channel.getPasswordHash());
             channelConfig.set("creator", channel.getCreator() != null ? channel.getCreator().toString() : null);
             channelConfig.set("notify-activity", channel.notifyActvity());
             channelConfig.set("last-activity", channel.getLastActivity());
@@ -407,11 +416,9 @@ public class ChatChannelManager {
 
         }
 
-        if (newChannel.hasPassword()) {
-            if (!newChannel.getPassword().equals(password)) {
-                United.messenger().send(player, "chat.wrong-password");
-                return;
-            }
+        if (!newChannel.checkPassword(password)) {
+            United.messenger().send(player, "chat.wrong-password");
+            return;
         }
 
         if (newChannel.getBlockedPlayers() != null) {
