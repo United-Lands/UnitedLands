@@ -31,6 +31,7 @@ import org.unitedlands.unitedlands.managers.IntegrationManager;
 import org.unitedlands.unitedlands.managers.PermissionManager;
 import org.unitedlands.unitedlands.managers.UnitedLandsDataManager;
 import org.unitedlands.unitedlands.utils.CoordinateUtils;
+import org.unitedlands.unitedlands.utils.TagUtils;
 import org.unitedlands.utils.United;
 
 import com.palmergames.bukkit.towny.TownyAPI;
@@ -199,6 +200,29 @@ public class CmdAdminTownyImport implements UnitedCommandExecutor {
 
             }
 
+            // United.logger().info(
+            //         "---------------------------------------------------------------------- Finished setting settlement countries, validating capitals...");
+
+            // List<Country> countriesToRemove = new ArrayList<>();
+            // for (var country : UnitedLandsDataManager.instance().getCountries()) {
+            //     if (!country.hasCapital()) {
+            //         United.logger().warning("Country " + country.getName()
+            //                 + " does not have a capital after import, likely because the former capital is not in a region. The country will be removed. The setllments will inherit the country color.");
+
+            //         for (var settlement : country.getSettlements()) {
+            //             settlement.setFillColor(country.getFillColor());
+            //             settlement.setStrokeColor(country.getStrokeColor());
+            //             settlement.save();
+            //         }
+
+            //         countriesToRemove.add(country);
+            //     }
+
+            // }
+
+            // for (var country: countriesToRemove) 
+            //     UnitedLandsDataManager.instance().removeCountry(country);
+
             United.logger().info(
                     "---------------------------------------------------------------------- Finished setting settlement countries, starting rendering...");
 
@@ -226,6 +250,8 @@ public class CmdAdminTownyImport implements UnitedCommandExecutor {
         settlement.setUuid(town.getUUID());
         settlement.setName(town.getName());
         settlement.setFoundingTimestamp(town.getRegistered());
+        if (town.hasTag())
+            settlement.setTag(TagUtils.format(town.getTag()));
 
         try {
             var spawnLocation = town.getSpawn();
@@ -270,7 +296,7 @@ public class CmdAdminTownyImport implements UnitedCommandExecutor {
 
             // Metadata
             convertTownyMetaData(town.getMetadata(), settlement);
-            
+
             // Workaround for CMI UUID chaos
             // Check if there is an imported account for the settlement
             var accountHolder = BankAccountManager.instance().getBankAccountHolder(town.getUUID());
@@ -369,10 +395,19 @@ public class CmdAdminTownyImport implements UnitedCommandExecutor {
             nationWorld = nation.getSpawnOrNull().getWorld();
         }
 
+        // Check if the country's capital town exists and if the settlement is in a region.
+        var capital = UnitedLandsDataManager.instance().getSettlement(nation.getCapital().getUUID());
+        if (capital == null || !capital.hasRegion()) {
+            United.logger().warning("Country " + nation.getName() + " does not have a valid capital, skipping.");
+            return CompletableFuture.completedFuture(null);
+        }
+
         country = new Country();
         country.setUuid(nation.getUUID());
         country.setName(nation.getName());
         country.setFoundingTimestamp(nation.getRegistered());
+        if (nation.hasTag())
+            country.setTag(TagUtils.format(nation.getTag()));
         country.setWorld(nationWorld);
 
         country.setStrokeColor(nation.getMapColorHexCode());
@@ -385,7 +420,7 @@ public class CmdAdminTownyImport implements UnitedCommandExecutor {
             leaderResident.addCountryRank("leader");
             leaderResident.save();
         }
-        
+
         // Workaround for CMI UUID chaos
         // Check if there is an imported account for the country
         var accountHolder = BankAccountManager.instance().getBankAccountHolder(nation.getUUID());

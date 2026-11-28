@@ -76,6 +76,7 @@ public interface UnitedLandsConfig extends UnitedConfigHandler {
         @UnitedSetting(key = "protect-unclaimed-land", def = "false")                       boolean protectUnclaimedLand,
         @UnitedSetting(key = "allow-settlement-claims-outside-home-region", def = "true")   boolean allowSettlementClaimsOutsideHomeRegion,
         @UnitedSetting(key = "prevent-hunger-in-settlement", def = "true")                  boolean preventHungerInSettlement,
+        @UnitedSetting(key = "max-tag-length", def = "8")                                   int     maxTagLength,
         @UnitedSection(key = "flight")                                 FlightSettings flight
     ) {}
 

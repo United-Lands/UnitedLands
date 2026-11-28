@@ -15,6 +15,7 @@ settlement:
     - settlement.setboard
     - settlement.setspawn
     - settlement.setcolor
+    - settlement.settag
     - settlement.invite
     - settlement.kick
     - settlement.plot.sell
@@ -69,6 +70,7 @@ country:
     - country.setname
     - country.setcolor
     - country.setspawn
+    - country.settag
     - country.settaxes
     - country.claim
     - country.unclaim

@@ -40,11 +40,25 @@ public class UnitedLandsPAPIExpansion extends PlaceholderExpansion {
         if (params.equalsIgnoreCase("player_country")) {
             return citizen.hasCountry() ? applyBrackets(citizen.getCountry().getCleanName()) : null; //
         }
+
+        if (params.equalsIgnoreCase("player_settlement_tag")) {
+            return citizen.hasSettlement() && citizen.getSettlement().hasTag()
+                    ? applyTagBrackets(citizen.getSettlement().getTag()) : null;
+        }
+
+        if (params.equalsIgnoreCase("player_country_tag")) {
+            return citizen.hasCountry() && citizen.getCountry().hasTag()
+                    ? applyTagBrackets(citizen.getCountry().getTag()) : null;
+        }
         return null; 
     }
 
     String applyBrackets(String str) {
-        return "<dark_gray>[</dark_gray>" + str + "<dark_gray>]</dark_gray>"; 
+        return "<dark_gray>[</dark_gray>" + str + "<dark_gray>]</dark_gray>";
+    }
+
+    String applyTagBrackets(String tag) {
+        return applyBrackets("<white>" + tag + "</white>");
     }
 
 }

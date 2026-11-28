@@ -45,6 +45,9 @@ admin:
     setspawn:
       not-in-region: <error>The spawn of {1} must be inside one of its regions.</error>
       success: <success>Successfully moved the spawn of {1} to this location.</success>
+    settag:
+      cleared: <success>Successfully removed the tag of {1}.</success>
+      success: <success>Successfully changed the tag of {1} to {2}.</success>
     unclaim:
       not-claimed: <error>The region is not claimed.</error>
       success: <success>Successfully unclaimed region {1} from {2}.</success>
@@ -102,6 +105,9 @@ admin:
     setspawn:
       not-in-claims: <error>Location is not inside settlement claims.</error>
       success: <success>Successfully changed the spawn of {1}.</success>
+    settag:
+      cleared: <success>Successfully removed the tag of {1}.</success>
+      success: <success>Successfully changed the tag of {1} to {2}.</success>
     toggle:
       success: <success>Toggled {2} to {3} for settlement {1}.</success>
       unknown-toggle: '<error>Unknown toggle: {1}.</error>'
@@ -181,6 +187,8 @@ general-errors:
   region-not-found: <error>Region {1} not found.</error>
   settlement-bankrupt: <error>You cannot use this command while the settlement is bankrupt.</error>
   settlement-not-found: <error>Settlement {1} not found.</error>
+  tag-empty: <error>The tag must contain at least one visible character.</error>
+  tag-too-long: <error>The tag can't be longer than {1} characters (formatting codes don't count).</error>
   wrong-color-format: <error>Wrong color format, must be hex (#000000).</error>
   wrong-number-format: '<error>Invalid number format: {1}</error>'
   wrong-world: <error>You cannot use the command in this world.</error>
@@ -326,6 +334,9 @@ player:
     setspawn:
       not-in-region: <error>The country spawn must be inside of a region you own.</error>
       success: <success>Successfully set your country spawn to this location.</success>
+    settag:
+      cleared: <success>Your country tag has been removed.</success>
+      success: <success>Your country tag is now {1}. Use "/c set tag none" to remove it.</success>
     titles:
       unknown-title: "<error>Unknown title: {1}</error>"
       already-claimed: <error>This title is alreay claimed by {1}</error>
@@ -485,6 +496,9 @@ player:
     setspawn:
       not-in-claims: <error>The spawn location must be inside of settlement claims.</error>
       success: <success>Successfully changed your settlement spawn.</success>
+    settag:
+      cleared: <success>Your settlement tag has been removed.</success>
+      success: <success>Your settlement tag is now {1}. Use "/s set tag none" to remove it.</success>
     settax:
       above-max: <error>You can't set taxes higher than {1}, using maximum allowed value.</error>
       below-min: <error>You can't set taxes lower than {1}, using minimum allowed value.</error>

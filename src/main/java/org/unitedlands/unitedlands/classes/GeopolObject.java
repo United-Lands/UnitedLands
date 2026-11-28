@@ -30,6 +30,8 @@ public class GeopolObject implements Identifiable, MetadataHolder {
     protected String name;
     @DatabaseField(width = 255, columnName = "display_name")
     protected String displayName;
+    @DatabaseField(canBeNull = true, width = 255, columnName = "tag")
+    protected String tag;
 
     @DatabaseField(width = 255, columnName = "world_name")
     protected String worldName;
@@ -92,6 +94,18 @@ public class GeopolObject implements Identifiable, MetadataHolder {
 
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+
+    public String getTag() {
+        return tag;
+    }
+
+    public boolean hasTag() {
+        return tag != null && !tag.isEmpty();
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
     }
 
     public World getWorld() {
