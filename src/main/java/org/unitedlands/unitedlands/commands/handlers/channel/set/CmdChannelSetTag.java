@@ -19,7 +19,7 @@ public class CmdChannelSetTag implements UnitedCommandExecutor {
     @Override
     public void handleCommand(CommandSender sender, String[] args) {
         
-        if (args.length != 1) {
+        if (args.length == 0) {
             sendUsage(sender);
             return;
         }
@@ -37,9 +37,10 @@ public class CmdChannelSetTag implements UnitedCommandExecutor {
             return;
         }
 
+        var input = String.join(" ", args);
         var tag = player.hasPermission("united.lands.admin")
-                ? args[0]
-                : United.miniMessage().get().escapeTags(args[0]);
+                ? input
+                : United.miniMessage().get().escapeTags(input);
 
         channel.setTag(tag);
         channel.save();

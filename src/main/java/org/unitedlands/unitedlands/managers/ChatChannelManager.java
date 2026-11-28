@@ -299,7 +299,7 @@ public class ChatChannelManager {
             channelConfig.set("prefix", channel.getPrefix());
             channelConfig.set("password", channel.getPasswordHash());
             channelConfig.set("creator", channel.getCreator() != null ? channel.getCreator().toString() : null);
-            channelConfig.set("notify-activity", channel.notifyActvity());
+            channelConfig.set("notify-activity", channel.notifyActivity());
             channelConfig.set("last-activity", channel.getLastActivity());
             channelConfig.set("blocked-players", channel.getBlockedPlayers().stream().map(UUID::toString).toList());
         }
@@ -354,8 +354,39 @@ public class ChatChannelManager {
         return channels.values().stream().filter(c -> creator.equals(c.getCreator())).count();
     }
 
-    public List<String> getPublicChannelNames() {
-        return channels.entrySet().stream().filter(c -> !c.getValue().hasPassword()).map(Entry::getKey).toList();
+    public List<String> getJoinableChannelNames(Player player) {
+        var citizen = findViewer(player);
+        if (citizen == null)
+            return List.of();
+        return channels.values().stream()
+                .filter(c -> !c.hasPassword() && getJoinError(player, citizen, c) == null)
+                .map(ChatChannel::getKey)
+                .sorted()
+                .toList();
+    }
+
+    private String getJoinError(Player player, Citizen citizen, ChatChannel channel) {
+        switch (channel.getKey()) {
+            case "COUNTRY":
+                if (!citizen.hasCountry())
+                    return "general-errors.not-in-country";
+                break;
+            case "SETTLEMENT":
+                if (!citizen.hasSettlement())
+                    return "general-errors.not-in-settlement";
+                break;
+            case "STAFF":
+                if (!player.hasPermission("united.lands.admin"))
+                    return "general-errors.no-permission";
+                break;
+            default:
+                break;
+        }
+
+        if (channel.isBlocked(player.getUniqueId()))
+            return "chat.got-blocked";
+
+        return null;
     }
 
     public ChatChannel getPlayerChannel(Player player) {
@@ -392,28 +423,15 @@ public class ChatChannelManager {
         var oldChannel = getPlayerChannel(player);
         var newChannel = channels.get(key);
 
-        switch (key) {
-            case "COUNTRY":
-                if (!senderViewer.hasCountry()) {
-                    United.messenger().send(player, "general-errors.not-in-country");
-                    return;
-                }
-                break;
-            case "SETTLEMENT":
-                if (!senderViewer.hasSettlement()) {
-                    United.messenger().send(player, "general-errors.not-in-settlement");
-                    return;
-                }
-                break;
-            case "STAFF":
-                if (!player.hasPermission("united.lands.admin")) {
-                    United.messenger().send(player, "general-errors.no-permission");
-                    return;
-                }
-                break;
-            default:
-                break;
+        if (oldChannel != null && oldChannel.getKey().equals(key)) {
+            United.messenger().send(player, "chat.already-in-channel", newChannel.getColor(), newChannel.getKey());
+            return;
+        }
 
+        var joinError = getJoinError(player, senderViewer, newChannel);
+        if (joinError != null) {
+            United.messenger().send(player, joinError, key);
+            return;
         }
 
         if (!newChannel.checkPassword(password)) {
@@ -421,23 +439,16 @@ public class ChatChannelManager {
             return;
         }
 
-        if (newChannel.getBlockedPlayers() != null) {
-            if (newChannel.getBlockedPlayers().contains(player.getUniqueId())) {
-                United.messenger().send(player, "chat.got-blocked", key);
-                return;
-            }
-        }
-
         playerChannels.put(player, key);
         United.messenger().send(player, "chat.switch", newChannel.getColor(), newChannel.getKey());
 
         // Notify the audience in the old channel that someone left.
-        if (oldChannel != null && oldChannel.notifyActvity()) {
+        if (oldChannel != null && oldChannel.notifyActivity()) {
             sendChannelNotification(oldChannel.getKey(),
                     United.messenger().get("chat.left", player.getName(), oldChannel.getKey()));
         }
         // Notify the audience in the new channel that someone joined.
-        if (newChannel.notifyActvity()) {
+        if (newChannel.notifyActivity()) {
             sendChannelNotification(key, United.messenger().get("chat.join", player.getName(), key));
         }
 
@@ -514,10 +525,12 @@ public class ChatChannelManager {
                 return viewers.stream().map(c -> c.getPlayer()).toList();
             case "LOCAL":
                 var origin = citizen.getPlayer().getLocation();
+                var localRadius = UnitedLandsChatConfig.get().localChatRadius();
+                var localRadiusSquared = localRadius * localRadius;
                 return viewers.stream()
                         .map(c -> c.getPlayer())
                         .filter(p -> p.getWorld().equals(origin.getWorld())
-                                && p.getLocation().distanceSquared(origin) <= 100 * 100)
+                                && p.getLocation().distanceSquared(origin) <= localRadiusSquared)
                         .toList();
             case "SETTLEMENT":
                 return viewers.stream()
@@ -621,7 +634,7 @@ public class ChatChannelManager {
 
         var channel = channels.get(channelKey);
         if (channel == null) {
-            United.logger().error("Unknwon chat channel: " + channelKey);
+            United.logger().error("Unknown chat channel: " + channelKey);
             return Component.empty();
         }
 

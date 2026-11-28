@@ -17,6 +17,7 @@ public interface UnitedLandsChatConfig extends UnitedConfigHandler {
     @UnitedSetting(key = "tag-close", def = "]") String tagClose();
     @UnitedSetting(key = "delimiter", def = ": ") String delimiter();
     @UnitedSetting(key = "player-name-placeholder") String playerNamePlaceholder();
+    @UnitedSetting(key = "local-chat-radius", def = "100") double localChatRadius();
     @UnitedSetting(key = "custom-channel-color", def = "white") String customChannelColor();
     @UnitedSetting(key = "custom-channel-lifetime", def = "259200") Long customChannelLifetime();
     @UnitedSetting(key = "custom-channel-max-name-length", def = "16") int customChannelMaxNameLength();

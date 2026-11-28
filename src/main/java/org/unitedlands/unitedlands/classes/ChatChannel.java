@@ -12,7 +12,7 @@ public class ChatChannel {
     private final String key;
     private final String prefix;
     private final boolean custom;
-    private final boolean notifyActvity;
+    private final boolean notifyActivity;
 
     private String tag;
     private UUID creator;
@@ -22,12 +22,12 @@ public class ChatChannel {
 
     private Set<UUID> blockedPlayers = new HashSet<>();
 
-    public ChatChannel(String key, String tag, String color, String prefix, boolean notifyJoin, boolean custom) {
+    public ChatChannel(String key, String tag, String color, String prefix, boolean notifyActivity, boolean custom) {
         this.key = key;
         this.tag = tag;
         this.color = color;
         this.prefix = prefix;
-        this.notifyActvity = notifyJoin;
+        this.notifyActivity = notifyActivity;
         this.custom = custom;
     }
 
@@ -43,8 +43,8 @@ public class ChatChannel {
         return custom;
     }
 
-    public boolean notifyActvity() {
-        return notifyActvity;
+    public boolean notifyActivity() {
+        return notifyActivity;
     }
 
     public String getTag() {
@@ -99,8 +99,8 @@ public class ChatChannel {
         return lastActivity;
     }
 
-    public void setLastActivity(long lastLeave) {
-        this.lastActivity = lastLeave;
+    public void setLastActivity(long lastActivity) {
+        this.lastActivity = lastActivity;
     }
 
     public void addBlockedPlayer(UUID playerId) {

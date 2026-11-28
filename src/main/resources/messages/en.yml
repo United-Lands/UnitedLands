@@ -125,6 +125,7 @@ chat:
     limit-reached: <error>You already own the maximum number of channels ({1}).</error>
     success: <body>Created chat channel <b>{1}</b>. Please remember that custom chat channels are also subject to rules and moderation.</body>
     success-private: <body>Created chat channel <b>{1}</b> with a password. Please remember that custom chat channels are also subject to rules and moderation.</body>
+  already-in-channel: <body>You're already talking in <{1}>{2}</{1}>.</body>
   blocked: <success>Blocked {1} from this channel.</success>
   color-set: <success>Channel color set to {1}.</success>
   got-blocked: <error>You're blocked from joining channel {1}.</error>
