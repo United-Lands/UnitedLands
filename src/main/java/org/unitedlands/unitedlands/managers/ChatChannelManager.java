@@ -30,6 +30,7 @@ import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 
 public class ChatChannelManager {
@@ -284,7 +285,7 @@ public class ChatChannelManager {
         United.messenger().send(player, "chat.switch", newChannel.getColor(), newChannel.getKey());
 
         // Notify the audience in the old channel that someone left.
-        if (oldChannel.notifyActvity()) {
+        if (oldChannel != null && oldChannel.notifyActvity()) {
             sendChannelNotification(oldChannel.getKey(),
                     United.messenger().get("chat.left", player.getName(), oldChannel.getKey()));
         }
@@ -296,7 +297,7 @@ public class ChatChannelManager {
         // In custom channels, save the time when the a player joined or left a channel.
         // This will will be used to purge channels that have not been used for a 
         // prolonged period of time.
-        if (oldChannel.isCustom()) {
+        if (oldChannel != null && oldChannel.isCustom()) {
             oldChannel.setLastActivity(System.currentTimeMillis());
             oldChannel.save();
         }
@@ -335,8 +336,7 @@ public class ChatChannelManager {
             return;
         }
 
-        var senderViewer = viewers.stream().filter(c -> c.getUuid().equals(player.getUniqueId())).findFirst()
-                .orElse(null);
+        var senderViewer = getOrRegisterViewer(player);
         if (senderViewer == null) {
             return;
         }
@@ -401,27 +401,45 @@ public class ChatChannelManager {
             return;
         }
 
-        if (prepared == null)
+        if (prepared == null) {
+            event.setCancelled(true);
             return;
+        }
 
         event.viewers().clear();
         event.viewers().addAll(prepared.receivers());
         event.renderer((source, sourceDisplayName, message, viewer) -> prepared.message());
     }
 
-    private PreparedMessage prepareMessage(Player player, String text) {
-
-        var channel = getPlayerChannel(player);
-        if (channel == null) {
-            United.logger().error("Could not find chat channel of player " + player.getName());
+    private Citizen getOrRegisterViewer(Player player) {
+        var viewer = findViewer(player);
+        if (viewer == null) {
+            registerPlayer(player);
+            viewer = findViewer(player);
+        }
+        if (viewer == null) {
+            United.messenger().send(player, "general-errors.no-citizen-data", player.getName());
             return null;
         }
+        if (getPlayerChannel(player) == null) {
+            United.logger().error("Could not find chat channel of player " + player.getName() + ", resetting to GLOBAL.");
+            playerChannels.put(player, "GLOBAL");
+        }
+        return viewer;
+    }
 
-        var senderViewer = viewers.stream().filter(c -> c.getUuid().equals(player.getUniqueId())).findFirst()
-                .orElse(null);
+    private Citizen findViewer(Player player) {
+        return viewers.stream().filter(c -> c.getUuid().equals(player.getUniqueId())).findFirst().orElse(null);
+    }
+
+    private PreparedMessage prepareMessage(Player player, String text) {
+
+        var senderViewer = getOrRegisterViewer(player);
         if (senderViewer == null) {
             return null;
         }
+
+        var channel = getPlayerChannel(player);
 
         var receivers = filterViewers(senderViewer, channel.getKey());
 
@@ -466,17 +484,25 @@ public class ChatChannelManager {
         if (prefix != null && IntegrationManager.instance().usePAPI()) {
             prefix = PlaceholderAPIIntegration.instance().setPlaceholders(source, prefix);
         }
+        var allowFormatting = source.hasPermission("united.lands.admin");
+
         var playerName = source.getName();
         if (UnitedLandsChatConfig.get().playerNamePlaceholder() != null && IntegrationManager.instance().usePAPI()) {
             playerName = PlaceholderAPIIntegration.instance().setPlaceholders(source,
                     UnitedLandsChatConfig.get().playerNamePlaceholder());
+            if (!allowFormatting)
+                playerName = miniMessage.escapeTags(playerName);
         }
 
         var header = tag + prefix + playerName + UnitedLandsChatConfig.get().delimiter();
 
+        var content = allowFormatting
+                ? Placeholder.parsed("message", text)
+                : Placeholder.unparsed("message", text);
+
         var message = Component.text()
                 .append(miniMessage.deserialize(header))
-                .append(miniMessage.deserialize("<" + color + ">" + text + "</" + color + ">"))
+                .append(miniMessage.deserialize("<" + color + "><message></" + color + ">", content))
                 .build();
 
         // Log all messages to console

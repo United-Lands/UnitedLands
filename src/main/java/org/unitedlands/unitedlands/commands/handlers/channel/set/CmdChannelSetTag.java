@@ -37,10 +37,14 @@ public class CmdChannelSetTag implements UnitedCommandExecutor {
             return;
         }
 
-        channel.setTag(args[0]);
+        var tag = player.hasPermission("united.lands.admin")
+                ? args[0]
+                : United.miniMessage().get().escapeTags(args[0]);
+
+        channel.setTag(tag);
         channel.save();
 
-        United.messenger().send(player, "chat.tag-set", args[0]);
+        United.messenger().send(player, "chat.tag-set", tag);
 
     }
 

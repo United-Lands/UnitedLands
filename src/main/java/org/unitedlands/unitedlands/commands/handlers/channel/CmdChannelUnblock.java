@@ -1,6 +1,7 @@
 package org.unitedlands.unitedlands.commands.handlers.channel;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -24,7 +25,10 @@ public class CmdChannelUnblock implements UnitedCommandExecutor {
         if (args.length == 1) { 
             var channel = ChatChannelManager.instance().getPlayerChannel((Player) sender);
             if (channel != null) {
-                return channel.getBlockedPlayers().stream().map(uuid -> Bukkit.getPlayer(uuid).getName()).toList();
+                return channel.getBlockedPlayers().stream()
+                        .map(uuid -> Bukkit.getOfflinePlayer(uuid).getName())
+                        .filter(Objects::nonNull)
+                        .toList();
             }
         }
         return null;
@@ -51,22 +55,24 @@ public class CmdChannelUnblock implements UnitedCommandExecutor {
             return;
         }
 
-        var targetPlayer = Bukkit.getPlayerExact(args[0]);
-        if (targetPlayer == null || !targetPlayer.isOnline()) {
-            United.messenger().send(player, "general-errors.player-not-found", args[0]);
-            return;
-        }
+        var target = channel.getBlockedPlayers().stream()
+                .map(Bukkit::getOfflinePlayer)
+                .filter(p -> args[0].equalsIgnoreCase(p.getName()))
+                .findFirst()
+                .orElse(null);
 
-        if (!channel.isBlocked(targetPlayer.getUniqueId())) {
+        if (target == null) {
             United.messenger().send(player, "chat.not-blocked");
             return;
         }
 
-        channel.removeBlockedPlayer(targetPlayer.getUniqueId());
+        channel.removeBlockedPlayer(target.getUniqueId());
         channel.save();
 
-        United.messenger().send(targetPlayer, "chat.got-unblocked", channel.getKey());
-        United.messenger().send(player, "chat.unblocked", targetPlayer.getName());
+        var onlineTarget = target.getPlayer();
+        if (onlineTarget != null)
+            United.messenger().send(onlineTarget, "chat.got-unblocked", channel.getKey());
+        United.messenger().send(player, "chat.unblocked", target.getName());
 
     }
 
